@@ -1,0 +1,15 @@
+# agentic-design
+
+Accessible design tokens and UI primitives for calm, minimal apps.
+
+Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,dark-mode.
+
+- SDK: import { summarizeText, dispatchText } from "agentic-design".
+- CLI: agentic-design summary --text "...".
+- MCP: run agentic-design mcp, then call summarize_text.
+
+## Docs
+
+- README: https://github.com/pooriaarab/agentic-design
+- Core contract: https://github.com/pooriaarab/agentic-design/blob/main/docs/agentic-core.md
+- License: MIT
