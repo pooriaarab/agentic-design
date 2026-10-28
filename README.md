@@ -5,36 +5,79 @@
 
 [Package](https://www.npmjs.com/package/agentic-design) · [Source](https://github.com/pooriaarab/agentic-design) · [Support](https://github.com/pooriaarab/agentic-design/issues)
 
-Accessible design tokens and UI primitives for calm, minimal apps.
+Accessible design tokens and React primitives for calm, minimal apps.
 
-> Status: scaffold. This repository holds the starter code only. It is not on npm
-> yet, and none of the features below work yet.
+> Status: early. The design tokens, the contrast check, and the fonts work.
+> The React primitives, the app patterns, and the demo are not built yet.
+> The package is not on npm yet.
 
-## Planned features
+## Install
 
-- Design tokens for color, type, space, and motion, with light and dark themes.
-- Accessible primitives that meet WCAG 2.2 AA.
-- Self-hosted fonts and assets, with no remote calls.
-- A small set of app patterns: shell, sidebar, toolbar, dialog, menu, toast.
-- Presence chips that label agents as agents.
+```sh
+npm install agentic-design
+```
 
-## Surfaces
+## Quick start
 
-One package gives you each way in:
+Import the stylesheet once. It holds the fonts, the tokens, and base rules.
 
-- **Library and SDK**: `import { ... } from "agentic-design"`.
-- **CLI**: `npx agentic-design --help`.
-- **MCP server**: `npx agentic-design mcp`, for Claude Code and other MCP clients.
-- **HTTP API**: a Cloudflare Worker you deploy to your own account.
-- **Web UI**: a small app served by the same Worker.
+```js
+import "agentic-design/styles.css";
+```
+
+Use a token in your own CSS:
+
+```css
+.card {
+  background: var(--ad-color-surface);
+  border: 1px solid var(--ad-color-border);
+  border-radius: var(--ad-radius-md);
+  padding: var(--ad-space-4);
+}
+```
+
+Set `data-theme="light"` or `data-theme="dark"` on `<html>` to pick a theme.
+Without it, the page follows the system setting. You can set `data-theme`
+on any inner element for a themed region.
+
+Read the same tokens in TypeScript:
+
+```ts
+import { themes, scale } from "agentic-design/tokens";
+
+themes.dark.accent; // "#8EA4FF"
+```
+
+## Features
+
+- Semantic color tokens for light and dark: `bg`, `surface`, `text`,
+  `text-muted`, `border`, `accent`, `agent`, `danger`, `warning`, `success`,
+  `focus`.
+- Scales for type, space, radius, shadow, and motion. Motion tokens drop to
+  zero when the user asks for reduced motion.
+- A contrast check. `npm run check:contrast` tests every text and background
+  pair in both themes against WCAG 2.2 AA and fails when one is too low.
+- Self-hosted Inter and JetBrains Mono (SIL OFL). The package makes no remote
+  request.
+- A CLI and an MCP server so an agent can read the tokens:
+  `npx agentic-design tokens --format json`, `npx agentic-design contrast`,
+  `npx agentic-design mcp`.
+- An HTTP route, `GET /api/v1/tokens`, from a Cloudflare Worker.
+
+## Limits
+
+- No React components yet.
+- Fonts cover Latin and Latin Extended only.
+- The contrast check covers the pairs listed in `src/tokens/tokens.ts`. Add a
+  pair there when you add a new use of color.
 
 ## Develop
 
 ```sh
 npm ci
-npm run build && npm run typecheck && npm test
+npm run ci:local
 ```
 
 ## License
 
-MIT.
+MIT. Fonts are SIL OFL 1.1. See `THIRD_PARTY_NOTICES.md`.

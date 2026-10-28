@@ -1,105 +1,42 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import {
-  createLogger,
-  dispatchText,
-  getCostReport,
-  GuardError,
-  LocalRouterAdapter,
-  summarizeText,
-  VendorError,
-  type Guards,
-  type Logger,
-  type RouterAdapter,
-} from "./core.js";
-import { DEFAULT_BRAND } from "./index.js";
+import { checkContrast, tokensCss, tokensJson } from "./tokens/index.js";
+import { VERSION } from "./version.js";
 
-export interface McpDeps {
-  router?: RouterAdapter;
-  guards?: Guards;
-  logger?: Logger;
+function ok(value: unknown): { content: { type: "text"; text: string }[] } {
+  return { content: [{ type: "text", text: typeof value === "string" ? value : JSON.stringify(value) }] };
 }
 
-const textShape = {
-  text: z.string().describe("The text to handle."),
-};
-
-function errorResult(error: unknown): {
-  content: { type: "text"; text: string }[];
-  isError: true;
-} {
-  const message = error instanceof Error ? error.message : String(error);
-  return { content: [{ type: "text", text: JSON.stringify({ error: message }) }], isError: true };
-}
-
-function okResult(value: unknown): {
-  content: { type: "text"; text: string }[];
-} {
-  return { content: [{ type: "text", text: JSON.stringify(value) }] };
-}
-
-export function createMcpServer(deps: McpDeps = {}): McpServer {
-  const router = deps.router ?? new LocalRouterAdapter();
-  const guards = deps.guards;
-  const logger = deps.logger ?? createLogger({ quiet: true });
-  const server = new McpServer({
-    name: DEFAULT_BRAND.command,
-    version: DEFAULT_BRAND.version,
-  });
+export function createMcpServer(): McpServer {
+  const server = new McpServer({ name: "agentic-design", version: VERSION });
 
   server.registerTool(
-    "summarize_text",
+    "get_tokens",
     {
-      description: "Count chars, words, and lines in a text, with top words.",
-      inputSchema: textShape,
+      description: "Read the design tokens: semantic colors for light and dark, shadows, and scales.",
+      inputSchema: { format: z.enum(["json", "css"]).default("json").describe("Output format.") },
       annotations: { readOnlyHint: true },
     },
-    async ({ text }) => okResult(summarizeText(text)),
+    async ({ format }) => ok(format === "css" ? tokensCss() : tokensJson()),
   );
 
   server.registerTool(
-    "dispatch_text",
+    "check_contrast",
     {
-      description: "Route one text through the pack router. Pass dryRun to preview only.",
-      inputSchema: {
-        ...textShape,
-        dryRun: z.boolean().optional().describe("Preview the route without delivery."),
-      },
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: false,
-        idempotentHint: false,
-        openWorldHint: false,
-      },
-    },
-    async ({ text, dryRun }) => {
-      try {
-        return okResult(await dispatchText(text, { adapter: router, guards, logger, dryRun: dryRun ?? false }));
-      } catch (error) {
-        if (error instanceof GuardError || error instanceof VendorError) {
-          return errorResult(error);
-        }
-        throw error;
-      }
-    },
-  );
-
-  server.registerTool(
-    "get_cost_report",
-    {
-      description: "Read the cost report for this session.",
+      description: "Check every text and background pair in both themes against WCAG 2.2 AA.",
       inputSchema: {},
       annotations: { readOnlyHint: true },
     },
-    async () => okResult(getCostReport()),
+    async () => {
+      const results = checkContrast();
+      return ok({ pass: results.every((r) => r.pass), failures: results.filter((r) => !r.pass) });
+    },
   );
 
   return server;
 }
 
-export async function startMcp(deps: McpDeps = {}): Promise<void> {
-  const server = createMcpServer(deps);
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+export async function startMcp(): Promise<void> {
+  await createMcpServer().connect(new StdioServerTransport());
 }

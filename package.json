@@ -1,7 +1,7 @@
 {
   "name": "agentic-design",
   "version": "0.0.0",
-  "description": "Accessible design tokens and UI primitives for calm, minimal apps.",
+  "description": "Accessible design tokens and React primitives for calm, minimal apps.",
   "keywords": [
     "design-system",
     "tokens",
@@ -25,7 +25,8 @@
     "node": ">=18"
   },
   "files": [
-    "dist"
+    "dist",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "publishConfig": {
     "access": "public"
@@ -37,7 +38,13 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./tokens": {
+      "types": "./dist/tokens.d.ts",
+      "import": "./dist/tokens.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./tokens.css": "./dist/tokens.css"
   },
   "bin": {
     "agentic-design": "./dist/cli.js",
@@ -46,9 +53,10 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "test": "playwright test --project=node",
     "clean": "rm -rf dist",
-    "ci:local": "npm run build && npm run typecheck && npm test"
+    "ci:local": "npm run build && npm run typecheck && npm run check:contrast && npm test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
@@ -58,6 +66,9 @@
     "@types/node": "^22.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.6.0",
-    "vitest": "^3.0.0"
-  }
+    "@playwright/test": "^1.50.0"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ]
 }

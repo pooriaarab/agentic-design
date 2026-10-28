@@ -1,13 +1,11 @@
 # agentic-design rules
 
-These rules bind every run of agentic-design. They also bind
-agents that drive this pack over MCP.
+These rules bind every change to agentic-design. They also bind agents that use
+the package.
 
-1. Preview before you act. Run each dispatch with dry run first.
-2. Respect guards. A denied call stays denied.
-3. Report failures as failures. Adapters throw, and callers surface
-   the error. No silent success follows a failed call.
-4. Count the cost. Read the cost report before you close a task.
-5. Keep quiet hours. The pack refuses routes inside the window.
-
-Pack: Accessible design tokens and UI primitives for calm, minimal apps. Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,dark-mode.
+1. Use semantic tokens. A component reads `--ad-color-*`, never a hex value.
+2. Test every color use. Each text and background pair needs an entry in
+   `contrastPairs`, and `npm run check:contrast` must pass.
+3. Never rely on color alone. Agents and people differ by label and shape too.
+4. Make no remote request. Fonts and assets ship in the package.
+5. Respect reduced motion. Motion tokens must fall to zero.

@@ -6,17 +6,19 @@ const pkg = JSON.parse(
 ) as { version: string };
 
 export default defineConfig({
-  entry: [
-    "src/index.ts",
-    "src/cli.ts",
-    "src/mcp.ts",
-    "src/mcp-bin.ts",
-    "src/worker.ts",
-  ],
+  entry: {
+    index: "src/index.ts",
+    tokens: "src/tokens/index.ts",
+    cli: "src/cli.ts",
+    mcp: "src/mcp.ts",
+    "mcp-bin": "src/mcp-bin.ts",
+    worker: "src/worker.ts",
+  },
   format: ["esm"],
   dts: true,
   clean: true,
   define: {
     __PACK_VERSION__: JSON.stringify(pkg.version),
   },
+  onSuccess: "node scripts/build-css.mjs",
 });
