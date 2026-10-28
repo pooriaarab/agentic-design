@@ -24,16 +24,12 @@
 .demo-header p { margin-top: var(--ad-space-1); }
 .demo-muted { color: var(--ad-color-text-muted); }
 .demo-group { margin-bottom: var(--ad-space-6); }
-.demo-field { display: grid; gap: var(--ad-space-1); font-size: var(--ad-font-size-xs); }
-.demo-field select {
-  min-height: var(--ad-size-control);
-  padding: 0 var(--ad-space-3);
-  border: 1px solid var(--ad-color-border-strong);
-  border-radius: var(--ad-radius-md);
-  background: var(--ad-color-surface);
-  color: var(--ad-color-text);
-  font: inherit;
-}
+.demo-nav { display: flex; gap: var(--ad-space-4); margin: var(--ad-space-3) 0 0; padding: 0; list-style: none; }
+.demo-nav a[aria-current="page"] { color: var(--ad-color-text); font-weight: var(--ad-font-weight-semibold); text-decoration: none; }
+.demo-nav a { display: inline-flex; align-items: center; min-height: 1.5rem; }
+.demo-header .ad-field { min-width: 10rem; }
+.demo-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ad-space-3); }
+.demo-form { display: grid; gap: var(--ad-space-4); max-width: 24rem; }
 
 ul.demo-swatches, ul.demo-list, ul.demo-row { margin: 0; padding: 0; list-style: none; }
 .demo-swatches {

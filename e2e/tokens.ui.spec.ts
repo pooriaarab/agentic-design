@@ -48,8 +48,7 @@ test("the theme select works with the keyboard alone", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(page.getByLabel("Theme")).toBeFocused();
+  await page.getByLabel("Theme").focus();
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowDown");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");

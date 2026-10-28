@@ -1,0 +1,212 @@
+/* Component styles. They read semantic tokens and set a few local variables. */
+:root {
+  --ad-control-h: var(--ad-size-control);
+}
+@media (pointer: coarse) {
+  :root {
+    --ad-control-h: var(--ad-size-control-touch);
+  }
+}
+
+/* Button ------------------------------------------------------------ */
+.ad-button {
+  --button-bg: var(--ad-color-surface);
+  --button-bg-hover: var(--ad-color-surface-hover);
+  --button-bg-active: var(--ad-color-surface-sunken);
+  --button-fg: var(--ad-color-text);
+  --button-border: var(--ad-color-border-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ad-space-2);
+  min-height: var(--ad-control-h);
+  padding: 0 var(--ad-space-4);
+  border: 1px solid var(--button-border);
+  border-radius: var(--ad-radius-md);
+  background: var(--button-bg);
+  color: var(--button-fg);
+  font: inherit;
+  font-weight: var(--ad-font-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--ad-duration-fast) var(--ad-easing-out);
+}
+.ad-button:hover { background: var(--button-bg-hover); }
+.ad-button:active { background: var(--button-bg-active); }
+.ad-button--sm {
+  min-height: 1.75rem;
+  padding: 0 var(--ad-space-3);
+  font-size: var(--ad-font-size-xs);
+}
+@media (pointer: coarse) {
+  .ad-button--sm { min-height: var(--ad-control-h); }
+}
+.ad-button--primary {
+  --button-bg: var(--ad-color-accent);
+  --button-bg-hover: var(--ad-color-accent-hover);
+  --button-bg-active: var(--ad-color-accent-hover);
+  --button-fg: var(--ad-color-text-on-accent);
+  --button-border: transparent;
+}
+.ad-button--ghost {
+  --button-bg: transparent;
+  --button-border: transparent;
+}
+.ad-button--danger {
+  --button-bg-hover: var(--ad-color-danger-subtle);
+  --button-bg-active: var(--ad-color-danger-subtle);
+  --button-fg: var(--ad-color-danger-text);
+  --button-border: var(--ad-color-danger);
+}
+.ad-button:disabled {
+  --button-bg: var(--ad-color-surface-sunken);
+  --button-bg-hover: var(--ad-color-surface-sunken);
+  --button-fg: var(--ad-color-text-muted);
+  --button-border: var(--ad-color-border);
+  cursor: not-allowed;
+}
+.ad-button[aria-disabled="true"] { cursor: progress; }
+.ad-icon-button {
+  width: var(--ad-control-h);
+  padding: 0;
+}
+.ad-icon-button.ad-button--sm { width: 1.75rem; }
+@media (pointer: coarse) {
+  .ad-icon-button.ad-button--sm { width: var(--ad-control-h); }
+}
+.ad-spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ad-spin 700ms linear infinite;
+}
+@keyframes ad-spin { to { transform: rotate(360deg); } }
+
+/* Field: label, control, hint, error -------------------------------- */
+.ad-field {
+  display: grid;
+  gap: var(--ad-space-1);
+}
+.ad-field__label {
+  font-weight: var(--ad-font-weight-medium);
+}
+.ad-field__hint {
+  color: var(--ad-color-text-muted);
+  font-size: var(--ad-font-size-xs);
+}
+.ad-field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ad-space-1);
+  color: var(--ad-color-danger-text);
+  font-size: var(--ad-font-size-xs);
+}
+.ad-field__error svg { flex: none; margin-top: -0.1em; }
+
+.ad-input {
+  width: 100%;
+  min-height: var(--ad-control-h);
+  padding: 0 var(--ad-space-3);
+  border: 1px solid var(--ad-color-border-strong);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-color-surface);
+  color: var(--ad-color-text);
+  font: inherit;
+}
+.ad-input::placeholder { color: var(--ad-color-text-muted); opacity: 1; }
+.ad-input:hover:not(:disabled) { background: var(--ad-color-surface-sunken); }
+.ad-input[aria-invalid="true"] { border-color: var(--ad-color-danger); }
+.ad-input:disabled {
+  background: var(--ad-color-surface-sunken);
+  border-color: var(--ad-color-border);
+  color: var(--ad-color-text-muted);
+  cursor: not-allowed;
+}
+.ad-textarea {
+  min-height: 5rem;
+  padding: var(--ad-space-2) var(--ad-space-3);
+  resize: vertical;
+}
+.ad-select { position: relative; display: block; }
+.ad-select select { appearance: none; padding-inline-end: var(--ad-space-8); cursor: pointer; }
+.ad-select::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: var(--ad-space-3);
+  inset-block-start: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  border: solid var(--ad-color-text-muted);
+  border-width: 0 2px 2px 0;
+  transform: translateY(-75%) rotate(45deg);
+  pointer-events: none;
+}
+
+/* Checkbox and switch ----------------------------------------------- */
+.ad-toggle { display: grid; gap: var(--ad-space-1); }
+.ad-toggle__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ad-space-3);
+  min-height: var(--ad-control-h);
+  cursor: pointer;
+}
+.ad-checkbox,
+.ad-switch {
+  appearance: none;
+  flex: none;
+  margin: 0;
+  border: 1px solid var(--ad-color-border-strong);
+  background: var(--ad-color-surface);
+  cursor: pointer;
+  transition: background-color var(--ad-duration-fast) var(--ad-easing-out);
+}
+.ad-checkbox {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--ad-radius-sm);
+}
+.ad-checkbox::before {
+  content: "";
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--ad-color-text-on-accent);
+  clip-path: polygon(14% 52%, 0 66%, 38% 100%, 100% 20%, 86% 8%, 38% 72%);
+  transform: scale(0);
+  transition: transform var(--ad-duration-fast) var(--ad-easing-out);
+}
+.ad-checkbox:checked { background: var(--ad-color-accent); border-color: var(--ad-color-accent); }
+.ad-checkbox:checked::before { transform: scale(1); }
+.ad-switch {
+  position: relative;
+  width: 2.25rem;
+  height: 1.375rem;
+  border-radius: var(--ad-radius-full);
+  background: var(--ad-color-surface-sunken);
+}
+.ad-switch::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 0.2rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: var(--ad-radius-full);
+  background: var(--ad-color-text-muted);
+  transform: translateY(-50%);
+  transition: transform var(--ad-duration-base) var(--ad-easing-out);
+}
+.ad-switch:checked { background: var(--ad-color-accent); border-color: var(--ad-color-accent); }
+.ad-switch:checked::before {
+  background: var(--ad-color-text-on-accent);
+  transform: translate(0.875rem, -50%);
+}
+.ad-checkbox:disabled,
+.ad-switch:disabled { background: var(--ad-color-surface-sunken); border-color: var(--ad-color-border); cursor: not-allowed; }
+.ad-checkbox:disabled::before { background: var(--ad-color-text-muted); }
+.ad-switch:disabled::before { background: var(--ad-color-border); }

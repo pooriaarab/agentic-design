@@ -25,7 +25,8 @@ mkdirSync(dist("demo/"), { recursive: true });
 writeFileSync(dist("demo/styles.css"), styles);
 mkdirSync(dist("demo/fonts/"), { recursive: true });
 for (const name of readdirSync(src("fonts/"))) copyFileSync(src(`fonts/${name}`), dist(`demo/fonts/${name}`));
-copyFileSync(src("demo/index.html"), dist("demo/index.html"));
+// Each page is the same shell. main.js picks the page from the path.
+for (const name of ["index", "primitives"]) copyFileSync(src("demo/index.html"), dist(`demo/${name}.html`));
 copyFileSync(src("demo/demo.css"), dist("demo/demo.css"));
 await build({
   entryPoints: [src("demo/main.tsx").pathname],

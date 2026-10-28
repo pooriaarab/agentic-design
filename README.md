@@ -8,7 +8,7 @@
 Accessible design tokens and React primitives for calm, minimal apps.
 
 > Status: early. The design tokens, the contrast check, and the fonts work.
-> The React primitives, the app patterns, and the demo are not built yet.
+> The form controls work. The overlays, the app patterns, and the demo are not built yet.
 > The package is not on npm yet.
 
 ## Install
@@ -59,6 +59,9 @@ themes.dark.accent; // "#8EA4FF"
   pair in both themes against WCAG 2.2 AA and fails when one is too low.
 - Self-hosted Inter and JetBrains Mono (SIL OFL). The package makes no remote
   request.
+- Form controls for React: `Button`, `IconButton` (needs a `label`), `Input`, `Textarea`,
+  `Select`, `Checkbox`, `Switch`. Each has a visible label, a focus ring, and
+  every state. An error names the problem, shows an icon, and is announced.
 - `ThemeProvider` and `useTheme` for React. They set `data-theme` and keep the pick on the device.
 - A token page at `/` from the Worker (`npm run build`, then `npx wrangler dev`).
 - A CLI and an MCP server so an agent can read the tokens:
@@ -68,7 +71,7 @@ themes.dark.accent; // "#8EA4FF"
 
 ## Limits
 
-- No React components yet, apart from the theme provider.
+- Dialog, menu, tooltip, tabs, toast, and the app patterns are not built yet.
 - Fonts cover Latin and Latin Extended only.
 - The contrast check covers the pairs listed in `src/tokens/tokens.ts`. Add a
   pair there when you add a new use of color.
