@@ -1,5 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cx } from "../cx.js";
+import { Tooltip } from "./tooltip.js";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
@@ -32,15 +33,18 @@ export interface IconButtonProps extends Omit<ButtonProps, "children" | "aria-la
   /** The accessible name. Required, because an icon has no text. */
   label: string;
   icon: ReactNode;
+  /** Show the label in a tooltip on hover and focus. On by default. */
+  tooltip?: boolean;
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-  { label, icon, variant = "ghost", className, ...rest },
+  { label, icon, tooltip = true, variant = "ghost", className, ...rest },
   ref,
 ) {
-  return (
+  const button = (
     <Button ref={ref} variant={variant} className={cx("ad-icon-button", className)} aria-label={label} {...rest}>
       {icon}
     </Button>
   );
+  return tooltip ? <Tooltip content={label}>{button}</Tooltip> : button;
 });

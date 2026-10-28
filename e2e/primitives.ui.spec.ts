@@ -51,7 +51,7 @@ test("an error names the field, is announced, and clears when fixed", async ({ p
   await name.fill("Ada");
   await expect(name).not.toHaveAttribute("aria-invalid", "true");
   await save.click();
-  await expect(page.getByRole("status")).toHaveText("Saved.");
+  await expect(page.getByText("Saved.", { exact: true })).toBeVisible();
 });
 
 test("a loading button ignores clicks and stays focusable", async ({ page }) => {

@@ -8,7 +8,7 @@
 Accessible design tokens and React primitives for calm, minimal apps.
 
 > Status: early. The design tokens, the contrast check, and the fonts work.
-> The form controls work. The overlays, the app patterns, and the demo are not built yet.
+> The form controls and the overlays work. The app patterns and the editor demo are not built yet.
 > The package is not on npm yet.
 
 ## Install
@@ -62,6 +62,9 @@ themes.dark.accent; // "#8EA4FF"
 - Form controls for React: `Button`, `IconButton` (needs a `label`), `Input`, `Textarea`,
   `Select`, `Checkbox`, `Switch`. Each has a visible label, a focus ring, and
   every state. An error names the problem, shows an icon, and is announced.
+- Overlays for React, on Radix UI (MIT): `Dialog`, `Menu`, `Tooltip`, `Tabs`, and
+  a toast (`ToastProvider`, `useToast`). Dialogs trap focus and give it back. An
+  icon button shows its label as a tooltip. An error toast stays until dismissed.
 - `ThemeProvider` and `useTheme` for React. They set `data-theme` and keep the pick on the device.
 - A token page at `/` from the Worker (`npm run build`, then `npx wrangler dev`).
 - A CLI and an MCP server so an agent can read the tokens:
@@ -71,7 +74,7 @@ themes.dark.accent; // "#8EA4FF"
 
 ## Limits
 
-- Dialog, menu, tooltip, tabs, toast, and the app patterns are not built yet.
+- The app patterns (shell, share dialog, presence) are not built yet.
 - Fonts cover Latin and Latin Extended only.
 - The contrast check covers the pairs listed in `src/tokens/tokens.ts`. Add a
   pair there when you add a new use of color.

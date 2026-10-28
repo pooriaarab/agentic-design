@@ -1,0 +1,169 @@
+import * as RadixDialog from "@radix-ui/react-dialog";
+import * as RadixMenu from "@radix-ui/react-dropdown-menu";
+import * as RadixTabs from "@radix-ui/react-tabs";
+import * as RadixToast from "@radix-ui/react-toast";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactElement, type ReactNode } from "react";
+import { AlertIcon, CheckIcon, CloseIcon, InfoIcon } from "../icons.js";
+import { IconButton } from "./button.js";
+
+/* Dialog ---------------------------------------------------------------- */
+
+export interface DialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** The element that opens the dialog. Focus returns to it on close. */
+  trigger?: ReactElement;
+  /** The dialog name. Required. */
+  title: string;
+  description?: ReactNode;
+  children?: ReactNode;
+  footer?: ReactNode;
+}
+
+export function Dialog({ open, onOpenChange, trigger, title, description, children, footer }: DialogProps) {
+  return (
+    <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
+      {trigger && <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>}
+      <RadixDialog.Portal>
+        <RadixDialog.Overlay className="ad-overlay" />
+        <RadixDialog.Content className="ad-dialog" {...(description ? {} : { "aria-describedby": undefined })}>
+          <RadixDialog.Title className="ad-dialog__title">{title}</RadixDialog.Title>
+          {description && <RadixDialog.Description className="ad-dialog__description">{description}</RadixDialog.Description>}
+          {children && <div className="ad-dialog__body">{children}</div>}
+          {footer && <div className="ad-dialog__footer">{footer}</div>}
+          <RadixDialog.Close asChild>
+            <IconButton label="Close" icon={<CloseIcon />} size="sm" className="ad-dialog__close" tooltip={false} />
+          </RadixDialog.Close>
+        </RadixDialog.Content>
+      </RadixDialog.Portal>
+    </RadixDialog.Root>
+  );
+}
+
+/** Wrap a button in a dialog footer to close the dialog when it is pressed. */
+export const DialogClose = RadixDialog.Close;
+
+/* Menu ------------------------------------------------------------------ */
+
+export type MenuItem =
+  | "separator"
+  | { label: string; onSelect: () => void; icon?: ReactNode; shortcut?: string; danger?: boolean; disabled?: boolean };
+
+export function Menu({ trigger, items, align = "end" }: { trigger: ReactElement; items: MenuItem[]; align?: "start" | "end" }) {
+  return (
+    <RadixMenu.Root modal={false}>
+      <RadixMenu.Trigger asChild>{trigger}</RadixMenu.Trigger>
+      <RadixMenu.Portal>
+        <RadixMenu.Content className="ad-menu" align={align} sideOffset={6}>
+          {items.map((item, index) =>
+            item === "separator" ? (
+              <RadixMenu.Separator key={`sep-${index}`} className="ad-menu__separator" />
+            ) : (
+              <RadixMenu.Item
+                key={item.label}
+                className={item.danger ? "ad-menu__item ad-menu__item--danger" : "ad-menu__item"}
+                disabled={item.disabled}
+                onSelect={item.onSelect}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+                {item.shortcut && <kbd className="ad-menu__shortcut">{item.shortcut}</kbd>}
+              </RadixMenu.Item>
+            ),
+          )}
+        </RadixMenu.Content>
+      </RadixMenu.Portal>
+    </RadixMenu.Root>
+  );
+}
+
+/* Tabs ------------------------------------------------------------------ */
+
+export interface TabItem {
+  value: string;
+  label: string;
+  content: ReactNode;
+}
+
+export function Tabs({ label, tabs, value, defaultValue, onValueChange }: { label: string; tabs: TabItem[]; defaultValue?: string; value?: string; onValueChange?: (value: string) => void }) {
+  return (
+    <RadixTabs.Root
+      className="ad-tabs"
+      value={value}
+      defaultValue={value === undefined ? (defaultValue ?? tabs[0]?.value) : undefined}
+      onValueChange={onValueChange}
+    >
+      <RadixTabs.List className="ad-tabs__list" aria-label={label}>
+        {tabs.map((tab) => (
+          <RadixTabs.Trigger key={tab.value} value={tab.value} className="ad-tabs__trigger">
+            {tab.label}
+          </RadixTabs.Trigger>
+        ))}
+      </RadixTabs.List>
+      {tabs.map((tab) => (
+        <RadixTabs.Content key={tab.value} value={tab.value} className="ad-tabs__panel">
+          {tab.content}
+        </RadixTabs.Content>
+      ))}
+    </RadixTabs.Root>
+  );
+}
+
+/* Toast ----------------------------------------------------------------- */
+
+export type ToastTone = "info" | "success" | "warning" | "danger";
+export interface ToastOptions {
+  title: string;
+  description?: string;
+  tone?: ToastTone;
+}
+interface ToastEntry extends ToastOptions {
+  id: number;
+}
+
+const ToastContext = createContext<((options: ToastOptions) => void) | null>(null);
+const toneIcon = { info: InfoIcon, success: CheckIcon, warning: AlertIcon, danger: AlertIcon } as const;
+
+/** Mount once near the root. A danger toast stays until it is dismissed. Others close after 8 seconds. */
+export function ToastProvider({ children }: { children: ReactNode }) {
+  const [toasts, setToasts] = useState<ToastEntry[]>([]);
+  const toast = useCallback((options: ToastOptions) => setToasts((all) => [...all, { ...options, id: Date.now() + Math.random() }]), []);
+  const remove = (id: number) => setToasts((all) => all.filter((t) => t.id !== id));
+  const value = useMemo(() => toast, [toast]);
+
+  return (
+    <ToastContext.Provider value={value}>
+      <RadixToast.Provider swipeDirection="right">
+        {children}
+        {toasts.map(({ id, title, description, tone = "info" }) => {
+          const Icon = toneIcon[tone];
+          return (
+            <RadixToast.Root
+              key={id}
+              className={`ad-toast ad-toast--${tone}`}
+              type={tone === "danger" ? "foreground" : "background"}
+              duration={tone === "danger" ? Infinity : 8000}
+              onOpenChange={(open) => !open && remove(id)}
+            >
+              <Icon className="ad-toast__icon" />
+              <div>
+                <RadixToast.Title className="ad-toast__title">{title}</RadixToast.Title>
+                {description && <RadixToast.Description className="ad-toast__description">{description}</RadixToast.Description>}
+              </div>
+              <RadixToast.Close asChild>
+                <IconButton label="Dismiss" icon={<CloseIcon />} size="sm" tooltip={false} />
+              </RadixToast.Close>
+            </RadixToast.Root>
+          );
+        })}
+        <RadixToast.Viewport className="ad-toast-viewport" label="Notifications ({hotkey})" />
+      </RadixToast.Provider>
+    </ToastContext.Provider>
+  );
+}
+
+export function useToast(): (options: ToastOptions) => void {
+  const toast = useContext(ToastContext);
+  if (!toast) throw new Error("useToast needs a ToastProvider above it.");
+  return toast;
+}
