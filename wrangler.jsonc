@@ -1,10 +1,10 @@
 {
-  // Sample worker config. Rename agentic-design on clone, then run
-  // wrangler deploy from the pack root.
+  // The demo site is static and served from dist/demo. A request with no file
+  // there reaches the Worker, which serves /health and /api/v1/tokens.
   "name": "agentic-design",
   "main": "src/worker.ts",
   "compatibility_date": "2026-01-01",
-  "vars": {
-    "PACK_NAME": "agentic-design"
+  "assets": {
+    "directory": "./dist/demo"
   }
 }

@@ -59,6 +59,8 @@ themes.dark.accent; // "#8EA4FF"
   pair in both themes against WCAG 2.2 AA and fails when one is too low.
 - Self-hosted Inter and JetBrains Mono (SIL OFL). The package makes no remote
   request.
+- `ThemeProvider` and `useTheme` for React. They set `data-theme` and keep the pick on the device.
+- A token page at `/` from the Worker (`npm run build`, then `npx wrangler dev`).
 - A CLI and an MCP server so an agent can read the tokens:
   `npx agentic-design tokens --format json`, `npx agentic-design contrast`,
   `npx agentic-design mcp`.
@@ -66,7 +68,7 @@ themes.dark.accent; // "#8EA4FF"
 
 ## Limits
 
-- No React components yet.
+- No React components yet, apart from the theme provider.
 - Fonts cover Latin and Latin Extended only.
 - The contrast check covers the pairs listed in `src/tokens/tokens.ts`. Add a
   pair there when you add a new use of color.

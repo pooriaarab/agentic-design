@@ -5,3 +5,7 @@ coverage/
 .env
 .env.local
 .DS_Store
+e2e-artifacts/
+test-results/
+playwright-report/
+.wrangler/
