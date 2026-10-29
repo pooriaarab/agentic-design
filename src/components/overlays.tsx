@@ -2,7 +2,7 @@ import * as RadixDialog from "@radix-ui/react-dialog";
 import * as RadixMenu from "@radix-ui/react-dropdown-menu";
 import * as RadixTabs from "@radix-ui/react-tabs";
 import * as RadixToast from "@radix-ui/react-toast";
-import { cloneElement, createContext, isValidElement, useCallback, useContext, useState, type ReactElement, type ReactNode } from "react";
+import { cloneElement, createContext, isValidElement, useCallback, useContext, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { AlertIcon, CheckIcon, CloseIcon, ErrorIcon, InfoIcon } from "../icons.js";
 import { IconButton, type IconButtonProps } from "./button.js";
 
@@ -22,6 +22,12 @@ export interface DialogProps {
 
 export function Dialog({ open, onOpenChange, trigger, title, description, children, footer }: DialogProps) {
   if (title.trim() === "") throw new Error("A dialog needs a non-empty title.");
+  // With no trigger, Radix has nothing to give focus back to. Remember what had focus as the
+  // dialog opens, and return it there on close.
+  const opener = useRef<Element | null>(null);
+  const wasOpen = useRef(false);
+  if (open && !wasOpen.current && typeof document !== "undefined") opener.current = document.activeElement;
+  wasOpen.current = Boolean(open);
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       {trigger && <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>}
@@ -30,6 +36,12 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
         <RadixDialog.Content
           className="ad-dialog"
           {...(description ? {} : { "aria-describedby": undefined })}
+          onCloseAutoFocus={(event) => {
+            if (!trigger && opener.current instanceof HTMLElement && opener.current.isConnected) {
+              event.preventDefault();
+              opener.current.focus();
+            }
+          }}
           onOpenAutoFocus={(event) => {
             // A destructive dialog marks its safest button with data-autofocus. It gets first focus.
             const safest = (event.currentTarget as HTMLElement).querySelector<HTMLElement>("[data-autofocus]");
@@ -150,7 +162,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const toast = useCallback((options: ToastOptions) => {
     if (typeof options.title !== "string" || options.title.trim() === "") throw new Error("A toast needs a non-empty title.");
     // An unknown tone, such as "error", is treated as danger. It stays until dismissed, so it is never missed.
-    const tone: ToastTone = options.tone === undefined ? "info" : options.tone in toneIcon ? options.tone : "danger";
+    const tone: ToastTone = options.tone === undefined ? "info" : Object.hasOwn(toneIcon, options.tone) ? options.tone : "danger";
     setToasts((all) => [...all, { ...options, tone, id: Date.now() + Math.random() }]);
   }, []);
   const remove = (id: number) => setToasts((all) => all.filter((t) => t.id !== id));
