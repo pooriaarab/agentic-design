@@ -104,7 +104,18 @@ test("a pressed toggle differs by shape, not only by color, and in forced colors
 
   await page.emulateMedia({ forcedColors: "active" });
   const fill = (el: Locator) => el.evaluate((n) => getComputedStyle(n).backgroundColor);
-  expect(await fill(italic)).not.toBe(await fill(bold));
+  // Assert the rule itself: a pressed fill is the system Highlight, which is not the page Canvas.
+  const system = (color: string) => page.evaluate((c) => {
+    const probe = document.createElement("div");
+    probe.style.backgroundColor = c;
+    document.body.append(probe);
+    const value = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return value;
+  }, color);
+  // The button animates its fill, so wait for it to settle.
+  await expect.poll(() => fill(italic)).toBe(await system("Highlight"));
+  expect(await fill(italic)).not.toBe(await system("Canvas"));
 });
 
 test("an agent is labeled as an agent by a word and a shape, never by color alone", async ({ page }) => {
@@ -277,4 +288,33 @@ test("keyboard focus stays on the top bar when the layout crosses the breakpoint
   await page.setViewportSize({ width: 1280, height: 800 });
   await expect(page.getByRole("button", { name: "Navigation" })).toBeHidden();
   await expect(theme).toBeFocused();
+});
+
+test("narrowing with focus in the sidebar opens the nav and keeps focus in it", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/patterns");
+  const nav = page.getByRole("navigation", { name: "Demo pages" });
+  await nav.getByRole("link", { name: "Patterns" }).focus();
+  await page.setViewportSize({ width: 390, height: 800 });
+  await expect(nav).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Patterns" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Navigation" })).toHaveAttribute("aria-expanded", "true");
+});
+
+test("widening closes the nav state, so Escape later does not send focus to a hidden button", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto("/patterns");
+  const toggle = page.getByRole("button", { name: "Navigation" });
+  await toggle.click();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  // The button is hidden when wide, so reach it by class.
+  await expect(page.locator(".ad-shell__menu")).toHaveAttribute("aria-expanded", "false");
+  const link = page.getByRole("navigation", { name: "Demo pages" }).getByRole("link", { name: "Patterns" });
+  await link.focus();
+  await page.keyboard.press("Escape");
+  await expect(link).toBeFocused();
+  // Narrowing again with focus outside the sidebar starts closed.
+  await link.blur();
+  await page.setViewportSize({ width: 390, height: 800 });
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
 });
