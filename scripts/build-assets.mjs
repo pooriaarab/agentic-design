@@ -43,6 +43,24 @@ await build({
   logLevel: "warning",
 });
 
+const MIT_BODY = `Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.`;
+
 // Licenses of the packages built into dist. MIT and similar licenses need their notice in every copy.
 const metafile = new URL("../dist/metafile-esm.json", import.meta.url);
 const bundled = new Set();
@@ -58,9 +76,11 @@ const sections = [...bundled].sort().map((name) => {
   if (file && existsSync(new URL(file, root))) {
     text = readFileSync(new URL(file, root), "utf8").trim();
   } else if (pkg.license === "MIT") {
-    // A few MIT packages ship no license file. The notice is built from package.json, and says so.
-    const author = typeof pkg.author === "string" ? pkg.author : (pkg.author?.name ?? name);
-    text = `(This package ships no license file. Its package.json declares MIT. Text generated from package.json.)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software, to deal in the Software without restriction, subject to this notice being included in all copies.\n\nCopyright (c) ${author}`;
+    // A few MIT packages ship no license file. Use the standard MIT text with the holder their
+    // package.json names, and say where it came from.
+    const author = typeof pkg.author === "string" ? pkg.author.replace(/\s*[<(].*$/, "") : (pkg.author?.name ?? "");
+    if (!author) throw new Error(`${name} is MIT but names no author, so no notice can be built`);
+    text = `(This package ships no license file. Its package.json declares MIT and names the holder below.)\n\nMIT License\n\nCopyright (c) ${author}\n\n${MIT_BODY}`;
   } else {
     throw new Error(`${name} is bundled but has no license file`);
   }

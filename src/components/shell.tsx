@@ -1,6 +1,13 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { MenuIcon } from "../icons.js";
 import { IconButton } from "./button.js";
+
+const NARROW = "(max-width: 47.99rem)";
+const onNarrowChange = (callback: () => void) => {
+  const query = window.matchMedia(NARROW);
+  query.addEventListener("change", callback);
+  return () => query.removeEventListener("change", callback);
+};
 
 export interface AppShellProps {
   /** The product name, shown at the top of the sidebar. */
@@ -13,8 +20,8 @@ export interface AppShellProps {
 }
 
 /**
- * Top bar, sidebar, and content, in that order in the page. The first tab stop is a skip link. Below 48rem the sidebar
- * hides behind a menu button. Opening it moves focus into the sidebar. Escape closes it and
+ * Sidebar, top bar, and content. The first tab stop is a skip link. Below 48rem the top bar comes first
+ * in the page, the sidebar sits under it, and the sidebar hides behind a menu button. Opening it moves focus into the sidebar. Escape closes it and
  * returns focus to the button.
  */
 export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
@@ -24,6 +31,9 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
   const openedByPerson = useRef(false);
   const sidebarId = useId();
   const mainId = useId();
+  // Tab order must follow what is drawn. Wide: sidebar on the left, then the top bar. Narrow: the
+  // top bar, then the sidebar under it. So the two swap places in the page with the layout.
+  const narrow = useSyncExternalStore(onNarrowChange, () => window.matchMedia(NARROW).matches, () => false);
 
   useEffect(() => {
     if (open && openedByPerson.current) sidebarRef.current?.querySelector<HTMLElement>("a")?.focus();
@@ -38,28 +48,35 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
     toggleRef.current?.focus();
   };
 
+  const topbarEl = (
+    <header className="ad-shell__topbar">
+      <IconButton
+        ref={toggleRef}
+        className="ad-shell__menu"
+        label="Navigation"
+        icon={<MenuIcon />}
+        aria-expanded={open}
+        aria-controls={sidebarId}
+        onClick={() => {
+          openedByPerson.current = !open;
+          setOpen((v) => !v);
+        }}
+      />
+      <div className="ad-shell__actions">{topbar}</div>
+    </header>
+  );
+  const sidebarEl = (
+    <div id={sidebarId} ref={sidebarRef} className="ad-shell__sidebar" data-open={open}>
+      <p className="ad-shell__brand">{brand}</p>
+      {sidebar}
+    </div>
+  );
+
   return (
     <div className="ad-shell" onKeyDown={onKeyDown}>
       <a className="ad-skip-link" href={`#${mainId}`}>Skip to content</a>
-      <header className="ad-shell__topbar">
-        <IconButton
-          ref={toggleRef}
-          className="ad-shell__menu"
-          label="Navigation"
-          icon={<MenuIcon />}
-          aria-expanded={open}
-          aria-controls={sidebarId}
-          onClick={() => {
-            openedByPerson.current = !open;
-            setOpen((v) => !v);
-          }}
-        />
-        <div className="ad-shell__actions">{topbar}</div>
-      </header>
-      <div id={sidebarId} ref={sidebarRef} className="ad-shell__sidebar" data-open={open}>
-        <p className="ad-shell__brand">{brand}</p>
-        {sidebar}
-      </div>
+      {narrow ? topbarEl : sidebarEl}
+      {narrow ? sidebarEl : topbarEl}
       <main id={mainId} className="ad-shell__content" tabIndex={-1}>{children}</main>
     </div>
   );

@@ -11,6 +11,10 @@ const ORDINARY_TEXT = /^[\p{L}\p{M}\p{N}\p{P}\p{S}\p{Zs}\u200C-\u200F]*$/u;
 // symbols that draw nothing, so a name made only of them would read as blank.
 const VISIBLE = /(?![\p{Default_Ignorable_Code_Point}\u2800])[\p{L}\p{N}\p{P}\p{S}]/u;
 
+// Characters that draw nothing, wherever they sit: Hangul fillers, the braille blank, variation selectors.
+const FILLER = /[\p{Default_Ignorable_Code_Point}\u2800]/u;
+const LEADING_MARK = /^[\p{M}\u200C-\u200F]/u;
+
 // A letter with many combining marks draws far above and below its row and covers its neighbors.
 const STACKED_MARKS = /\p{M}{5,}/u;
 
@@ -28,5 +32,8 @@ export function usableText(text: unknown, maxLength: number): string | null {
   if (typeof text !== "string" || text.length > maxLength) return null;
   // Joiners and direction marks are allowed, but they must not split a stack of marks into short runs.
   const withoutJoiners = text.replace(/[\u200C-\u200F]/g, "");
-  return ORDINARY_TEXT.test(text) && VISIBLE.test(text) && !STACKED_MARKS.test(withoutJoiners) ? text : null;
+  if (!ORDINARY_TEXT.test(text) || !VISIBLE.test(text) || STACKED_MARKS.test(withoutJoiners)) return null;
+  // A filler anywhere makes a name that looks like another name. A leading mark has nothing to sit on.
+  if (FILLER.test(withoutJoiners) || LEADING_MARK.test(text)) return null;
+  return text;
 }

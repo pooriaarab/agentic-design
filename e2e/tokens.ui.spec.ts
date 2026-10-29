@@ -63,7 +63,7 @@ test("the skip link moves focus into the main content", async ({ page }) => {
   expect(await page.evaluate(() => !!document.activeElement?.closest("main"))).toBe(true);
 });
 
-test("the theme select works with the keyboard alone, and the tab order is skip link, theme, pages", async ({ page }) => {
+test("the theme select works with the keyboard alone, and the tab order is skip link, pages, theme", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   const pages = await page.getByRole("navigation", { name: "Demo pages" }).getByRole("link").allInnerTexts();
@@ -77,7 +77,7 @@ test("the theme select works with the keyboard alone, and the tab order is skip 
       }),
     );
   }
-  expect(stops.slice(0, pages.length + 2)).toEqual(["Skip to content", "Theme", ...pages]);
+  expect(stops.slice(0, pages.length + 2)).toEqual(["Skip to content", ...pages, "Theme"]);
   await page.getByLabel("Theme").focus();
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowDown");
