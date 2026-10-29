@@ -4,6 +4,13 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.7.1 - 2026-10-29
+
+### Fixed
+
+- `agentic-design-mcp mcp --help` and `agentic-design-mcp mcp --version` no longer start the MCP server and hang. They print the usage or the version and exit 0, as `agentic-design mcp --help` already did.
+- After the `mcp` word, the bin reads `--help`, `-h`, `--version` and `-V` anywhere in the arguments, as the package CLI does. When both `--help` and `--version` are given, the usage wins. Other arguments are still ignored, so `agentic-design-mcp mcp --verbose` starts the server. The package CLI rejects that argument instead. Without the `mcp` word, the bin reads only its first argument, as before.
+
 ## 0.7.0 - 2026-10-29
 
 ### Added
