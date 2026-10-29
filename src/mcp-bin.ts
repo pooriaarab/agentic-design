@@ -5,7 +5,7 @@ const HELP = `agentic-design-mcp ${VERSION}
 Usage: agentic-design-mcp [mcp] [--help | --version]
 
 Runs the MCP server on stdio. An MCP client starts it.
-After mcp, every argument is read as a flag. Otherwise only the first argument is read.
+After mcp, --help and --version may appear anywhere, and other arguments are ignored. Otherwise only the first argument is read.
 `;
 
 // The `mcp` word may come first, as the package CLI takes it: `agentic-design-mcp mcp --help`.
