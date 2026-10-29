@@ -6,18 +6,18 @@
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
-> Status: 0.2.0. The design tokens, the contrast check, and the fonts work.
+> Status: 0.3.0. The design tokens, the contrast check, and the fonts work.
 > The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the share dialog, and the editor demo work.
 > See [CHANGELOG.md](CHANGELOG.md) for what is in this release, its breaking changes, and its limits.
 
 ## Install
 
-Once 0.2.0 is on npm, run `npm install agentic-design`. Until then, build it from a checkout and
+Once 0.3.0 is on npm, run `npm install agentic-design`. Until then, build it from a checkout and
 install the tarball:
 
 ```sh
 npm ci && npm pack
-npm install ./agentic-design-0.2.0.tgz
+npm install ./agentic-design-0.3.0.tgz
 ```
 
 `npm pack` runs the build first (`prepack`), so the tarball holds `dist/`.
