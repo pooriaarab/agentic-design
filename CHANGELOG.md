@@ -12,7 +12,7 @@ All notable changes to this package are in this file. The format follows
 
 ### Fixed
 
-- The top bar no longer makes the page scroll sideways on a 360px to 390px screen. The product name and the title shorten with an ellipsis, and the actions wrap. A focus ring on the name is not clipped, and the title is not clipped at all, so a `DocumentTitle` keeps its focus ring and its error text.
+- The top bar no longer makes the page scroll sideways on a 360px to 390px screen. The product name shortens with an ellipsis, the title wraps, and the actions wrap. A focus ring on the name is not clipped, and the title is not clipped at all, so a `DocumentTitle` keeps its focus ring and its error text.
 - A remote cursor name tag (`PresenceCursor`) moves back inside the screen when it would be cut off at either edge, so the name and the word Agent stay readable. Its text does not clip, and a chip note wraps and does not widen the page.
 - An end-to-end test loads every demo page at 320px, 360px, and 390px, in both text directions for the editor, and checks that the page and the top bar are not wider than the screen.
 

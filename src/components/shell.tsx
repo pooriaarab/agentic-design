@@ -30,7 +30,8 @@ export type AppShellProps = {
 /**
  * Sidebar, top bar, and content. The first tab stop is a skip link. Below 48rem the top bar comes first
  * in the page, the sidebar sits under it, and the sidebar hides behind a menu button. Opening it moves focus into the sidebar. Escape closes it and
- * returns focus to the button.
+ * returns focus to the button. Below 48rem the `secondary` actions fold behind a "More options" button
+ * under the top bar. Escape closes them and returns focus to that button.
  */
 export function AppShell({ brand, sidebar, title, topbar, secondary, panel, panelLabel, children }: AppShellProps) {
   // `panel={show && <Comments />}` gives false when hidden. Null and false mean no panel.

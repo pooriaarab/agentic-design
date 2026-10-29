@@ -142,6 +142,8 @@ export function PresenceCursor({ entry }: { entry: PresenceEntry }) {
     const tag = tagRef.current;
     if (!tag) return;
     tag.style.removeProperty("--agd-cursor-shift");
+    // The page width without a scrollbar. The stylesheet's 100vw counts the scrollbar.
+    tag.style.maxInlineSize = `${document.documentElement.clientWidth - 16}px`;
     const box = tag.getBoundingClientRect();
     const rtl = getComputedStyle(tag).direction === "rtl";
     const edge = document.documentElement.clientWidth - 8;
