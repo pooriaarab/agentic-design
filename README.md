@@ -97,6 +97,24 @@ themes.dark.accent; // "#8EA4FF"
   modified). Pass `view="grid"` for a grid with a "Sort by" select. `loading` shows placeholders, and
   `empty` replaces the default empty state. `locale` (default `en`) sets the date and sort language.
   Pass `FileRow` children for a plain list.
+- `DataTable` for React: a grid for many rows. Only the rows in view are in the page, so 10,000 rows scroll
+  smoothly. Pass `rows`, `columns`, and `getRowId`. Add `selectable` for a checkbox column, select-all, and a
+  bar at the bottom with your `bulkActions` and "Clear selection". `loading` shows placeholders and says so to a
+  screen reader. `empty` replaces the default empty state. The grid has one tab stop. Arrow keys, Home, End,
+  and Page Up and Down move between rows. Space selects a row (with Shift, a range), Enter calls `onRowActivate`,
+  and Escape clears the selection.
+
+```tsx
+<DataTable
+  label="Tasks"
+  rows={tasks}
+  columns={[{ id: "title", header: "Title", cell: (t) => t.title }]}
+  getRowId={(t) => t.id}
+  selectable
+  bulkActions={(ids) => <Button size="sm" onClick={() => archive(ids)}>Archive</Button>}
+/>
+```
+
 - `ShareDialog`: people and agents with roles, an invite field (an email invites a person, an
   `@handle` invites an agent, and anything else is refused), a link with role, expiry, and a
   sign-in rule, and a snapshot link that holds the page in the URL fragment. `PresenceCursor`
@@ -113,6 +131,7 @@ themes.dark.accent; // "#8EA4FF"
 
 ## Limits
 
+- `DataTable` rows have one fixed height (`rowHeight`), so a cell cannot wrap. It does not sort or fetch pages.
 - `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.
 - `FileList` sorts only the `items` you pass, and only when it is not controlled. If you pass `sort`,
   your code must sort `items` itself. It does not paginate.
