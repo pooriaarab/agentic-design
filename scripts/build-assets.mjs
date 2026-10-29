@@ -3,7 +3,7 @@
 import { build } from "esbuild";
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { themeInitScript } from "../dist/react.js";
+import { themeInitScript } from "../dist/index.js";
 import { tokensCss } from "../dist/tokens.js";
 
 const src = (path) => new URL(`../src/${path}`, import.meta.url);

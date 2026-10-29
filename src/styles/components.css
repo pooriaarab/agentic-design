@@ -66,7 +66,7 @@
   --button-border: var(--ad-color-border);
   cursor: not-allowed;
 }
-.ad-button[aria-disabled="true"] { cursor: progress; }
+.ad-button[aria-busy="true"] { cursor: progress; }
 .ad-icon-button {
   width: var(--ad-control-h);
   padding: 0;
@@ -346,9 +346,12 @@
 .ad-shell {
   display: grid;
   grid-template-columns: var(--ad-size-sidebar) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas: "sidebar topbar" "sidebar content";
   min-height: 100vh;
 }
 .ad-shell__sidebar {
+  grid-area: sidebar;
   display: flex;
   flex-direction: column;
   gap: var(--ad-space-4);
@@ -357,8 +360,8 @@
   background: var(--ad-color-surface-sunken);
 }
 .ad-shell__brand { padding: 0 var(--ad-space-3); font-weight: var(--ad-font-weight-semibold); }
-.ad-shell__body { display: flex; flex-direction: column; min-width: 0; }
 .ad-shell__topbar {
+  grid-area: topbar;
   display: flex;
   align-items: center;
   gap: var(--ad-space-3);
@@ -368,10 +371,11 @@
   background: var(--ad-color-bg);
 }
 .ad-shell__actions { display: flex; align-items: center; gap: var(--ad-space-4); margin-inline-start: auto; }
-.ad-shell__content { flex: 1; padding: var(--ad-space-8) var(--ad-space-6) var(--ad-space-24); outline: none; }
+.ad-shell__content { grid-area: content; min-width: 0; padding: var(--ad-space-8) var(--ad-space-6) var(--ad-space-24); outline: none; }
 .ad-shell__menu { display: none; }
+/* On a narrow screen the sidebar sits below the top bar, under the button that opens it. */
 @media (max-width: 47.99rem) {
-  .ad-shell { grid-template-columns: minmax(0, 1fr); }
+  .ad-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr; grid-template-areas: "topbar" "sidebar" "content"; }
   .ad-shell__menu { display: inline-flex; }
   .ad-shell__sidebar[data-open="false"] { display: none; }
   .ad-shell__sidebar { border-inline-end: 0; border-bottom: 1px solid var(--ad-color-border); }
@@ -406,7 +410,10 @@
   background: var(--ad-color-surface);
 }
 .ad-toolbar__separator { align-self: stretch; width: 1px; margin: var(--ad-space-1); background: var(--ad-color-border); }
+/* Pressed is shown by a thicker ring and a heavier label, as well as by color. */
 .ad-button[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1px var(--button-border);
+  font-weight: var(--ad-font-weight-semibold);
   --button-bg: var(--ad-color-accent-subtle);
   --button-bg-hover: var(--ad-color-accent-subtle);
   --button-fg: var(--ad-color-accent-text);
@@ -438,10 +445,17 @@
   white-space: nowrap;
 }
 .ad-file-row__meta, .ad-file-row__time { display: inline-flex; align-items: center; gap: var(--ad-space-2); color: var(--ad-color-text-muted); font-size: var(--ad-font-size-xs); }
+.ad-file-row__actions { display: inline-flex; }
 @media (max-width: 47.99rem) {
-  .ad-file-row { grid-template-columns: auto minmax(0, 1fr) auto; }
-  .ad-file-row__meta { grid-column: 2 / -1; }
-  .ad-file-row__time { display: none; }
+  .ad-file-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "icon name actions" ". meta meta" ". time time";
+  }
+  .ad-file-row__icon { grid-area: icon; }
+  .ad-file-row__name { grid-area: name; }
+  .ad-file-row__meta { grid-area: meta; }
+  .ad-file-row__time { grid-area: time; }
+  .ad-file-row__actions { grid-area: actions; }
 }
 
 /* Presence ----------------------------------------------------------- */
@@ -477,7 +491,7 @@
   border: 1px solid var(--ad-color-agent);
   border-radius: var(--ad-radius-full);
   color: var(--ad-color-agent-text);
-  font-size: 0.6875rem;
+  font-size: var(--ad-font-size-xs);
   font-weight: var(--ad-font-weight-semibold);
   letter-spacing: 0.02em;
   line-height: 1.2;
@@ -486,8 +500,7 @@
 .ad-stack { display: inline-flex; align-items: center; gap: var(--ad-space-3); }
 .ad-stack__list { display: flex; margin: 0; padding: 0; list-style: none; }
 .ad-stack__list li + li { margin-inline-start: -0.25rem; }
-.ad-stack__list .ad-avatar { width: 1.75rem; height: 1.75rem; }
-.ad-stack__list .ad-avatar { box-shadow: 0 0 0 2px var(--ad-color-bg); }
+.ad-stack__list .ad-avatar { width: 1.75rem; height: 1.75rem; box-shadow: 0 0 0 2px var(--ad-color-bg); }
 .ad-stack__summary { color: var(--ad-color-text-muted); font-size: var(--ad-font-size-xs); white-space: nowrap; }
 
 /* Windows High Contrast. Backgrounds become system colors there, so state needs system colors. */
@@ -499,4 +512,7 @@
   .ad-switch::before { background: ButtonText; }
   .ad-switch:checked::before { background: HighlightText; }
   .ad-button[aria-busy="true"] { border-style: dashed; }
+  .ad-button[aria-pressed="true"] { background: Highlight; color: HighlightText; border-color: Highlight; }
+  .ad-tabs__trigger[data-state="active"]::after { background: Highlight; }
+  .ad-menu__item[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
 }

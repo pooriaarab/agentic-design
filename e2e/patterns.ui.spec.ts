@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const violations = async (page: Page) =>
@@ -9,7 +9,7 @@ for (const scheme of ["light", "dark"] as const) {
   test(`patterns have no axe violations in ${scheme}`, async ({ page }, testInfo) => {
     await page.emulateMedia({ colorScheme: scheme });
     await page.goto("/patterns");
-    await page.waitForTimeout(200);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath(`patterns-${scheme}.png`), fullPage: true });
     expect(await violations(page)).toEqual([]);
     await page.getByRole("button", { name: "Show empty state" }).click();
@@ -20,6 +20,8 @@ for (const scheme of ["light", "dark"] as const) {
 
 test("the shell has a skip link, one main landmark, and marks the current page", async ({ page }) => {
   await page.goto("/patterns");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Theme" })).toBeVisible();
   await page.keyboard.press("Tab");
   const skip = page.getByRole("link", { name: "Skip to content" });
   await expect(skip).toBeFocused();
@@ -30,7 +32,7 @@ test("the shell has a skip link, one main landmark, and marks the current page",
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Patterns");
 });
 
-test("on a narrow screen the sidebar hides behind a menu button that Escape closes", async ({ page }) => {
+test("on a narrow screen the nav opens under its button, takes focus, and Escape gives focus back", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/patterns");
   const nav = page.getByRole("navigation", { name: "Demo pages" });
@@ -40,11 +42,28 @@ test("on a narrow screen the sidebar hides behind a menu button that Escape clos
   await toggle.click();
   await expect(nav).toBeVisible();
   await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  // The opened nav sits below the top bar, and focus is already inside it.
+  const [toggleBox, navBox] = [await toggle.boundingBox(), await nav.boundingBox()];
+  expect((navBox?.y ?? 0) > (toggleBox?.y ?? 0)).toBe(true);
+  await expect(nav.getByRole("link").first()).toBeFocused();
   expect(await violations(page)).toEqual([]);
+
+  await nav.getByRole("link", { name: "Patterns" }).focus();
   await page.keyboard.press("Escape");
   await expect(nav).toBeHidden();
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
-  expect(overflow).toBe(false);
+  await expect(toggle).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+});
+
+test("Escape from a menu elsewhere does not close the open nav", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto("/patterns");
+  await page.getByRole("button", { name: "Navigation" }).click();
+  await page.getByRole("button", { name: "More actions for Launch plan" }).click();
+  await expect(page.getByRole("menu")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Demo pages" })).toBeVisible();
 });
 
 test("the toolbar is one tab stop, moves with arrow keys, and toggles", async ({ page }) => {
@@ -52,18 +71,40 @@ test("the toolbar is one tab stop, moves with arrow keys, and toggles", async ({
   const toolbar = page.getByRole("toolbar", { name: "Text formatting" });
   const bold = toolbar.getByRole("button", { name: "Bold" });
   const italic = toolbar.getByRole("button", { name: "Italic" });
+  const insert = toolbar.getByRole("button", { name: "Insert item" });
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+  // Tab enters the toolbar on one item, and the next Tab leaves it.
+  await page.getByRole("combobox", { name: "Theme" }).focus();
+  await page.keyboard.press("Tab");
+  await expect(toolbar.locator(":focus")).toHaveCount(1);
+  await page.keyboard.press("Tab");
+  expect(await page.evaluate(() => !!document.activeElement?.closest('[role="toolbar"]'))).toBe(false);
+
   await bold.focus();
   await page.keyboard.press("ArrowRight");
   await expect(italic).toBeFocused();
   await page.keyboard.press("End");
-  await expect(toolbar.getByRole("button", { name: "Insert item" })).toBeFocused();
+  await expect(insert).toBeFocused();
   await page.keyboard.press("Home");
   await expect(bold).toBeFocused();
   await expect(bold).toHaveAttribute("aria-pressed", "false");
   await page.keyboard.press("Space");
   await expect(bold).toHaveAttribute("aria-pressed", "true");
-  await page.keyboard.press("Tab");
-  expect(await page.evaluate(() => !!document.activeElement?.closest('[role="toolbar"]'))).toBe(false);
+});
+
+test("a pressed toggle differs by shape, not only by color, and in forced colors", async ({ page }) => {
+  await page.goto("/patterns");
+  const bold = page.getByRole("button", { name: "Bold" });
+  const italic = page.getByRole("button", { name: "Italic" });
+  const shadow = (el: Locator) => el.evaluate((n) => getComputedStyle(n).boxShadow);
+  // Italic starts pressed. Bold does not.
+  expect(await shadow(bold)).toBe("none");
+  expect(await shadow(italic)).not.toBe("none");
+
+  await page.emulateMedia({ forcedColors: "active" });
+  const fill = (el: Locator) => el.evaluate((n) => getComputedStyle(n).backgroundColor);
+  expect(await fill(italic)).not.toBe(await fill(bold));
 });
 
 test("an agent is labeled as an agent by a word and a shape, never by color alone", async ({ page }) => {
@@ -81,8 +122,15 @@ test("an agent is labeled as an agent by a word and a shape, never by color alon
   const radius = (selector: string) => page.locator(selector).first().evaluate((el) => getComputedStyle(el).borderTopLeftRadius);
   expect(await radius(".ad-avatar--agent")).not.toBe(await radius(".ad-avatar--person"));
 
+  // In forced colors the pill keeps its line and the avatar keeps its shape.
   await page.emulateMedia({ forcedColors: "active" });
-  await expect(claude.locator(".ad-pill")).toBeVisible();
+  const pill = await claude.locator(".ad-pill").evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { style: s.borderTopStyle, width: parseFloat(s.borderTopWidth) };
+  });
+  expect(pill.style).toBe("solid");
+  expect(pill.width).toBeGreaterThanOrEqual(1);
+  expect(await radius(".ad-avatar--agent")).not.toBe(await radius(".ad-avatar--person"));
 });
 
 test("the stack counts people and agents in words and names every avatar", async ({ page }) => {
@@ -90,6 +138,8 @@ test("the stack counts people and agents in words and names every avatar", async
   const stack = page.getByRole("list", { name: "Here now" });
   await expect(stack.getByRole("img")).toHaveCount(5);
   await expect(stack.getByRole("img", { name: "Claude, agent" })).toBeVisible();
+  await expect(stack.getByRole("img", { name: "Review bot, agent, paused" })).toBeVisible();
+  await expect(stack.getByRole("img", { name: "Grace Hopper, away" })).toBeVisible();
   await expect(stack.getByRole("img", { name: "2 more" })).toBeVisible();
   await expect(page.locator(".ad-stack__summary")).toHaveText("4 people, 2 agents");
 });
@@ -111,12 +161,24 @@ test("a file row links by name, shows who edited, and labels an agent edit", asy
   await expect(notes.locator("time")).toHaveAttribute("datetime", "2026-10-26T15:30:00.000Z");
 });
 
-test("targets on the patterns page are at least 24 by 24 CSS pixels", async ({ page }) => {
+for (const width of [1280, 390]) {
+  test(`targets on the patterns page are at least 24 by 24 CSS pixels at ${width} px wide`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/patterns");
+    if (width < 768) await page.getByRole("button", { name: "Navigation" }).click();
+    const small: string[] = [];
+    for (const el of await page.locator("button:visible, select, a:visible").all()) {
+      const box = await el.boundingBox();
+      if (box && (box.width < 24 || box.height < 24)) small.push(await el.evaluate((n) => n.outerHTML.slice(0, 70)));
+    }
+    expect(small).toEqual([]);
+  });
+}
+
+test("on a narrow screen every file row still shows its date", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/patterns");
-  const small: string[] = [];
-  for (const el of await page.locator("button:visible, select, a:visible").all()) {
-    const box = await el.boundingBox();
-    if (box && (box.width < 24 || box.height < 24)) small.push(await el.evaluate((n) => n.outerHTML.slice(0, 70)));
-  }
-  expect(small).toEqual([]);
+  const times = page.getByRole("list", { name: "Recent files" }).locator("time");
+  await expect(times).toHaveCount(3);
+  for (const time of await times.all()) await expect(time).toBeVisible();
 });

@@ -21,7 +21,7 @@ const ada: PresenceEntry = { id: "1", name: "Ada Lovelace", kind: "person" };
 const grace: PresenceEntry = { id: "2", name: "Grace Hopper", kind: "person", status: "away" };
 const claude: PresenceEntry = { id: "3", name: "Claude", kind: "agent", actingFor: "Ada Lovelace" };
 const reviewer: PresenceEntry = { id: "4", name: "Review bot", kind: "agent", status: "paused" };
-const hostile: PresenceEntry = { id: "5", name: "Eve‮evil", kind: "person" };
+const hostile: PresenceEntry = { id: "5", name: "Eve\u202Eevil", kind: "person" };
 const crowd: PresenceEntry[] = [ada, grace, claude, reviewer, hostile, { id: "6", name: "Linus", kind: "person" }];
 
 export function PatternsPage() {

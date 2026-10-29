@@ -38,7 +38,7 @@ export function FileRow({ name, href, kind = "file", modified, editedBy, actions
       <time className="ad-file-row__time" dateTime={modified.toISOString()}>
         {modified.toLocaleDateString("en", { day: "numeric", month: "short", year: "numeric" })}
       </time>
-      {actions}
+      {actions && <span className="ad-file-row__actions">{actions}</span>}
     </li>
   );
 }

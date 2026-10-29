@@ -31,10 +31,15 @@ function initials(name: string): string {
  * A person is a circle with initials. An agent is a rounded square with a robot glyph.
  * The shape differs, so the difference never rests on color.
  */
-export function Avatar({ entry }: { entry: PresenceEntry }) {
+export function Avatar({ entry, label }: { entry: PresenceEntry; label?: string }) {
   return (
-    <span className={cx("ad-avatar", `ad-avatar--${entry.kind}`)} aria-hidden="true">
-      {entry.kind === "agent" ? <BotIcon /> : initials(displayName(entry))}
+    <span
+      className={cx("ad-avatar", `ad-avatar--${entry.kind}`)}
+      role={label ? "img" : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
+    >
+      {entry.kind === "agent" ? <BotIcon aria-hidden="true" /> : initials(displayName(entry))}
     </span>
   );
 }
@@ -46,7 +51,8 @@ export function Avatar({ entry }: { entry: PresenceEntry }) {
 export function PresenceChip({ entry, className }: { entry: PresenceEntry; className?: string }) {
   const name = displayName(entry);
   const status = statusLabel[entry.status ?? "active"];
-  const actingFor = entry.actingFor ? usableName(entry.actingFor) : null;
+  // A name that fails the check still shows who the agent acts for, as unnamed.
+  const actingFor = entry.actingFor === undefined ? null : (usableName(entry.actingFor) ?? "Unnamed person");
   return (
     <span className={cx("ad-chip", className)}>
       <Avatar entry={entry} />
@@ -80,13 +86,11 @@ export function PresenceStack({ entries, max = 4, label = "Here now" }: { entrie
     <div className="ad-stack">
       <ul className="ad-stack__list" aria-label={label}>
         {shown.map((entry) => {
-          const name = displayName(entry);
-          const text = entry.kind === "agent" ? `${name}, agent` : name;
+          const status = statusLabel[entry.status ?? "active"];
+          const text = [displayName(entry), entry.kind === "agent" && "agent", status.toLowerCase()].filter(Boolean).join(", ");
           return (
             <li key={entry.id} title={text}>
-              <span className={cx("ad-avatar", `ad-avatar--${entry.kind}`)} role="img" aria-label={text}>
-                {entry.kind === "agent" ? <BotIcon aria-hidden="true" /> : initials(name)}
-              </span>
+              <Avatar entry={entry} label={text} />
             </li>
           );
         })}

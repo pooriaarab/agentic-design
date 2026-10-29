@@ -31,7 +31,7 @@ export function PrimitivesPage() {
         <h2 id="buttons">Buttons</h2>
         <div className="demo-cluster">
           <Button variant="primary">Save</Button>
-          <Button>Cancel</Button>
+          <Button data-autofocus>Cancel</Button>
           <Button variant="ghost">Skip</Button>
           <Button variant="danger">Delete</Button>
           <Button variant="primary" size="sm">Small</Button>
@@ -59,10 +59,13 @@ export function PrimitivesPage() {
             hint="Shown to people you share with."
             autoComplete="name"
             required
+            aria-describedby="name-extra"
             value={name}
             onChange={(e) => setName(e.target.value)}
             error={submitted && name.trim() === "" ? "Enter a name so people know who you are." : undefined}
           />
+          <p id="name-extra" className="demo-muted demo-note">Use the name on your badge.</p>
+          <Input label="Phone" hint="Checked by the page, not by the field." aria-invalid="true" autoComplete="tel" />
           <Input label="Email" type="email" autoComplete="email" placeholder="you@example.org" />
           <Textarea label="Notes" hint="Optional." />
           <Select label="Role" defaultValue="viewer">
@@ -90,7 +93,7 @@ export function PrimitivesPage() {
             footer={
               <>
                 <DialogClose asChild>
-                  <Button>Cancel</Button>
+                  <Button data-autofocus>Cancel</Button>
                 </DialogClose>
                 <DialogClose asChild>
                   <Button variant="danger" onClick={() => toast({ title: "Page moved to the trash", tone: "success" })}>
@@ -101,7 +104,7 @@ export function PrimitivesPage() {
             }
           />
           <Menu
-            trigger={<IconButton label="More actions" icon={<MoreIcon />} tooltip={false} />}
+            trigger={<IconButton label="More actions" icon={<MoreIcon />} />}
             items={[
               { label: "Rename", shortcut: "F2", onSelect: () => setLastAction("rename") },
               { label: "Duplicate", onSelect: () => setLastAction("duplicate") },

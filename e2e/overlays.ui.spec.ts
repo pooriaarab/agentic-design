@@ -5,6 +5,17 @@ const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const violations = async (page: Page) =>
   (await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()).violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) }));
 
+// A spinner never finishes, so wait only for animations that have an end.
+const settle = (page: Page) =>
+  page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished),
+    ),
+  );
+
 const open = async (page: Page, scheme: "light" | "dark" = "light") => {
   await page.emulateMedia({ colorScheme: scheme });
   await page.goto("/primitives");
@@ -15,7 +26,7 @@ for (const scheme of ["light", "dark"] as const) {
     await open(page, scheme);
     await page.getByRole("button", { name: "Delete page…" }).click();
     await expect(page.getByRole("dialog", { name: "Delete this page?" })).toBeVisible();
-    await page.waitForTimeout(300);
+    await settle(page);
     await page.screenshot({ path: testInfo.outputPath(`dialog-${scheme}.png`) });
     expect(await violations(page)).toEqual([]);
     await page.keyboard.press("Escape");
@@ -28,7 +39,7 @@ for (const scheme of ["light", "dark"] as const) {
     await page.getByRole("button", { name: "Show error toast" }).click();
     await page.getByRole("button", { name: "Show toast", exact: true }).click();
     await expect(page.locator(".ad-toast", { hasText: "Link copied" })).toBeVisible();
-    await page.waitForTimeout(300);
+    await settle(page);
     await page.screenshot({ path: testInfo.outputPath(`toast-${scheme}.png`) });
     expect(await violations(page)).toEqual([]);
   });
@@ -41,7 +52,8 @@ test("the dialog has a name and a description, traps focus, and returns focus on
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: "Delete this page?" });
   await expect(dialog).toHaveAccessibleDescription(/People and agents lose access/);
-  await expect(dialog.getByRole("button", { name: "Close" })).toBeFocused();
+  // A destructive dialog opens on its safest button, not on Close.
+  await expect(dialog.getByRole("button", { name: "Cancel" })).toBeFocused();
   await expect(dialog.locator(":focus")).toHaveCount(1);
   for (let i = 0; i < 8; i++) {
     await page.keyboard.press("Tab");
@@ -73,13 +85,53 @@ test("the menu works with the keyboard alone", async ({ page }) => {
   await expect(page.getByRole("tooltip")).toHaveCount(0);
 });
 
-test("tabs move with the arrow keys and the panel follows", async ({ page }) => {
+test("tabs have one tab stop, move with the arrow keys, and label their panel", async ({ page }) => {
   await open(page);
   const tablist = page.getByRole("tablist", { name: "Page sections" });
-  await tablist.getByRole("tab", { name: "Overview" }).focus();
+  const overview = tablist.getByRole("tab", { name: "Overview" });
+  const history = tablist.getByRole("tab", { name: "History" });
+  await page.getByRole("button", { name: "Show error toast" }).focus();
+  await page.keyboard.press("Tab");
+  await expect(overview).toBeFocused();
+  await page.keyboard.press("Tab");
+  expect(await page.evaluate(() => !!document.activeElement?.closest('[role="tablist"]'))).toBe(false);
+  await overview.focus();
   await page.keyboard.press("ArrowRight");
-  await expect(tablist.getByRole("tab", { name: "History" })).toHaveAttribute("aria-selected", "true");
-  await expect(page.getByRole("tabpanel")).toContainText("keeps its author");
+  await expect(history).toBeFocused();
+  await expect(history).toHaveAttribute("aria-selected", "true");
+  const panel = page.getByRole("tabpanel");
+  await expect(panel).toContainText("keeps its author");
+  await expect(panel).toHaveAccessibleName("History");
+});
+
+test("a menu trigger shows no tooltip, so none pops up where the menu was", async ({ page }) => {
+  await open(page);
+  const trigger = page.getByRole("button", { name: "More actions" });
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+});
+
+test("selected tabs and highlighted menu items stay visible in forced colors", async ({ page }) => {
+  await page.emulateMedia({ forcedColors: "active" });
+  await open(page);
+  const highlight = await page.evaluate(() => {
+    const probe = document.createElement("div");
+    probe.style.background = "Highlight";
+    document.body.append(probe);
+    const color = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return color;
+  });
+  const bar = await page.getByRole("tab", { name: "Overview" }).evaluate((el) => getComputedStyle(el, "::after").backgroundColor);
+  expect(bar).toBe(highlight);
+
+  await page.getByRole("button", { name: "More actions" }).click();
+  await page.getByRole("menuitem", { name: "Duplicate" }).hover();
+  const outline = await page.getByRole("menuitem", { name: "Duplicate" }).evaluate((el) => getComputedStyle(el).outlineStyle);
+  expect(outline).toBe("solid");
 });
 
 test("an icon button shows its label as a tooltip on keyboard focus", async ({ page }) => {
@@ -88,6 +140,8 @@ test("an icon button shows its label as a tooltip on keyboard focus", async ({ p
   await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: "Add item" })).toBeFocused();
   await expect(page.getByRole("tooltip")).toHaveText("Add item");
+  // The tooltip repeats the name, so it must not be read as a second description.
+  await expect(page.getByRole("button", { name: "Add item" })).toHaveAccessibleDescription("");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("tooltip")).toBeHidden();
 });

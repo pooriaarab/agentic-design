@@ -11,7 +11,7 @@ import { AlertIcon } from "../icons.js";
 
 interface FieldProps {
   /** Always visible. A placeholder is never a label. */
-  label: ReactNode;
+  label: Exclude<ReactNode, null | undefined | boolean>;
   /** Hide the label from sight. It stays in the accessible name. Use it only where context labels the control. */
   hideLabel?: boolean;
   hint?: ReactNode;
@@ -20,7 +20,10 @@ interface FieldProps {
 }
 
 function useField(idProp: string | undefined, { label, hint, error }: FieldProps) {
-  if (typeof label === "string" && label.trim() === "") throw new Error("A field needs a non-empty label.");
+  // A missing translation can still reach here as undefined, null, false, or "". None is a label.
+  if ((label as unknown) == null || (label as unknown) === false || (typeof label === "string" && label.trim() === "")) {
+    throw new Error("A field needs a non-empty label.");
+  }
   const auto = useId();
   const id = idProp ?? auto;
   const hintId = hint ? `${id}-hint` : undefined;
@@ -84,7 +87,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const field = useField(idProp, { label, hint, error });
   return (
     <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
-      <input ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} />
+      <input ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]} />
     </Shell>
   );
 });
@@ -98,7 +101,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   const field = useField(idProp, { label, hint, error });
   return (
     <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
-      <textarea ref={ref} className={cx("ad-input ad-textarea", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} />
+      <textarea ref={ref} className={cx("ad-input ad-textarea", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]} />
     </Shell>
   );
 });
@@ -114,7 +117,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   return (
     <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
       <span className="ad-select">
-        <select ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])}>
+        <select ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]}>
           {children}
         </select>
       </span>
@@ -127,7 +130,7 @@ type ToggleProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "role"> 
 export type CheckboxProps = ToggleProps;
 export type SwitchProps = ToggleProps;
 
-function useToggle(idProp: string | undefined, label: ReactNode, hint: ReactNode) {
+function useToggle(idProp: string | undefined, label: FieldProps["label"], hint: ReactNode) {
   const { id, hintId, control } = useField(idProp, { label, hint });
   return { id, hintId, describedBy: control["aria-describedby"] };
 }
