@@ -84,3 +84,5 @@ summary { cursor: pointer; padding: var(--agd-space-2) 0; }
 .demo-suggestion ins { text-decoration-color: var(--agd-color-agent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
 .demo-main > .agd-toolbar { justify-self: start; }
 .demo-attribution { display: flex; flex-wrap: wrap; align-items: center; gap: var(--agd-space-2); color: var(--agd-color-text-muted); font-size: var(--agd-font-size-sm); }
+.demo-sidebar-frame { display: flex; min-height: 12rem; border: 1px solid var(--agd-color-border); border-radius: var(--agd-radius-md); overflow: hidden; }
+.demo-sidebar-frame__body { margin: 0; padding: var(--agd-space-4); }

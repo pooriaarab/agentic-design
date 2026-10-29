@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   AgentBadge,
+  AppSidebar,
   Button,
   DocumentTitle,
   FileList,
@@ -111,6 +112,23 @@ export function ChromePage() {
           <Button onClick={() => setState("ready")}>Show files</Button>
         </div>
         <FileList label="Recent files" view={view} items={state === "empty" ? [] : items} loading={state === "loading"} />
+      </section>
+
+      <section aria-labelledby="demo-appsidebar-h" id="demo-appsidebar">
+        <h2 id="demo-appsidebar-h">App sidebar</h2>
+        <div className="demo-sidebar-frame">
+          <AppSidebar label="Project" storageKey="demo-sidebar">
+            <SidebarNav
+              label="Project pages"
+              items={[
+                { href: "/chrome#overview", label: "Overview", current: true },
+                { href: "/chrome#tasks", label: "Tasks" },
+                { href: "/chrome#files", label: "Files" },
+              ]}
+            />
+          </AppSidebar>
+          <p className="demo-muted demo-sidebar-frame__body">Collapse the sidebar with its button. The choice stays after a reload.</p>
+        </div>
       </section>
 
       <section aria-labelledby="demo-share-h" id="demo-share">

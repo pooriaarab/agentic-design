@@ -35,3 +35,4 @@ export const BotIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M4 7.5h12v8a1 1 
 export const ErrorIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M7.5 7.5l5 5M12.5 7.5l-5 5M10 2.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" {...p} />;
 export const SearchIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM13 13l3.5 3.5" {...p} />;
 export const SlidersIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M3.5 6h8M15 6h1.5M3.5 14h1.5M8.5 14h8M13 4v4M7 12v4" {...p} />;
+export const PanelLeftIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M3.5 4.5h13v11h-13zM8 4.5v11" {...p} />;

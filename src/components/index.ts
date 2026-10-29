@@ -25,3 +25,5 @@ export { DataTableToolbar, TableSearch, FilterChips, DisplayPopover, filterMenuI
 export type { DisplayPopoverProps, FilterChip } from "./data-toolbar.js";
 export { applyDataView, emptyDataView, fieldText, sameDisplay } from "./data-view.js";
 export type { DataField, DataFilter, DataView } from "./data-view.js";
+export { AppSidebar, SIDEBAR_STORAGE_KEY } from "./app-sidebar.js";
+export type { AppSidebarProps } from "./app-sidebar.js";
