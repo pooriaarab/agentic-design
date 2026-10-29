@@ -99,7 +99,8 @@ export function DataTable<T>({
   // When the active row is gone, stay near where it was.
   const lastActive = useRef(0);
   const active = found >= 0 ? found : Math.max(0, Math.min(lastActive.current, count - 1));
-  lastActive.current = active;
+  // A loading phase has no rows, so it must not reset the position.
+  if (!loading) lastActive.current = active;
   const wantFocus = useRef(false);
   // Did focus sit in the grid before this render? A refetch or a filter can remove the row that has it.
   const focusWasInside = useRef(false);
@@ -244,13 +245,17 @@ export function DataTable<T>({
   const style = { "--agd-dt-cols": tracks, "--agd-dt-min": minWidth, "--agd-dt-row": `${rowHeight}px`, "--agd-dt-height": typeof height === "number" ? `${height}px` : height } as CSSProperties;
   const nameOf = (row: T) => rowLabel?.(row) ?? getRowId(row);
   // Say how many rows arrived when loading ends, so the status does not just go quiet.
-  const [arrived, setArrived] = useState("");
+  // The message holds only while the count and the selection are as they were when it was set.
+  const [arrived, setArrived] = useState<number | null>(null);
   const wasLoading = useRef(loading);
   useEffect(() => {
-    if (wasLoading.current && !loading) setArrived(`${count} ${count === 1 ? "row" : "rows"}`);
+    if (wasLoading.current && !loading) setArrived(count);
     wasLoading.current = loading;
   }, [loading, count]);
-  const status = loading ? "Loading rows" : selectable && selected.size > 0 ? `${selected.size} of ${count} selected` : arrived;
+  useEffect(() => {
+    if (!loading) setArrived((n) => (n === count && selected.size === 0 ? n : null));
+  }, [count, selected.size, loading]);
+  const status = loading ? "Loading rows" : selectable && selected.size > 0 ? `${selected.size} of ${count} selected` : arrived !== null && arrived === count && count > 0 ? `${count} ${count === 1 ? "row" : "rows"}` : "";
 
   return (
     <div className="agd-datatable" style={style}>

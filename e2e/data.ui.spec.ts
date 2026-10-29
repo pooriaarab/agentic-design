@@ -252,3 +252,14 @@ test("the status says how many rows arrived when loading ends", async ({ page })
   await page.getByRole("button", { name: "Show rows" }).click();
   await expect(page.getByRole("status").filter({ hasText: "10000 rows" })).toBeAttached();
 });
+
+test("the rows-arrived status does not come back with an old count", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Show loading" }).click();
+  await page.getByRole("button", { name: "Show rows" }).click();
+  await page.getByRole("button", { name: "100 rows" }).click();
+  await page.locator('[data-index="0"]').focus();
+  await page.keyboard.press("Space");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("status").filter({ hasText: "10000 rows" })).toHaveCount(0);
+});
