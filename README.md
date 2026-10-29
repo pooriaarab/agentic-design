@@ -100,7 +100,7 @@ themes.dark.accent; // "#8EA4FF"
 - `DataTable` for React: a grid for many rows. Only the rows in view are in the page, so 10,000 rows scroll
   smoothly. Pass `rows`, `columns`, and `getRowId`. Add `selectable` for a checkbox column, select-all, and a
   bar at the bottom with your `bulkActions` and "Clear selection". `loading` shows placeholders and says so to a
-  screen reader. `empty` replaces the default empty state. The rows are one tab stop, and select-all is another. Arrow keys, Home, End,
+  screen reader. `empty` replaces the default empty state. The rows are one tab stop (with `selectable`, select-all is another). Arrow keys, Home, End,
   and Page Up and Down move between rows. Space selects a row (with Shift, a range), Enter calls `onRowActivate`,
   and Escape clears the selection. Keep focusable controls out of cells, because each one adds a tab stop.
   A selection keeps the ids of rows that leave the list, and they count again when the rows return.

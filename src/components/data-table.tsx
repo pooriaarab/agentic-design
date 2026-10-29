@@ -96,7 +96,10 @@ export function DataTable<T>({
   // The active row is an id, so rows added above it do not move the tab stop to another row.
   const [activeId, setActiveId] = useState<string | null>(null);
   const found = activeId === null ? -1 : ids.indexOf(activeId);
-  const active = found >= 0 ? found : 0;
+  // When the active row is gone, stay near where it was.
+  const lastActive = useRef(0);
+  const active = found >= 0 ? found : Math.max(0, Math.min(lastActive.current, count - 1));
+  lastActive.current = active;
   const wantFocus = useRef(false);
   // Did focus sit in the grid before this render? A refetch or a filter can remove the row that has it.
   const focusWasInside = useRef(false);

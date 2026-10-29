@@ -212,3 +212,16 @@ test("focus returns to the row after the rows reload", async ({ page }) => {
   await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent === "Show rows")?.click());
   await expect(page.locator('[data-index="0"]')).toBeFocused();
 });
+
+test("the active row survives a list that shrinks and returns", async ({ page }) => {
+  await page.goto("/data");
+  await page.locator('[data-index="0"]').focus();
+  for (let i = 0; i < 60; i++) await page.keyboard.press("ArrowDown");
+  await expect(page.locator('[data-index="60"]')).toBeFocused();
+  // Cut the list to 100 rows from the page, so the button never takes focus. Row 60 still exists.
+  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent === "100 rows")?.click());
+  await expect(page.locator('[data-index="60"]')).toBeFocused();
+  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent === "Show empty")?.click());
+  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent === "10,000 rows")?.click());
+  await expect(page.locator('[data-index="60"]')).toHaveAttribute("tabindex", "0");
+});
