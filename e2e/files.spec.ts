@@ -41,5 +41,5 @@ test("a table sorts by owner name, and the active header carries aria-sort", () 
 
 test("the plain list with FileRow children still renders", () => {
   const row = createElement(FileRow, { name: "Plan", href: "#p", modified: new Date("2026-01-01T00:00:00Z"), editedBy: ada });
-  expect(html({ label: "Recent", children: row })).toContain('<ul class="ad-files" aria-label="Recent">');
+  expect(html({ label: "Recent", children: row })).toContain('<ul class="agd-files" aria-label="Recent">');
 });

@@ -4,6 +4,16 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.4.0 - 2026-10-29
+
+### Changed
+
+- **BREAKING:** the class prefix `ad-` is now `agd-`. The custom property prefix `--ad-` is now `--agd-`. Ad blockers hide elements with `ad-*` classes through EasyList rules, so buttons and other parts vanished for some people. No rule matches `agd-`. There are no aliases for the old names. Rename each `ad-*` class, `--ad-*` variable, and `data-ad-*` attribute in your own CSS and code.
+
+### Added
+
+- An end-to-end guard loads the demo pages with EasyList cosmetic filters applied. It checks that buttons, inputs, the skip link, and dialogs stay visible. It fails on the old prefix.
+
 ## 0.3.3 - 2026-10-29
 
 ### Security
@@ -55,7 +65,7 @@ All notable changes to this package are in this file. The format follows
 
 - The brand of `AppShell` is in the top bar, inside the banner landmark, not at the
   top of the sidebar. The brand has no padding now. A host that styled
-  `.ad-shell__brand` may need to adjust it.
+  the shell brand class may need to adjust it.
 
 ### Fixed
 

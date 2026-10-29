@@ -37,9 +37,9 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       {trigger && <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>}
       <RadixDialog.Portal>
-        <RadixDialog.Overlay className="ad-overlay" />
+        <RadixDialog.Overlay className="agd-overlay" />
         <RadixDialog.Content
-          className="ad-dialog"
+          className="agd-dialog"
           {...(description ? {} : { "aria-describedby": undefined })}
           onCloseAutoFocus={(event) => {
             if (!trigger && opener.current instanceof HTMLElement && opener.current.isConnected) {
@@ -56,13 +56,13 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
             }
           }}
         >
-          <RadixDialog.Title className="ad-dialog__title">{title}</RadixDialog.Title>
+          <RadixDialog.Title className="agd-dialog__title">{title}</RadixDialog.Title>
           <RadixDialog.Close asChild>
-            <IconButton label="Close" icon={<CloseIcon />} size="sm" className="ad-dialog__close" tooltip={false} />
+            <IconButton label="Close" icon={<CloseIcon />} size="sm" className="agd-dialog__close" tooltip={false} />
           </RadixDialog.Close>
-          {description && <RadixDialog.Description className="ad-dialog__description">{description}</RadixDialog.Description>}
-          {children && <div className="ad-dialog__body">{children}</div>}
-          {footer && <div className="ad-dialog__footer">{footer}</div>}
+          {description && <RadixDialog.Description className="agd-dialog__description">{description}</RadixDialog.Description>}
+          {children && <div className="agd-dialog__body">{children}</div>}
+          {footer && <div className="agd-dialog__footer">{footer}</div>}
         </RadixDialog.Content>
       </RadixDialog.Portal>
     </RadixDialog.Root>
@@ -88,20 +88,20 @@ export function Menu({ trigger, items, align = "end" }: { trigger: ReactElement;
     <RadixMenu.Root modal={false}>
       <RadixMenu.Trigger asChild>{menuTrigger}</RadixMenu.Trigger>
       <RadixMenu.Portal>
-        <RadixMenu.Content className="ad-menu" align={align} sideOffset={6}>
+        <RadixMenu.Content className="agd-menu" align={align} sideOffset={6}>
           {items.map((item, index) =>
             item === "separator" ? (
-              <RadixMenu.Separator key={`sep-${index}`} className="ad-menu__separator" />
+              <RadixMenu.Separator key={`sep-${index}`} className="agd-menu__separator" />
             ) : (
               <RadixMenu.Item
                 key={`${index}-${item.label}`}
-                className={item.danger ? "ad-menu__item ad-menu__item--danger" : "ad-menu__item"}
+                className={item.danger ? "agd-menu__item agd-menu__item--danger" : "agd-menu__item"}
                 disabled={item.disabled}
                 onSelect={item.onSelect}
               >
                 {item.icon}
                 <span>{item.label}</span>
-                {item.shortcut && <kbd className="ad-menu__shortcut">{item.shortcut}</kbd>}
+                {item.shortcut && <kbd className="agd-menu__shortcut">{item.shortcut}</kbd>}
               </RadixMenu.Item>
             ),
           )}
@@ -123,20 +123,20 @@ export function Tabs({ label, tabs, value, defaultValue, onValueChange }: { labe
   if (label.trim() === "") throw new Error("Tabs need a non-empty label.");
   return (
     <RadixTabs.Root
-      className="ad-tabs"
+      className="agd-tabs"
       value={value}
       defaultValue={value === undefined ? (defaultValue ?? tabs[0]?.value) : undefined}
       onValueChange={onValueChange}
     >
-      <RadixTabs.List className="ad-tabs__list" aria-label={label}>
+      <RadixTabs.List className="agd-tabs__list" aria-label={label}>
         {tabs.map((tab) => (
-          <RadixTabs.Trigger key={tab.value} value={tab.value} className="ad-tabs__trigger">
+          <RadixTabs.Trigger key={tab.value} value={tab.value} className="agd-tabs__trigger">
             {tab.label}
           </RadixTabs.Trigger>
         ))}
       </RadixTabs.List>
       {tabs.map((tab) => (
-        <RadixTabs.Content key={tab.value} value={tab.value} className="ad-tabs__panel">
+        <RadixTabs.Content key={tab.value} value={tab.value} className="agd-tabs__panel">
           {tab.content}
         </RadixTabs.Content>
       ))}
@@ -181,18 +181,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           return (
             <RadixToast.Root
               key={id}
-              className={`ad-toast ad-toast--${tone}`}
+              className={`agd-toast agd-toast--${tone}`}
               type={tone === "danger" ? "foreground" : "background"}
               duration={tone === "danger" ? Infinity : 8000}
               onOpenChange={(open) => !open && remove(id)}
             >
-              <Icon className="ad-toast__icon" />
+              <Icon className="agd-toast__icon" />
               <div>
-                <RadixToast.Title className="ad-toast__title">
-                  <span className="ad-sr-only">{toneWord[tone]}: </span>
+                <RadixToast.Title className="agd-toast__title">
+                  <span className="agd-sr-only">{toneWord[tone]}: </span>
                   {title}
                 </RadixToast.Title>
-                {description && <RadixToast.Description className="ad-toast__description">{description}</RadixToast.Description>}
+                {description && <RadixToast.Description className="agd-toast__description">{description}</RadixToast.Description>}
               </div>
               <RadixToast.Close asChild>
                 <IconButton label="Dismiss" icon={<CloseIcon />} size="sm" tooltip={false} />
@@ -200,7 +200,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             </RadixToast.Root>
           );
         })}
-        <RadixToast.Viewport className="ad-toast-viewport" label="Notifications ({hotkey})" />
+        <RadixToast.Viewport className="agd-toast-viewport" label="Notifications ({hotkey})" />
       </RadixToast.Provider>
     </ToastContext.Provider>
   );

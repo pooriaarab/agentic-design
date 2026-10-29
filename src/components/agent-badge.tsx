@@ -27,16 +27,16 @@ export function AgentBadge({ name, actingFor, label = "Made by an agent", compac
   const sentence = `${label}${who ? `: ${who}` : ""}, acting for ${owner}`;
   if (compact) {
     return (
-      <span className={cx("ad-agent-badge ad-agent-badge--compact", className)} title={sentence}>
+      <span className={cx("agd-agent-badge agd-agent-badge--compact", className)} title={sentence}>
         <Avatar entry={entry} label={sentence} />
       </span>
     );
   }
   return (
-    <span className={cx("ad-agent-badge", className)}>
+    <span className={cx("agd-agent-badge", className)}>
       <Avatar entry={entry} />
-      <span className="ad-agent-badge__label">{label}</span>
-      <span className="ad-agent-badge__meta">
+      <span className="agd-agent-badge__label">{label}</span>
+      <span className="agd-agent-badge__meta">
         {who && `${who}, `}for {owner}
       </span>
     </span>

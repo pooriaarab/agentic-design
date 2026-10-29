@@ -164,7 +164,7 @@ test("every request stays on this origin and the fonts load", async ({ page }) =
 test("reduced motion zeroes the motion tokens, everywhere, and only when asked", async ({ page }) => {
   const duration = () =>
     page.evaluate(() => {
-      const read = (el: Element) => getComputedStyle(el).getPropertyValue("--ad-duration-base").trim();
+      const read = (el: Element) => getComputedStyle(el).getPropertyValue("--agd-duration-base").trim();
       return { root: read(document.documentElement), region: read(document.getElementById("region") as Element) };
     });
   await page.emulateMedia({ reducedMotion: "no-preference" });

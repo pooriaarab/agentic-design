@@ -78,15 +78,15 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
     return true;
   };
 
-  if (readOnly) return <span className={cx("ad-title", className)}><span className="ad-title__text" title={shown}>{shown}</span></span>;
+  if (readOnly) return <span className={cx("agd-title", className)}><span className="agd-title__text" title={shown}>{shown}</span></span>;
 
   if (!editing) {
     return (
-      <span className={cx("ad-title", className)}>
+      <span className={cx("agd-title", className)}>
         <button
           ref={buttonRef}
           type="button"
-          className="ad-title__button"
+          className="agd-title__button"
           title={shown}
           aria-label={`${shown}, rename`}
           onClick={open}
@@ -97,17 +97,17 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
             }
           }}
         >
-          <span className="ad-title__text">{shown}</span>
+          <span className="agd-title__text">{shown}</span>
         </button>
       </span>
     );
   }
 
   return (
-    <span className={cx("ad-title", className)}>
+    <span className={cx("agd-title", className)}>
       <input
         ref={inputRef}
-        className="ad-title__input"
+        className="agd-title__input"
         aria-label={label}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
@@ -134,7 +134,7 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
           if (commit()) close(false);
         }}
       />
-      {error && <span id={errorId} className="ad-title__error" role="alert">{error}</span>}
+      {error && <span id={errorId} className="agd-title__error" role="alert">{error}</span>}
     </span>
   );
 }

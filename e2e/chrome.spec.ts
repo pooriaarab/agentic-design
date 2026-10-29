@@ -17,7 +17,7 @@ test("a badge with no principal says unknown, and the compact badge keeps every 
   expect(html(createElement(AgentBadge, {}))).toContain("for unknown");
   const compact = html(createElement(AgentBadge, { name: "Claude", actingFor: "Ada", compact: true, label: "Edited by an agent" }));
   expect(compact).toContain('aria-label="Edited by an agent: Claude, acting for Ada"');
-  expect(compact).not.toContain("ad-agent-badge__label");
+  expect(compact).not.toContain("agd-agent-badge__label");
 });
 
 test("a read-only title shows plain text, and an unsafe stored title shows as Untitled", () => {
@@ -42,7 +42,7 @@ test("a badge label in another language is shown as given, and does not crash th
 test("a panel that is false or null draws no panel, and no label is needed", () => {
   const shell = (panel: null | false) => html(createElement(AppShell, { brand: "x", sidebar: null, panel, panelLabel: "Notes", children: null }));
   for (const panel of [false, null] as const) {
-    expect(shell(panel)).not.toContain("ad-shell__panel");
+    expect(shell(panel)).not.toContain("agd-shell__panel");
     expect(shell(panel)).not.toContain("data-panel");
   }
 });

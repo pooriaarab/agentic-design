@@ -9,7 +9,7 @@ export function Toolbar({ label, children, dir }: { label: string; children: Rea
   // Arrow keys follow the page direction. Pass `dir` to override what the page says.
   const direction = dir ?? (typeof document !== "undefined" && document.documentElement.dir === "rtl" ? "rtl" : "ltr");
   return (
-    <RadixToolbar.Root className="ad-toolbar" aria-label={label} dir={direction}>
+    <RadixToolbar.Root className="agd-toolbar" aria-label={label} dir={direction}>
       {children}
     </RadixToolbar.Root>
   );
@@ -25,14 +25,14 @@ export const ToolbarButton = forwardRef<HTMLButtonElement, IconButtonProps & { p
 });
 
 export function ToolbarSeparator() {
-  return <RadixToolbar.Separator className="ad-toolbar__separator" />;
+  return <RadixToolbar.Separator className="agd-toolbar__separator" />;
 }
 
 /** Buttons that belong together, such as text style. A screen reader hears the group name. Keep it inside a `Toolbar`. */
 export function ToolbarGroup({ label, children }: { label: string; children: ReactNode }) {
   if (label.trim() === "") throw new Error("A toolbar group needs a non-empty label.");
   return (
-    <div className="ad-toolbar__group" role="group" aria-label={label}>
+    <div className="agd-toolbar__group" role="group" aria-label={label}>
       {children}
     </div>
   );

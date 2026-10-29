@@ -41,7 +41,7 @@ function initials(name: string): string {
 export function Avatar({ entry, label }: { entry: PresenceEntry; label?: string }) {
   return (
     <span
-      className={cx("ad-avatar", `ad-avatar--${kindOf(entry)}`)}
+      className={cx("agd-avatar", `agd-avatar--${kindOf(entry)}`)}
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
@@ -78,17 +78,17 @@ export function PresenceChip({ entry, className }: { entry: PresenceEntry; class
   const agent = kindOf(entry) === "agent";
   const actingFor = entry.actingFor === undefined ? null : (usableName(entry.actingFor) ?? "Unnamed person");
   return (
-    <span className={cx("ad-chip", className)}>
+    <span className={cx("agd-chip", className)}>
       <Avatar entry={entry} />
-      <span className="ad-chip__name" title={name} aria-hidden="true">{name}</span>
+      <span className="agd-chip__name" title={name} aria-hidden="true">{name}</span>
       {agent && (
-        <span className="ad-pill" aria-hidden="true" title={actingFor ? `An agent acting for ${actingFor}.` : "An agent, not a person."}>
+        <span className="agd-pill" aria-hidden="true" title={actingFor ? `An agent acting for ${actingFor}.` : "An agent, not a person."}>
           Agent
         </span>
       )}
-      {agent && <span className="ad-chip__meta" aria-hidden="true">for {actingFor ?? "unknown"}</span>}
-      {status && <span className="ad-chip__meta" aria-hidden="true">{status}</span>}
-      <span className="ad-sr-only">{describe(entry)}</span>
+      {agent && <span className="agd-chip__meta" aria-hidden="true">for {actingFor ?? "unknown"}</span>}
+      {status && <span className="agd-chip__meta" aria-hidden="true">{status}</span>}
+      <span className="agd-sr-only">{describe(entry)}</span>
     </span>
   );
 }
@@ -105,8 +105,8 @@ export function PresenceStack({ entries, max = 4, label = "Here now" }: { entrie
   const shown = entries.slice(0, max);
   const hidden = entries.length - shown.length;
   return (
-    <div className="ad-stack">
-      <ul className="ad-stack__list" aria-label={label}>
+    <div className="agd-stack">
+      <ul className="agd-stack__list" aria-label={label}>
         {shown.map((entry) => {
           const text = describe(entry);
           return (
@@ -117,11 +117,11 @@ export function PresenceStack({ entries, max = 4, label = "Here now" }: { entrie
         })}
         {hidden > 0 && (
           <li>
-            <span className="ad-avatar ad-avatar--more" role="img" aria-label={`${hidden} more`}>+{hidden}</span>
+            <span className="agd-avatar agd-avatar--more" role="img" aria-label={`${hidden} more`}>+{hidden}</span>
           </li>
         )}
       </ul>
-      {entries.length > 0 && <span className="ad-stack__summary">{summary(entries)}</span>}
+      {entries.length > 0 && <span className="agd-stack__summary">{summary(entries)}</span>}
     </div>
   );
 }
@@ -134,9 +134,9 @@ export function PresenceStack({ entries, max = 4, label = "Here now" }: { entrie
 export function PresenceCursor({ entry }: { entry: PresenceEntry }) {
   const name = displayName(entry);
   return (
-    <span className={cx("ad-cursor", `ad-cursor--${kindOf(entry)}`)} contentEditable={false} aria-hidden="true">
-      <span className="ad-cursor__caret" />
-      <span className="ad-cursor__tag">
+    <span className={cx("agd-cursor", `agd-cursor--${kindOf(entry)}`)} contentEditable={false} aria-hidden="true">
+      <span className="agd-cursor__caret" />
+      <span className="agd-cursor__tag">
         {name}
         {kindOf(entry) === "agent" && ` · Agent · for ${entry.actingFor === undefined ? "unknown" : (usableName(entry.actingFor) ?? "Unnamed person")}`}
       </span>

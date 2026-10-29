@@ -120,7 +120,7 @@ test("a pressed toggle differs by shape, not only by color, and in forced colors
 
 test("an agent is labeled as an agent by a word and a shape, never by color alone", async ({ page }) => {
   await page.goto("/patterns");
-  const chips = page.locator(".ad-chip");
+  const chips = page.locator(".agd-chip");
   const claude = chips.filter({ hasText: "Claude" }).first();
   await expect(claude).toContainText("Agent");
   await expect(claude).toContainText("for Ada Lovelace");
@@ -133,17 +133,17 @@ test("an agent is labeled as an agent by a word and a shape, never by color alon
   await expect(chips.filter({ hasText: "Grace Hopper" }).first()).toContainText("Away");
 
   const radius = (selector: string) => page.locator(selector).first().evaluate((el) => getComputedStyle(el).borderTopLeftRadius);
-  expect(await radius(".ad-avatar--agent")).not.toBe(await radius(".ad-avatar--person"));
+  expect(await radius(".agd-avatar--agent")).not.toBe(await radius(".agd-avatar--person"));
 
   // In forced colors the pill keeps its line and the avatar keeps its shape.
   await page.emulateMedia({ forcedColors: "active" });
-  const pill = await claude.locator(".ad-pill").evaluate((el) => {
+  const pill = await claude.locator(".agd-pill").evaluate((el) => {
     const s = getComputedStyle(el);
     return { style: s.borderTopStyle, width: parseFloat(s.borderTopWidth) };
   });
   expect(pill.style).toBe("solid");
   expect(pill.width).toBeGreaterThanOrEqual(1);
-  expect(await radius(".ad-avatar--agent")).not.toBe(await radius(".ad-avatar--person"));
+  expect(await radius(".agd-avatar--agent")).not.toBe(await radius(".agd-avatar--person"));
 });
 
 test("the stack counts people and agents in words and names every avatar", async ({ page }) => {
@@ -154,12 +154,12 @@ test("the stack counts people and agents in words and names every avatar", async
   await expect(stack.getByRole("img", { name: "Review bot, agent, acting for an unknown person, paused" })).toBeVisible();
   await expect(stack.getByRole("img", { name: "Grace Hopper, person, away" })).toBeVisible();
   await expect(stack.getByRole("img", { name: "2 more" })).toBeVisible();
-  await expect(page.locator(".ad-stack__summary")).toHaveText("4 people, 2 agents");
+  await expect(page.locator(".agd-stack__summary")).toHaveText("4 people, 2 agents");
 });
 
 test("a hostile name shows as unnamed", async ({ page }) => {
   await page.goto("/patterns");
-  await expect(page.locator(".ad-chip", { hasText: "Unnamed person" })).toHaveCount(1);
+  await expect(page.locator(".agd-chip", { hasText: "Unnamed person" })).toHaveCount(1);
   await expect(page.getByText("evil")).toHaveCount(0);
 });
 
@@ -202,7 +202,7 @@ test("a malformed peer entry still renders, and an unknown kind shows as an agen
   const list = page.getByRole("list", { name: "Malformed entries" });
   const mallory = list.getByRole("listitem").filter({ hasText: "Mallory" });
   await expect(mallory).toContainText("Agent");
-  await expect(mallory.locator(".ad-avatar--agent")).toHaveCount(1);
+  await expect(mallory.locator(".agd-avatar--agent")).toHaveCount(1);
   const trent = list.getByRole("listitem").filter({ hasText: "Trent" });
   await expect(trent).toBeVisible();
   await expect(trent).not.toContainText("busy");
@@ -241,12 +241,12 @@ test("on a narrow screen the tab order follows what is on the screen", async ({ 
 
 test("a screen reader gets one built sentence per chip, so a person named Agent still reads as a person", async ({ page }) => {
   await page.goto("/patterns");
-  const claude = page.locator(".ad-chip").filter({ hasText: "Claude" }).first();
-  await expect(claude.locator(".ad-sr-only")).toHaveText("Claude, agent, acting for Ada Lovelace");
+  const claude = page.locator(".agd-chip").filter({ hasText: "Claude" }).first();
+  await expect(claude.locator(".agd-sr-only")).toHaveText("Claude, agent, acting for Ada Lovelace");
   await expect(claude.locator('[aria-hidden="true"]').first()).toBeAttached();
-  const trickster = page.locator(".ad-chip").filter({ hasText: "Ada Agent for Bob" });
-  await expect(trickster.locator(".ad-sr-only")).toHaveText("Ada Agent for Bob, person");
-  await expect(trickster.locator(".ad-pill")).toHaveCount(0);
+  const trickster = page.locator(".agd-chip").filter({ hasText: "Ada Agent for Bob" });
+  await expect(trickster.locator(".agd-sr-only")).toHaveText("Ada Agent for Bob, person");
+  await expect(trickster.locator(".agd-pill")).toHaveCount(0);
 });
 
 test("the toolbar arrow keys follow a right-to-left page", async ({ page }) => {
@@ -308,7 +308,7 @@ test("widening closes the nav state, so Escape later does not send focus to a hi
   await toggle.click();
   await page.setViewportSize({ width: 1280, height: 800 });
   // The button is hidden when wide, so reach it by class.
-  await expect(page.locator(".ad-shell__menu")).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator(".agd-shell__menu")).toHaveAttribute("aria-expanded", "false");
   const link = page.getByRole("navigation", { name: "Demo pages" }).getByRole("link", { name: "Patterns" });
   await link.focus();
   await page.keyboard.press("Escape");

@@ -1,6 +1,6 @@
 import { colorNames, scale, shadows, themes, type ThemeName } from "./tokens.js";
 
-const prefix = "--ad-";
+const prefix = "--agd-";
 
 // Colors and shadows change with the theme. Scales do not, so they live on :root alone.
 // A themed region inherits them, and the reduced-motion override on :root reaches every region.
