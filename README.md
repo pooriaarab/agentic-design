@@ -12,15 +12,7 @@ Accessible design tokens and UI primitives for calm, minimal apps.
 
 ## Install
 
-Once 0.3.1 is on npm, run `npm install agentic-design`. Until then, build it from a checkout and
-install the tarball:
-
-```sh
-npm ci && npm pack
-npm install ./agentic-design-0.3.1.tgz
-```
-
-`npm pack` runs the build first (`prepack`), so the tarball holds `dist/`.
+Run `npm install agentic-design`.
 
 ## Quick start
 
@@ -28,6 +20,16 @@ Import the stylesheet once. It holds the fonts, the tokens, and base rules.
 
 ```js
 import "agentic-design/styles.css";
+```
+
+To use the tokens alone, import `agentic-design/tokens.css` instead. It sets the custom properties
+and the `color-scheme` for each theme. It loads no fonts, no base rules, and sets no font on any
+element. Apply a font token in your own CSS, for example `font-family: var(--ad-font-family-sans)`.
+The font tokens use the family names `Inter Variable` and `JetBrains Mono Variable`. Register your
+font files under those names, or set the two tokens yourself.
+
+```js
+import "agentic-design/tokens.css";
 ```
 
 Use a token in your own CSS:
