@@ -1,7 +1,7 @@
 // Builds dist/tokens.css, dist/styles.css, dist/fonts, and the demo site in site/.
 // The demo site is not part of the published package.
 import { build } from "esbuild";
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { themeInitScript } from "../dist/index.js";
 import { tokensCss } from "../dist/tokens.js";
@@ -42,3 +42,49 @@ await build({
   define: { "process.env.NODE_ENV": '"production"' },
   logLevel: "warning",
 });
+
+const MIT_BODY = `Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.`;
+
+// Licenses of the packages built into dist. MIT and similar licenses need their notice in every copy.
+const metafile = new URL("../dist/metafile-esm.json", import.meta.url);
+const bundled = new Set();
+for (const input of Object.keys(JSON.parse(readFileSync(metafile, "utf8")).inputs)) {
+  const found = /node_modules\/((?:@[^/]+\/)?[^/]+)/.exec(input);
+  if (found) bundled.add(found[1]);
+}
+const sections = [...bundled].sort().map((name) => {
+  const root = new URL(`../node_modules/${name}/`, import.meta.url);
+  const pkg = JSON.parse(readFileSync(new URL("package.json", root), "utf8"));
+  const file = readdirSync(root).find((f) => /^licen[cs]e/i.test(f));
+  let text;
+  if (file && existsSync(new URL(file, root))) {
+    text = readFileSync(new URL(file, root), "utf8").trim();
+  } else if (pkg.license === "MIT") {
+    // A few MIT packages ship no license file. Use the standard MIT text with the holder their
+    // package.json names, and say where it came from.
+    const author = typeof pkg.author === "string" ? pkg.author.replace(/\s*[<(].*$/, "") : (pkg.author?.name ?? "");
+    if (!author) throw new Error(`${name} is MIT but names no author, so no notice can be built`);
+    text = `(This package ships no license file. Its package.json declares MIT and names the holder below.)\n\nMIT License\n\nCopyright (c) ${author}\n\n${MIT_BODY}`;
+  } else {
+    throw new Error(`${name} is bundled but has no license file`);
+  }
+  return `## ${name} ${pkg.version}\n\nLicense: ${pkg.license}\n\n${text}\n`;
+});
+writeFileSync(dist("THIRD_PARTY_LICENSES.md"), `# Licenses of bundled packages\n\nThese packages are built into dist/react.js.\n\n${sections.join("\n")}`);
+rmSync(metafile);

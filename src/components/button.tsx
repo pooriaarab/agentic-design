@@ -1,5 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cx } from "../cx.js";
+import { Tooltip } from "./tooltip.js";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
@@ -34,16 +35,26 @@ export interface IconButtonProps extends Omit<ButtonProps, "children" | "aria-la
   /** The accessible name. Required, because an icon has no text. */
   label: string;
   icon: ReactNode;
+  /** Show the label in a tooltip on hover and focus. On by default. */
+  tooltip?: boolean;
 }
 
+// The tooltip repeats the accessible name, so the description Radix adds would read it twice.
+// This body drops that one id and keeps any description the caller set.
+const IconButtonBody = forwardRef<HTMLButtonElement, ButtonProps>(function IconButtonBody(props, ref) {
+  const described = props["aria-describedby"]?.split(" ").filter((id) => !id.startsWith("radix-")).join(" ");
+  return <Button ref={ref} {...props} aria-describedby={described || undefined} />;
+});
+
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-  { label, icon, variant = "ghost", className, ...rest },
+  { label, icon, tooltip = true, variant = "ghost", className, ...rest },
   ref,
 ) {
   if (label.trim() === "") throw new Error("IconButton needs a non-empty label.");
-  return (
-    <Button ref={ref} variant={variant} className={cx("ad-icon-button", className)} {...rest} aria-label={rest.loading ? `${label}, loading` : label}>
+  const button = (
+    <IconButtonBody ref={ref} variant={variant} className={cx("ad-icon-button", className)} {...rest} aria-label={rest.loading ? `${label}, loading` : label}>
       {rest.loading ? null : icon}
-    </Button>
+    </IconButtonBody>
   );
+  return tooltip ? <Tooltip content={label}>{button}</Tooltip> : button;
 });

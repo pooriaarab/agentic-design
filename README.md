@@ -7,7 +7,7 @@
 Accessible design tokens and UI primitives for calm, minimal apps.
 
 > Status: early. The design tokens, the contrast check, and the fonts work.
-> The form controls work. The overlays, the app patterns, and the demo are not built yet.
+> The form controls and the overlays work. The app patterns and the editor demo are not built yet.
 > The package is not on npm yet.
 
 ## Install
@@ -65,7 +65,10 @@ themes.dark.accent; // "#8EA4FF"
   `Select`, `Checkbox`, `Switch`. Each field has a visible label and a focus ring.
   `Input`, `Textarea`, and `Select` take `hint` and `error`. An error shows an icon and
   text, sets `aria-invalid`, and is announced. `Button` has loading and disabled states.
-  Checked states stay visible in Windows High Contrast.
+  Checked and selected states stay visible in Windows High Contrast.
+- Overlays for React, on Radix UI (MIT): `Dialog`, `Menu`, `Tooltip`, `Tabs`, and
+  a toast (`ToastProvider`, `useToast`). Dialogs trap focus and give it back. An
+  icon button shows its label as a tooltip. An error toast stays until dismissed.
 - `ThemeProvider` and `useTheme` for React, from `agentic-design/react`. They set `data-theme`, keep the pick on the device, and sync it across tabs. `themeInitScript()` returns a script for the page head, so a saved dark pick never flashes light. React is an optional peer: the root entry and the CLI do not need it.
 - A token page at `/` from the Worker. Run `npm run build` first, then `npx wrangler dev`.
 - A CLI and an MCP server so an agent can read the tokens:
@@ -75,11 +78,13 @@ themes.dark.accent; // "#8EA4FF"
 
 ## Limits
 
-- Dialog, menu, tooltip, tabs, toast, and the app patterns are not built yet.
+- The app patterns (shell, share dialog, presence) are not built yet.
 - Fonts cover Latin and Latin Extended only, and only upright faces ship. Italic text is
   synthesized by the browser.
 - `Checkbox` and `Switch` have no error state yet, so a required checkbox cannot show an
   accessible error with these controls.
+- A toast raised while a modal dialog is open stays out of reach until the dialog closes,
+  because a modal hides the rest of the page. Show an error inside the dialog instead.
 - The contrast check covers the pairs listed in `src/tokens/tokens.ts`. Add a
   pair there when you add a new use of color.
 

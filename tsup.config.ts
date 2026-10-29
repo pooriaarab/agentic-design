@@ -11,6 +11,9 @@ export default defineConfig({
     worker: "src/worker.ts",
   },
   format: ["esm"],
+  // Radix goes inside the react entry, so installing the package for the CLI pulls in no React.
+  noExternal: [/^@radix-ui\//],
+  metafile: true,
   dts: true,
   clean: true,
   onSuccess: "node scripts/build-assets.mjs",

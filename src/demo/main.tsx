@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
+import { ToastProvider, TooltipProvider } from "../react.js";
 import { ThemeProvider } from "../theme.js";
 import { PrimitivesPage } from "./primitives-page.js";
 import { TokensPage } from "./tokens-page.js";
@@ -14,7 +15,11 @@ const Page = pages[window.location.pathname.replace(/\/$/, "") || "/"];
 if (Page) {
   createRoot(document.getElementById("root") as HTMLElement).render(
     <ThemeProvider>
-      <Page />
+      <TooltipProvider>
+        <ToastProvider>
+          <Page />
+        </ToastProvider>
+      </TooltipProvider>
     </ThemeProvider>,
   );
 }
