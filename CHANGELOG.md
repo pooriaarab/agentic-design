@@ -4,6 +4,12 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.8.0 - 2026-10-29
+
+### Added
+
+- `DataTable`, a virtualized table for large row sets. It keeps one tab stop, moves focus with the arrow keys, and announces its status and position.
+
 ## 0.7.1 - 2026-10-29
 
 ### Fixed
