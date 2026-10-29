@@ -66,7 +66,7 @@
   --button-border: var(--ad-color-border);
   cursor: not-allowed;
 }
-.ad-button[aria-disabled="true"] { cursor: progress; }
+.ad-button[aria-busy="true"] { cursor: progress; }
 .ad-icon-button {
   width: var(--ad-control-h);
   padding: 0;
@@ -351,4 +351,6 @@
   .ad-switch::before { background: ButtonText; }
   .ad-switch:checked::before { background: HighlightText; }
   .ad-button[aria-busy="true"] { border-style: dashed; }
+  .ad-tabs__trigger[data-state="active"]::after { background: Highlight; }
+  .ad-menu__item[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
 }

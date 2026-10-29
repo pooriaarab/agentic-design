@@ -37,15 +37,22 @@ export interface IconButtonProps extends Omit<ButtonProps, "children" | "aria-la
   tooltip?: boolean;
 }
 
+// The tooltip repeats the accessible name, so the description Radix adds would read it twice.
+// This body drops that one id and keeps any description the caller set.
+const IconButtonBody = forwardRef<HTMLButtonElement, ButtonProps>(function IconButtonBody(props, ref) {
+  const described = props["aria-describedby"]?.split(" ").filter((id) => !id.startsWith("radix-")).join(" ");
+  return <Button ref={ref} {...props} aria-describedby={described || undefined} />;
+});
+
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
   { label, icon, tooltip = true, variant = "ghost", className, ...rest },
   ref,
 ) {
   if (label.trim() === "") throw new Error("IconButton needs a non-empty label.");
   const button = (
-    <Button ref={ref} variant={variant} className={cx("ad-icon-button", className)} {...rest} aria-label={label}>
+    <IconButtonBody ref={ref} variant={variant} className={cx("ad-icon-button", className)} {...rest} aria-label={label}>
       {rest.loading ? null : icon}
-    </Button>
+    </IconButtonBody>
   );
   return tooltip ? <Tooltip content={label}>{button}</Tooltip> : button;
 });

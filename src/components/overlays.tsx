@@ -2,9 +2,9 @@ import * as RadixDialog from "@radix-ui/react-dialog";
 import * as RadixMenu from "@radix-ui/react-dropdown-menu";
 import * as RadixTabs from "@radix-ui/react-tabs";
 import * as RadixToast from "@radix-ui/react-toast";
-import { createContext, useCallback, useContext, useMemo, useState, type ReactElement, type ReactNode } from "react";
+import { cloneElement, createContext, isValidElement, useCallback, useContext, useState, type ReactElement, type ReactNode } from "react";
 import { AlertIcon, CheckIcon, CloseIcon, ErrorIcon, InfoIcon } from "../icons.js";
-import { IconButton } from "./button.js";
+import { IconButton, type IconButtonProps } from "./button.js";
 
 /* Dialog ---------------------------------------------------------------- */
 
@@ -27,7 +27,18 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
       {trigger && <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>}
       <RadixDialog.Portal>
         <RadixDialog.Overlay className="ad-overlay" />
-        <RadixDialog.Content className="ad-dialog" {...(description ? {} : { "aria-describedby": undefined })}>
+        <RadixDialog.Content
+          className="ad-dialog"
+          {...(description ? {} : { "aria-describedby": undefined })}
+          onOpenAutoFocus={(event) => {
+            // A destructive dialog marks its safest button with data-autofocus. It gets first focus.
+            const safest = (event.currentTarget as HTMLElement).querySelector<HTMLElement>("[data-autofocus]");
+            if (safest) {
+              event.preventDefault();
+              safest.focus();
+            }
+          }}
+        >
           <RadixDialog.Title className="ad-dialog__title">{title}</RadixDialog.Title>
           <RadixDialog.Close asChild>
             <IconButton label="Close" icon={<CloseIcon />} size="sm" className="ad-dialog__close" tooltip={false} />
@@ -51,9 +62,14 @@ export type MenuItem =
   | { label: string; onSelect: () => void; icon?: ReactNode; shortcut?: string; danger?: boolean; disabled?: boolean };
 
 export function Menu({ trigger, items, align = "end" }: { trigger: ReactElement; items: MenuItem[]; align?: "start" | "end" }) {
+  for (const item of items) {
+    if (item !== "separator" && item.label.trim() === "") throw new Error("A menu item needs a non-empty label.");
+  }
+  // Focus returns to the trigger when the menu closes. A tooltip would pop up there, so the trigger has none.
+  const menuTrigger = isValidElement<IconButtonProps>(trigger) && trigger.type === IconButton ? cloneElement(trigger, { tooltip: false }) : trigger;
   return (
     <RadixMenu.Root modal={false}>
-      <RadixMenu.Trigger asChild>{trigger}</RadixMenu.Trigger>
+      <RadixMenu.Trigger asChild>{menuTrigger}</RadixMenu.Trigger>
       <RadixMenu.Portal>
         <RadixMenu.Content className="ad-menu" align={align} sideOffset={6}>
           {items.map((item, index) =>
@@ -87,6 +103,7 @@ export interface TabItem {
 }
 
 export function Tabs({ label, tabs, value, defaultValue, onValueChange }: { label: string; tabs: TabItem[]; defaultValue?: string; value?: string; onValueChange?: (value: string) => void }) {
+  if (label.trim() === "") throw new Error("Tabs need a non-empty label.");
   return (
     <RadixTabs.Root
       className="ad-tabs"
@@ -132,10 +149,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastEntry[]>([]);
   const toast = useCallback((options: ToastOptions) => setToasts((all) => [...all, { ...options, id: Date.now() + Math.random() }]), []);
   const remove = (id: number) => setToasts((all) => all.filter((t) => t.id !== id));
-  const value = useMemo(() => toast, [toast]);
 
   return (
-    <ToastContext.Provider value={value}>
+    <ToastContext.Provider value={toast}>
       <RadixToast.Provider swipeDirection="right">
         {children}
         {toasts.map(({ id, title, description, tone = "info" }) => {
