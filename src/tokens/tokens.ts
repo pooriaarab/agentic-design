@@ -136,7 +136,7 @@ export const contrastPairs: readonly ContrastPair[] = deepFreeze([
   ...status("warning"),
   ...status("success"),
   ...ui("border-strong", surfaces, "control borders (WCAG 1.4.11)"),
-  ...ui("focus", surfaces, "focus ring (WCAG 2.4.13)"),
+  ...ui("focus", [...surfaces, "accent-subtle", "agent-subtle", "danger-subtle", "warning-subtle", "success-subtle"], "focus ring (WCAG 1.4.11)"),
   ...ui("accent", ["accent-subtle", ...surfaces], "accent marks and checked controls"),
   ...ui("agent", ["agent-subtle", ...surfaces], "agent avatar outline"),
 ]);

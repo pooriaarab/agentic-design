@@ -20,6 +20,8 @@ test.beforeAll(async () => {
   });
   closeSync(log);
   for (let i = 0; i < 120; i++) {
+    // If the server we spawned has died, a /health answer comes from a stale server on this port.
+    if (server.exitCode !== null) break;
     try {
       if ((await fetch(`${base}/health`)).ok) return;
     } catch {
@@ -66,7 +68,9 @@ test("an unknown path is 404 for any method", async () => {
   expect((await send("/nope", "POST")).status).toBe(404);
 });
 
-test("a known path with the wrong method is 405", async () => {
-  expect((await send("/api/v1/tokens", "POST")).status).toBe(405);
+test("a known path with the wrong method is 405 and says which methods work", async () => {
+  const res = await send("/api/v1/tokens", "POST");
+  expect(res.status).toBe(405);
+  expect(res.headers.get("allow")).toBe("GET, HEAD");
   expect((await send("/health", "DELETE")).status).toBe(405);
 });

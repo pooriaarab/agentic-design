@@ -125,6 +125,14 @@ test("a saved dark pick is applied before the app loads, so there is no light fl
   expect(await bodyBg(page)).toBe(hexToRgb(themes.dark.bg));
 });
 
+test("a saved value that is not light, dark, or system is ignored and the page still renders", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("agentic-design-theme", "Dark"));
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.*/);
+  await expect(page.getByLabel("Theme")).toHaveValue("system");
+});
+
 test("a pick in one tab reaches another tab of the same app", async ({ context }) => {
   const first = await context.newPage();
   const second = await context.newPage();
