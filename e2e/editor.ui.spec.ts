@@ -299,12 +299,18 @@ test("changing another link setting keeps the expiry date it had", async ({ page
   await page.getByRole("switch", { name: "Anyone with the link" }).check();
   await page.getByLabel("Link expires").selectOption("1d");
   await expect(page.getByText("Stops working on Oct 29, 2026.")).toBeVisible();
-  await page.clock.fastForward("48:00:00");
   await page.getByLabel("Require sign-in").uncheck();
   await page.getByLabel("Access", { exact: true }).selectOption("commenter");
   await expect(page.getByText("Stops working on Oct 29, 2026.")).toBeVisible();
+  // Two days pass. The link has expired, and the dialog says so and never shows it as live.
+  await page.clock.fastForward("48:00:00");
+  await page.getByLabel("Link expires").selectOption("never");
+  await page.getByLabel("Link expires").selectOption("1d");
+  await page.clock.fastForward("48:00:00");
+  await page.getByLabel("Require sign-in").check();
+  await expect(page.getByText("This link expired on Oct 31, 2026. Choose a new expiry.")).toBeVisible();
   await page.getByLabel("Link expires").selectOption("7d");
-  await expect(page.getByText("Stops working on Nov 6, 2026.")).toBeVisible();
+  await expect(page.getByText("Stops working on Nov 8, 2026.")).toBeVisible();
 });
 
 test("a snapshot carries the text as edited, and no cursor names", async ({ page }) => {
@@ -320,4 +326,49 @@ test("a snapshot carries the text as edited, and no cursor names", async ({ page
   const json = JSON.parse(Buffer.from(url.split("#snapshot=")[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8"));
   expect(json.text).toContain("Measure sign-ups for two weeks. Edited by hand.");
   expect(json.text).not.toContain("Grace Hopper");
+});
+
+test("turning the link on starts a new expiry clock", async ({ page }) => {
+  await page.clock.install({ time: new Date("2026-10-28T12:00:00Z") });
+  await page.goto("/editor");
+  await page.clock.fastForward(8 * 24 * 3600 * 1000);
+  await openShare(page);
+  await page.getByRole("tab", { name: "Link" }).click();
+  await page.getByRole("switch", { name: "Anyone with the link" }).check();
+  await expect(page.getByText("Stops working on Nov 12, 2026.")).toBeVisible();
+  await expect(page.getByText(/expired on/)).toHaveCount(0);
+});
+
+test("inviting an agent that is already in the list is refused", async ({ page }) => {
+  await page.goto("/editor");
+  await openShare(page);
+  await page.getByLabel("Invite a person or an agent").fill("@claude");
+  await page.getByRole("button", { name: "Invite", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("@claude already has access. Change their role in the list below.");
+  await expect(page.locator(".ad-stack__summary")).toHaveText("2 people, 1 agent");
+});
+
+test("accepting a suggestion after the paragraph was edited changes nothing", async ({ page }) => {
+  await page.goto("/editor");
+  const text = page.getByRole("textbox", { name: "Page text" });
+  await text.locator("p").last().click();
+  await page.keyboard.press("End");
+  await page.keyboard.type(" Edited by hand.");
+  await page.getByRole("complementary", { name: "Suggestion from Claude" }).getByRole("button", { name: "Accept" }).click();
+  await expect(page.locator(".ad-toast", { hasText: "We didn't apply the suggestion" })).toBeVisible();
+  await expect(text).toContainText("Measure sign-ups for two weeks. Edited by hand.");
+  await expect(page.getByRole("complementary", { name: "Suggestion from Claude" })).toBeVisible();
+});
+
+test("a page too long for a snapshot link makes no link", async ({ page }) => {
+  await page.goto("/editor");
+  const text = page.getByRole("textbox", { name: "Page text" });
+  await text.locator("p").last().click();
+  await page.keyboard.press("End");
+  await page.keyboard.insertText(" " + "word ".repeat(1200));
+  await openShare(page);
+  await page.getByRole("tab", { name: "Snapshot" }).click();
+  await page.getByRole("button", { name: "Create snapshot link" }).click();
+  await expect(page.locator(".ad-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
+  await expect(page.getByLabel("Snapshot link")).toHaveCount(0);
 });

@@ -82,7 +82,9 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
             setError("Enter an email like ada@example.org, or an agent handle like @claude.");
             return;
           }
-          if (people.some((p) => p.invitedAs?.toLowerCase() === invitee.to.toLowerCase())) {
+          // Compare without case and without a leading @, against how it was invited, its id, and its name.
+          const same = (value?: string) => value?.replace(/^@/, "").toLowerCase() === invitee.to.replace(/^@/, "").toLowerCase();
+          if (people.some((p) => same(p.invitedAs) || same(p.entry.id) || same(p.entry.name))) {
             setSent("");
             setError(`${invitee.to} already has access. Change their role in the list below.`);
             return;
@@ -148,7 +150,11 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
   );
 }
 
+const shortDate = (date: Date) => date.toLocaleDateString("en", { day: "numeric", month: "short", year: "numeric" });
+
 function LinkTab({ link, onChangeLink, onCopy }: Pick<ShareDialogProps, "link" | "onChangeLink" | "onCopy">) {
+  // A date in the past is an expired link. It is never shown as live.
+  const expired = link.expiresAt != null && link.expiresAt.getTime() < Date.now();
   return (
     <div className="ad-share">
       <Switch
@@ -166,7 +172,8 @@ function LinkTab({ link, onChangeLink, onCopy }: Pick<ShareDialogProps, "link" |
             <Select
               label="Link expires"
               value={link.expiry}
-              hint={link.expiresAt ? `Stops working on ${link.expiresAt.toLocaleDateString("en", { day: "numeric", month: "short", year: "numeric" })}.` : undefined}
+              hint={link.expiresAt ? (expired ? `This link expired on ${shortDate(link.expiresAt)}. Choose a new expiry.` : `Stops working on ${shortDate(link.expiresAt)}.`) : undefined}
+              error={undefined}
               onChange={(e) => onChangeLink({ ...link, expiry: e.target.value as LinkExpiry })}
             >
               {(Object.keys(expiryLabel) as LinkExpiry[]).map((x) => <option key={x} value={x}>{expiryLabel[x]}</option>)}

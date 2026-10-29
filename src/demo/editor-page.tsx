@@ -120,6 +120,13 @@ function Editor() {
 
   // The suggestion card holds focus when a key is pressed. It is about to go, so focus the text.
   const decide = (decision: "accepted" | "rejected") => {
+    // The suggestion was written against the original paragraph. If a person has changed it since,
+    // accepting would replace their words, so nothing is applied.
+    const live = textRef.current?.querySelectorAll("p")[2]?.textContent?.trim();
+    if (decision === "accepted" && live !== lastBefore) {
+      toast({ title: "We didn't apply the suggestion", description: "The last paragraph changed after Claude wrote it. Nothing was changed.", tone: "danger" });
+      return;
+    }
     textRef.current?.focus();
     setAccepted(decision);
     if (decision === "accepted") toast({ title: "Suggestion accepted", description: "The edit stays labeled as made by Claude, an agent.", tone: "success" });
@@ -151,12 +158,23 @@ function Editor() {
             onRemove={(id) => setPeople((all) => all.filter((p) => p.entry.id !== id))}
             link={link}
             onChangeLink={(next) => {
-              // Only a change to the expiry starts a new clock. Any other setting keeps the date it had.
-              if (next.expiry === link.expiry) return setLink(next);
+              // A new clock starts when the expiry changes or the link is turned on. Any other setting keeps its date.
+              if (next.expiry === link.expiry && !(next.enabled && !link.enabled)) return setLink(next);
               const days = expiryDays[next.expiry];
               setLink({ ...next, expiresAt: days === null ? null : new Date(Date.now() + days * DAY) });
             }}
-            snapshot={{ url: snapshot, onCreate: () => setSnapshot(snapshotUrl(liveParagraphs(textRef.current))) }}
+            snapshot={{
+              url: snapshot,
+              onCreate: () => {
+                const url = snapshotUrl(liveParagraphs(textRef.current));
+                // Make only a link that the page can open again. A longer page cannot be a snapshot.
+                if (readSnapshot(url.slice(url.indexOf("#"))) === null) {
+                  toast({ title: "This page is too long for a snapshot link", description: "Shorten the text and try again. Nothing was shared.", tone: "danger" });
+                  return;
+                }
+                setSnapshot(url);
+              },
+            }}
             onCopy={copy}
           />
         </>

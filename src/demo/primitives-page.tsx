@@ -23,6 +23,7 @@ export function PrimitivesPage() {
   const [loadingClicks, setLoadingClicks] = useState(0);
   const [normalClicks, setNormalClicks] = useState(0);
   const [lastAction, setLastAction] = useState("none");
+  const [renameOpen, setRenameOpen] = useState(false);
   const toast = useToast();
 
   return (
@@ -114,6 +115,20 @@ export function PrimitivesPage() {
             ]}
           />
           <Button onClick={() => toast({ title: "Something odd happened", tone: "error" as never })}>Show odd-tone toast</Button>
+          <Button onClick={() => toast({ title: "Another odd thing", tone: "constructor" as never })}>Show inherited-tone toast</Button>
+          <Button onClick={() => setRenameOpen(true)}>Rename…</Button>
+          <Dialog
+            open={renameOpen}
+            onOpenChange={setRenameOpen}
+            title="Rename this page"
+            footer={
+              <DialogClose asChild>
+                <Button>Done</Button>
+              </DialogClose>
+            }
+          >
+            <Input label="New name" defaultValue="Launch plan" />
+          </Dialog>
           <Button onClick={() => toast({ title: "Link copied", description: "Anyone with the link can view.", tone: "info" })}>Show toast</Button>
           <Button onClick={() => toast({ title: "We couldn't save your changes", description: "Your draft is safe on this device. Try again.", tone: "danger" })}>
             Show error toast
