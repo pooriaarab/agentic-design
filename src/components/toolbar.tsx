@@ -1,6 +1,8 @@
 import * as RadixToolbar from "@radix-ui/react-toolbar";
-import type { ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
+import { MoreIcon } from "../icons.js";
 import { IconButton, type IconButtonProps } from "./button.js";
+import { Menu, type MenuItem } from "./overlays.js";
 
 /** One tab stop. Arrow keys, Home, and End move inside it. */
 export function Toolbar({ label, children, dir }: { label: string; children: ReactNode; dir?: "ltr" | "rtl" }) {
@@ -14,14 +16,33 @@ export function Toolbar({ label, children, dir }: { label: string; children: Rea
 }
 
 /** A toolbar icon button. Pass `pressed` to make it a toggle. */
-export function ToolbarButton({ pressed, ...props }: IconButtonProps & { pressed?: boolean }) {
+export const ToolbarButton = forwardRef<HTMLButtonElement, IconButtonProps & { pressed?: boolean }>(function ToolbarButton({ pressed, ...props }, ref) {
   return (
     <RadixToolbar.Button asChild>
-      <IconButton size="sm" aria-pressed={pressed} {...props} />
+      <IconButton ref={ref} size="sm" aria-pressed={pressed} {...props} />
     </RadixToolbar.Button>
   );
-}
+});
 
 export function ToolbarSeparator() {
   return <RadixToolbar.Separator className="ad-toolbar__separator" />;
+}
+
+/** Buttons that belong together, such as text style. A screen reader hears the group name. Keep it inside a `Toolbar`. */
+export function ToolbarGroup({ label, children }: { label: string; children: ReactNode }) {
+  if (label.trim() === "") throw new Error("A toolbar group needs a non-empty label.");
+  return (
+    <div className="ad-toolbar__group" role="group" aria-label={label}>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * The last stop of a toolbar: a "More" button that opens a menu of the tools that do not fit.
+ * It is in the same tab stop as the other buttons, so arrow keys reach it. Put the tools that
+ * matter least in it, and keep the same actions out of the bar.
+ */
+export function ToolbarOverflow({ label = "More tools", items }: { label?: string; items: MenuItem[] }) {
+  return <Menu trigger={<ToolbarButton label={label} icon={<MoreIcon />} tooltip={false} />} items={items} />;
 }

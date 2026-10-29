@@ -9,22 +9,29 @@ const onNarrowChange = (callback: () => void) => {
   return () => query.removeEventListener("change", callback);
 };
 
-export interface AppShellProps {
+export type AppShellProps = {
   /** The product name, shown at the top of the sidebar. */
   brand: ReactNode;
   /** Usually a `SidebarNav`. */
   sidebar: ReactNode;
+  /** Sits at the start of the top bar, for example a `DocumentTitle`. */
+  title?: ReactNode;
   /** Actions on the right of the top bar. */
   topbar?: ReactNode;
   children: ReactNode;
-}
+} & (
+  | { panel?: undefined; panelLabel?: undefined }
+  /** A side panel after the content, for example comments or an assistant. Below 48rem it sits under the content. */
+  | { panel: ReactNode; panelLabel: string }
+);
 
 /**
  * Sidebar, top bar, and content. The first tab stop is a skip link. Below 48rem the top bar comes first
  * in the page, the sidebar sits under it, and the sidebar hides behind a menu button. Opening it moves focus into the sidebar. Escape closes it and
  * returns focus to the button.
  */
-export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
+export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, children }: AppShellProps) {
+  if (panel !== undefined && (panelLabel ?? "").trim() === "") throw new Error("A side panel needs a non-empty label.");
   const [open, setOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -85,6 +92,7 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
           setOpen((v) => !v);
         }}
       />
+      {title && <div className="ad-shell__title">{title}</div>}
       <div className="ad-shell__actions">{topbar}</div>
     </header>
   );
@@ -108,11 +116,12 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
   );
 
   return (
-    <div className="ad-shell" onKeyDown={onKeyDown}>
+    <div className="ad-shell" data-panel={panel === undefined ? undefined : ""} onKeyDown={onKeyDown}>
       <a className="ad-skip-link" href={`#${mainId}`}>Skip to content</a>
       {/* Keyed, so crossing the breakpoint moves the two parts and does not remount them. */}
       {narrow ? [topbarEl, sidebarEl] : [sidebarEl, topbarEl]}
       <main id={mainId} className="ad-shell__content" tabIndex={-1}>{children}</main>
+      {panel !== undefined && <aside className="ad-shell__panel" aria-label={panelLabel}>{panel}</aside>}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 
 // The Worker runs under wrangler dev, the real runtime, and the test talks to it over HTTP.
-const port = 8791;
+const port = Number(process.env.WORKER_TEST_PORT ?? 8791);
 const base = `http://127.0.0.1:${port}`;
 let server: ChildProcess;
 const logPath = join(tmpdir(), "agentic-design-wrangler.log");
