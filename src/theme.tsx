@@ -8,6 +8,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { THEME_STORAGE_KEY } from "./theme-init.js";
 import type { ThemeName } from "./tokens/index.js";
 
 export type ThemePreference = ThemeName | "system";
@@ -38,14 +39,6 @@ function readPreference(storageKey: string, fallback: ThemePreference): ThemePre
   }
 }
 
-/**
- * A script for the head of the page. It applies a saved pick before first paint, so a person
- * who chose dark never sees a light flash. Put it in a `<script>` tag before the app loads.
- */
-export function themeInitScript(storageKey = "agentic-design-theme"): string {
-  return `try{var t=localStorage.getItem(${JSON.stringify(storageKey)});if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}`;
-}
-
 export interface ThemeProviderProps {
   children: ReactNode;
   defaultPreference?: ThemePreference;
@@ -56,7 +49,7 @@ export interface ThemeProviderProps {
 export function ThemeProvider({
   children,
   defaultPreference = "system",
-  storageKey = "agentic-design-theme",
+  storageKey = THEME_STORAGE_KEY,
 }: ThemeProviderProps) {
   const [preference, setPreferenceState] = useState(() => readPreference(storageKey, defaultPreference));
   const systemDark = useSyncExternalStore(
@@ -76,7 +69,8 @@ export function ThemeProvider({
   // Another tab of the same app changed the pick.
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if (event.key === storageKey) setPreferenceState(readPreference(storageKey, defaultPreference));
+      // A null key means another tab cleared all storage.
+      if (event.key === storageKey || event.key === null) setPreferenceState(readPreference(storageKey, defaultPreference));
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);

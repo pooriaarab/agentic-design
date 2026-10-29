@@ -10,6 +10,7 @@ html {
   text-size-adjust: 100%;
 }
 
+/* 14px suits dense app screens. Long reading text, such as page prose, should use --ad-font-size-md. */
 body {
   margin: 0;
   background: var(--ad-color-bg);

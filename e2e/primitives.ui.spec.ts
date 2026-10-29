@@ -90,7 +90,15 @@ test("every control has a focus ring", async ({ page }) => {
 test("a caller's aria-describedby joins the generated one and does not replace it", async ({ page }) => {
   await page.goto("/primitives");
   await page.locator("form").getByRole("button", { name: "Save" }).click();
-  await expect(page.getByLabel(/^Name/)).toHaveAccessibleDescription(/Shown to people you share with\..*Enter a name/);
+  const description = await page.getByLabel(/^Name/).evaluate((el) => el.getAttribute("aria-describedby"));
+  expect(description?.split(" ")).toHaveLength(3);
+  await expect(page.getByLabel(/^Name/)).toHaveAccessibleDescription(/Shown to people you share with\..*Enter a name.*Use the name on your badge\./);
+});
+
+test("a caller's aria-invalid is kept when the field has no error of its own", async ({ page }) => {
+  await page.goto("/primitives");
+  await expect(page.getByLabel("Phone")).toHaveAttribute("aria-invalid", "true");
+  await expect(page.getByLabel("Email")).not.toHaveAttribute("aria-invalid", /.*/);
 });
 
 test("checked and busy states stay visible in forced colors", async ({ page }) => {
@@ -110,6 +118,7 @@ test("checked and busy states stay visible in forced colors", async ({ page }) =
 test("targets are at least 24 by 24 CSS pixels", async ({ page }) => {
   await page.goto("/primitives");
   const small: string[] = [];
+  // Checkbox and switch boxes are under 24px. Their label row is the target, so the row is measured.
   for (const el of await page.locator("button, input:not([type=checkbox]):not([role=switch]), select, textarea, summary, a, .ad-toggle__row").all()) {
     const box = await el.boundingBox();
     if (box && (box.width < 24 || box.height < 24)) small.push(await el.evaluate((n) => n.outerHTML.slice(0, 60)));

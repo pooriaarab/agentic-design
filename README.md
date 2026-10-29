@@ -1,9 +1,8 @@
 # agentic-design
 
-[![npm version](https://img.shields.io/npm/v/agentic-design)](https://www.npmjs.com/package/agentic-design)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit)
 
-[Package](https://www.npmjs.com/package/agentic-design) · [Source](https://github.com/pooriaarab/agentic-design) · [Support](https://github.com/pooriaarab/agentic-design/issues)
+[Source](https://github.com/pooriaarab/agentic-design) · [Support](https://github.com/pooriaarab/agentic-design/issues)
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
@@ -13,8 +12,11 @@ Accessible design tokens and UI primitives for calm, minimal apps.
 
 ## Install
 
+The package is not on npm yet. Build it from a checkout and install the tarball:
+
 ```sh
-npm install agentic-design
+npm ci && npm run build && npm pack
+npm install ./agentic-design-0.0.0.tgz
 ```
 
 ## Quick start
@@ -63,7 +65,7 @@ themes.dark.accent; // "#8EA4FF"
   `Select`, `Checkbox`, `Switch`. Each field has a visible label and a focus ring.
   `Input`, `Textarea`, and `Select` take `hint` and `error`. An error shows an icon and
   text, sets `aria-invalid`, and is announced. `Button` has loading and disabled states.
-  Checked and pressed states stay visible in Windows High Contrast.
+  Checked states stay visible in Windows High Contrast.
 - `ThemeProvider` and `useTheme` for React, from `agentic-design/react`. They set `data-theme`, keep the pick on the device, and sync it across tabs. `themeInitScript()` returns a script for the page head, so a saved dark pick never flashes light. React is an optional peer: the root entry and the CLI do not need it.
 - A token page at `/` from the Worker. Run `npm run build` first, then `npx wrangler dev`.
 - A CLI and an MCP server so an agent can read the tokens:
@@ -74,7 +76,10 @@ themes.dark.accent; // "#8EA4FF"
 ## Limits
 
 - Dialog, menu, tooltip, tabs, toast, and the app patterns are not built yet.
-- Fonts cover Latin and Latin Extended only.
+- Fonts cover Latin and Latin Extended only, and only upright faces ship. Italic text is
+  synthesized by the browser.
+- `Checkbox` and `Switch` have no error state yet, so a required checkbox cannot show an
+  accessible error with these controls.
 - The contrast check covers the pairs listed in `src/tokens/tokens.ts`. Add a
   pair there when you add a new use of color.
 
@@ -84,6 +89,9 @@ themes.dark.accent; // "#8EA4FF"
 npm ci
 npm run ci:local
 ```
+
+`ci:local` builds first. Run `npm run build` before `npm run typecheck` on a clean checkout,
+because the tests import `dist/`.
 
 ## License
 
