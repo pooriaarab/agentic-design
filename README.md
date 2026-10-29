@@ -137,7 +137,7 @@ const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all
   toolbar={
     <DataTableToolbar end={<DisplayPopover fields={fields} columns={columnList} view={view} onViewChange={setView} defaults={emptyDataView} />}>
       <TableSearch value={view.query} onChange={(query) => setView({ ...view, query })} />
-      <FilterChips chips={chips} onRemove={removeFilter} addItems={addItems}
+      <FilterChips chips={chips} onRemove={removeFilter} addItems={addItems} />
     </DataTableToolbar>
   }
 />
