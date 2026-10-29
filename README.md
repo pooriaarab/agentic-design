@@ -6,18 +6,21 @@
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
-> Status: early. The design tokens, the contrast check, and the fonts work.
+> Status: 0.1.0, the first release. The design tokens, the contrast check, and the fonts work.
 > The tokens, the controls, the overlays, the app patterns, the share dialog, and the editor demo work.
-> The package is not on npm yet.
+> See [CHANGELOG.md](CHANGELOG.md) for what is in this release and its limits.
 
 ## Install
 
-The package is not on npm yet. Build it from a checkout and install the tarball:
+Version 0.1.0 is published to npm by the release workflow. Until it is on npm, build it from a
+checkout and install the tarball:
 
 ```sh
-npm ci && npm run build && npm pack
-npm install ./agentic-design-0.0.0.tgz
+npm ci && npm pack
+npm install ./agentic-design-0.1.0.tgz
 ```
+
+`npm pack` runs the build first (`prepack`), so the tarball holds `dist/`.
 
 ## Quick start
 
