@@ -248,3 +248,17 @@ test("the toolbar arrow keys follow a right-to-left page", async ({ page }) => {
   await page.keyboard.press("ArrowLeft");
   await expect(toolbar.getByRole("button", { name: "Italic" })).toBeFocused();
 });
+
+test("crossing the breakpoint keeps the top bar and its state, and does not remount it", async ({ page }) => {
+  await page.goto("/patterns");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const theme = page.getByRole("combobox", { name: "Theme" });
+  await theme.selectOption("dark");
+  const handle = await theme.elementHandle();
+  await page.setViewportSize({ width: 390, height: 800 });
+  await expect(page.getByRole("button", { name: "Navigation" })).toBeVisible();
+  expect(await handle?.evaluate((el) => el.isConnected)).toBe(true);
+  await expect(theme).toHaveValue("dark");
+  await page.setViewportSize({ width: 1280, height: 800 });
+  expect(await handle?.evaluate((el) => el.isConnected)).toBe(true);
+});

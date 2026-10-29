@@ -35,5 +35,7 @@ export function usableText(text: unknown, maxLength: number): string | null {
   if (!ORDINARY_TEXT.test(text) || !VISIBLE.test(text) || STACKED_MARKS.test(withoutJoiners)) return null;
   // A filler anywhere makes a name that looks like another name. A leading mark has nothing to sit on.
   if (FILLER.test(withoutJoiners) || LEADING_MARK.test(text)) return null;
+  // Two names that differ only by an edge space, a wide space, or a trailing mark read as one name.
+  if (/^\s|\s$|\s{2,}|(?! )\p{Zs}|[\u200C-\u200F]$|[\u200C-\u200F]{2,}/u.test(text)) return null;
   return text;
 }
