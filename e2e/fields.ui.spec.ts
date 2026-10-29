@@ -25,8 +25,9 @@ const fields = { Input, Textarea, Select, Checkbox, Switch };
 const opts = [h("option", { key: "a", value: "a" }, "Viewer"), h("option", { key: "b", value: "b" }, "Editor")];
 
 function Controlled({ kind }) {
-  const [text, setText] = useState(kind === "Select" ? "a" : "start");
-  const [on, setOn] = useState(false);
+  // Start away from the browser default: Select on its second option, toggles on.
+  const [text, setText] = useState(kind === "Select" ? "b" : "start");
+  const [on, setOn] = useState(true);
   const isToggle = kind === "Checkbox" || kind === "Switch";
   const props = isToggle
     ? { label: "Name", checked: on, onChange: (e) => setOn(e.currentTarget.checked) }
@@ -241,9 +242,9 @@ test("an error alone describes the control, and the caller's aria-invalid is kep
 const controlled = [
   { kind: "Input", role: "textbox", start: "start", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", undo: (p: Page) => p.getByLabel("Name").fill(""), untyped: "", parent: ["from parent", ""] },
   { kind: "Textarea", role: "textbox", start: "start", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", undo: (p: Page) => p.getByLabel("Name").fill(""), untyped: "", parent: ["from parent", ""] },
-  { kind: "Select", role: "combobox", start: "a", change: (p: Page) => p.getByLabel("Name").selectOption("b"), typed: "b", undo: (p: Page) => p.getByLabel("Name").selectOption("a"), untyped: "a", parent: ["b", "a"] },
-  { kind: "Checkbox", role: "checkbox", start: "false", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", undo: (p: Page) => p.getByLabel("Name").uncheck(), untyped: "false", parent: ["true", "false"] },
-  { kind: "Switch", role: "switch", start: "false", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", undo: (p: Page) => p.getByLabel("Name").uncheck(), untyped: "false", parent: ["true", "false"] },
+  { kind: "Select", role: "combobox", start: "b", change: (p: Page) => p.getByLabel("Name").selectOption("a"), typed: "a", undo: (p: Page) => p.getByLabel("Name").selectOption("b"), untyped: "b", parent: ["a", "b"] },
+  { kind: "Checkbox", role: "checkbox", start: "true", change: (p: Page) => p.getByLabel("Name").uncheck(), typed: "false", undo: (p: Page) => p.getByLabel("Name").check(), untyped: "true", parent: ["false", "true"] },
+  { kind: "Switch", role: "switch", start: "true", change: (p: Page) => p.getByLabel("Name").uncheck(), typed: "false", undo: (p: Page) => p.getByLabel("Name").check(), untyped: "true", parent: ["false", "true"] },
 ] as const;
 
 // The control shows the value in the state: its value, or on or off for a box.
