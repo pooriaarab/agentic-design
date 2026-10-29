@@ -127,8 +127,8 @@ themes.dark.accent; // "#8EA4FF"
     give each its own `label`.
   - `FilterChips` lists the filters in use, each with a remove button, and a menu to add one. Pass `chips`, a
     list of `FilterChip` objects. Each has an `id` and a `label` such as "Status: Open". `filterMenuItems` builds
-    the menu from your rows. It offers up to `limit` values per field (default 12), the first ones in row order,
-    and it leaves out values already in use.
+    the menu from your rows. It takes up to `limit` values per field (default 12), the first ones in row order, and lists them
+    in text order. A `limit` below 1 still offers one value. It leaves out values already in use.
   - `DisplayPopover` opens a panel with "Group by", "Order by", a direction, a checkbox for each column, and
     "Reset to defaults". Its props are `DisplayPopoverProps`.
   - `applyDataView(rows, view, fields)` does the searching, filtering, ordering, and grouping for you. Pass
