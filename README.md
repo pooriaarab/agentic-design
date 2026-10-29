@@ -119,14 +119,16 @@ themes.dark.accent; // "#8EA4FF"
 
 - Table controls for React, to put in the `toolbar` of a `DataTable`.
   - `DataTableToolbar` is the bar that holds these controls. Its `end` prop takes a control at the right edge,
-    such as `DisplayPopover`.
+    such as `DisplayPopover`. Its `label` names the group (default "Table controls"). With two tables on a page,
+    give each toolbar its own `label`.
   - `TableSearch` is a button that opens a search field and moves focus into it. Escape clears the text, and
     Escape again closes the field. Inside a Radix `Dialog`, Escape also closes the dialog, because the dialog
     listens first. When it is open, it is a search landmark named by its `label` (default "Search"). With two tables on a page,
     give each its own `label`.
   - `FilterChips` lists the filters in use, each with a remove button, and a menu to add one. Pass `chips`, a
     list of `FilterChip` objects. Each has an `id` and a `label` such as "Status: Open". `filterMenuItems` builds
-    the menu from your rows.
+    the menu from your rows. It offers up to `limit` values per field (default 12), the first ones in row order,
+    and it leaves out values already in use.
   - `DisplayPopover` opens a panel with "Group by", "Order by", a direction, a checkbox for each column, and
     "Reset to defaults". Its props are `DisplayPopoverProps`.
   - `applyDataView(rows, view, fields)` does the searching, filtering, ordering, and grouping for you. Pass
@@ -164,6 +166,8 @@ const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all
   - The button says what it does ("Collapse sidebar" or "Expand sidebar") and has `aria-expanded`.
   - The choice is saved in `localStorage`, and it follows across tabs. Set `storageKey` per sidebar. The default
     key is `SIDEBAR_STORAGE_KEY`.
+  - With no saved choice, it starts open, or collapsed on a screen narrower than 48rem. Set `defaultCollapsed`
+    to change this.
   - Collapsed, it is a narrow rail with the button, and its content is hidden and leaves the tab order. The rail
     is as wide as the size token `sidebar-rail` (`var(--agd-size-sidebar-rail)`).
   - Pass a function as the child to keep the content and draw icons only.
