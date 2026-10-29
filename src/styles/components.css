@@ -64,6 +64,7 @@
   --button-bg-hover: var(--agd-color-surface-sunken);
   --button-fg: var(--agd-color-text-muted);
   --button-border: var(--agd-color-border);
+  border-style: dashed;
   cursor: not-allowed;
 }
 .agd-button[aria-busy="true"] { cursor: progress; }
