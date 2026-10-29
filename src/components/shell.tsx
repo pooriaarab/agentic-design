@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { MenuIcon } from "../icons.js";
 import { IconButton } from "./button.js";
 
@@ -34,6 +34,19 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
   // Tab order must follow what is drawn. Wide: sidebar on the left, then the top bar. Narrow: the
   // top bar, then the sidebar under it. So the two swap places in the page with the layout.
   const narrow = useSyncExternalStore(onNarrowChange, () => window.matchMedia(NARROW).matches, () => false);
+  // Moving a node in the page takes focus off it. Remember the focused element as the layout
+  // changes, and give focus back once the parts have moved.
+  const lastNarrow = useRef(narrow);
+  const focused = useRef<Element | null>(null);
+  if (narrow !== lastNarrow.current) {
+    focused.current = document.activeElement;
+    lastNarrow.current = narrow;
+  }
+  useLayoutEffect(() => {
+    const el = focused.current;
+    focused.current = null;
+    if (el instanceof HTMLElement && el.isConnected && el !== document.activeElement && el !== document.body) el.focus();
+  }, [narrow]);
 
   useEffect(() => {
     if (open && openedByPerson.current) sidebarRef.current?.querySelector<HTMLElement>("a")?.focus();

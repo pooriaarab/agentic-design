@@ -262,3 +262,16 @@ test("crossing the breakpoint keeps the top bar and its state, and does not remo
   await page.setViewportSize({ width: 1280, height: 800 });
   expect(await handle?.evaluate((el) => el.isConnected)).toBe(true);
 });
+
+test("keyboard focus stays on the top bar when the layout crosses the breakpoint, both ways", async ({ page }) => {
+  await page.goto("/patterns");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const theme = page.getByRole("combobox", { name: "Theme" });
+  await theme.focus();
+  await page.setViewportSize({ width: 390, height: 800 });
+  await expect(page.getByRole("button", { name: "Navigation" })).toBeVisible();
+  await expect(theme).toBeFocused();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(page.getByRole("button", { name: "Navigation" })).toBeHidden();
+  await expect(theme).toBeFocused();
+});
