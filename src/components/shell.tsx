@@ -94,7 +94,7 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
           setOpen((v) => !v);
         }}
       />
-      {title && <div className="ad-shell__title">{title}</div>}
+      {title !== undefined && title !== null && title !== false && <div className="ad-shell__title">{title}</div>}
       <div className="ad-shell__actions">{topbar}</div>
     </header>
   );

@@ -4,7 +4,7 @@ import { MoreIcon } from "../icons.js";
 import { IconButton, type IconButtonProps } from "./button.js";
 import { Menu, type MenuItem } from "./overlays.js";
 
-/** One tab stop. Arrow keys, Home, and End move inside it. */
+/** One tab stop. Arrow keys, Home, and End move inside it. It reads the page direction when it renders, so render it again after the page direction changes. */
 export function Toolbar({ label, children, dir }: { label: string; children: ReactNode; dir?: "ltr" | "rtl" }) {
   // Arrow keys follow the page direction. Pass `dir` to override what the page says.
   const direction = dir ?? (typeof document !== "undefined" && document.documentElement.dir === "rtl" ? "rtl" : "ltr");

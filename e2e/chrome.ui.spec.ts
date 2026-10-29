@@ -132,7 +132,7 @@ test("the badge says it in words and keeps the facts when only the avatar fits",
   await page.goto("/chrome");
   const badge = page.locator(".ad-agent-badge:not(.ad-agent-badge--compact)").first();
   await expect(badge).toContainText("Made by an agent");
-  await expect(badge).toContainText("Claude · for Ada Lovelace");
+  await expect(badge).toContainText("Claude, for Ada Lovelace");
   await expect(page.locator(".ad-agent-badge").nth(1)).toContainText("for unknown");
   const compact = page.locator(".ad-agent-badge--compact").getByRole("img");
   // The hostile name fails the allow-list, so the badge shows the generic name.
@@ -145,7 +145,16 @@ test("in forced colors the badge keeps its line and the title field keeps its fo
   await page.emulateMedia({ forcedColors: "active" });
   await page.goto("/chrome");
   const border = (selector: string) => page.locator(selector).first().evaluate((n) => getComputedStyle(n).borderTopColor);
-  expect(await border(".ad-agent-badge:not(.ad-agent-badge--compact)")).not.toBe("rgba(0, 0, 0, 0)");
+  const system = (color: string) => page.evaluate((c) => {
+    const probe = document.createElement("div");
+    probe.style.color = c;
+    document.body.append(probe);
+    const value = getComputedStyle(probe).color;
+    probe.remove();
+    return value;
+  }, color);
+  // The page border color is replaced by the system text color, so the badge keeps its line.
+  expect(await border(".ad-agent-badge:not(.ad-agent-badge--compact)")).toBe(await system("CanvasText"));
   await page.getByRole("button", { name: "Launch plan, rename" }).click();
   const outline = await page.getByRole("textbox", { name: "Document title" }).evaluate((n) => getComputedStyle(n).outlineStyle);
   expect(outline).not.toBe("none");
@@ -182,11 +191,15 @@ test("in a right-to-left page the panel moves to the start side", async ({ page 
 });
 
 test("in a right-to-left page the toolbar arrow keys follow the page direction", async ({ page }) => {
+  // The page is right-to-left from its first render, as a real RTL app is.
+  await page.addInitScript(() => {
+    const set = () => document.documentElement?.setAttribute("dir", "rtl");
+    set();
+    document.addEventListener("readystatechange", set);
+  });
   await page.goto("/chrome");
-  await page.evaluate(() => document.documentElement.setAttribute("dir", "rtl"));
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   const toolbar = page.getByRole("toolbar", { name: "Editor tools" });
-  // The toolbar reads the page direction when it renders, so press a toggle to render it again.
-  await toolbar.getByRole("button", { name: "Bold" }).click();
   await toolbar.getByRole("button", { name: "Bold" }).focus();
   await page.keyboard.press("ArrowLeft");
   await expect(toolbar.getByRole("button", { name: "Italic" })).toBeFocused();

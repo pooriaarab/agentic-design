@@ -33,13 +33,10 @@ test("a stored title that is long but safe is shown, and does not turn into Unti
   expect(html(createElement(DocumentTitle, { value: long, onRename: () => undefined }))).toContain(`${long}, rename`);
 });
 
-test("a badge label that does not say agent is refused", () => {
-  expect(() => html(createElement(AgentBadge, { label: "Draft" }))).toThrow('must say "agent"');
-});
-
-test("a badge label that has agent only inside another word is refused", () => {
-  for (const label of ["Approved by management", "Reagent list"]) expect(() => html(createElement(AgentBadge, { label }))).toThrow('must say "agent"');
-  expect(html(createElement(AgentBadge, { label: "Edited by agents" }))).toContain("Edited by agents");
+test("a badge label in another language is shown as given, and does not crash the page", () => {
+  const out = html(createElement(AgentBadge, { label: "Von einem Agenten erstellt", name: "Claude" }));
+  expect(out).toContain("Von einem Agenten erstellt");
+  expect(html(createElement(AgentBadge, { label: "\u0623\u0646\u0634\u0623\u0647 \u0648\u0643\u064A\u0644" }))).toContain("for unknown");
 });
 
 test("a panel that is false or null draws no panel, and no label is needed", () => {
