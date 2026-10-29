@@ -73,6 +73,15 @@ test("mcp --verbose --help prints usage, as the package CLI reads flags after mc
   expect(result.timedOut).toBe(false);
   expect(result.code).toBe(0);
   expect(result.stdout).toContain("Usage: agentic-design-mcp [mcp] [--help | --version]");
+  expect(result.stderr).toBe("");
+});
+
+test("mcp --version --help prints usage, because help is checked first, as in the CLI", async () => {
+  const result = await run(["mcp", "--version", "--help"]);
+  expect(result.timedOut).toBe(false);
+  expect(result.code).toBe(0);
+  expect(result.stdout).toContain("Usage: agentic-design-mcp [mcp] [--help | --version]");
+  expect(result.stderr).toBe("");
 });
 
 for (const flag of ["--version", "-V"]) {
