@@ -88,8 +88,9 @@ themes.dark.accent; // "#8EA4FF"
   square avatar, and who the agent acts for. A custom `label` should say that an agent made the item. A `Toolbar` takes `ToolbarGroup` for named
   groups of buttons and `ToolbarOverflow` for a "More tools" menu.
 - File lists for React: `FileList` with `items` shows a table with sortable column headers (name, owner,
-  modified), or a grid with a "Sort by" select. `loading` shows placeholders, and `empty` replaces the
-  default empty state. Pass `FileRow` children for a plain list.
+  modified). Pass `view="grid"` for a grid with a "Sort by" select. `loading` shows placeholders, and
+  `empty` replaces the default empty state. `locale` (default `en`) sets the date and sort language.
+  Pass `FileRow` children for a plain list.
 - `ShareDialog`: people and agents with roles, an invite field (an email invites a person, an
   `@handle` invites an agent, and anything else is refused), a link with role, expiry, and a
   sign-in rule, and a snapshot link that holds the page in the URL fragment. `PresenceCursor`

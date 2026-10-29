@@ -34,7 +34,8 @@ All notable changes to this package are in this file. The format follows
   item. `compact` keeps those facts in the avatar's accessible name.
 - `ToolbarGroup`, a named group of buttons, and `ToolbarOverflow`, a "More tools"
   menu as the last stop of a `Toolbar`. `ToolbarButton` forwards its ref.
-- `FileList` takes `items` and shows a sortable table or grid. The table has
+- `FileList` takes `items` and shows a sortable table. Pass `view="grid"` for the
+  grid. The table has
   column headers with `aria-sort`. The grid has a "Sort by" select. The list sorts
   by name, A to Z, unless you pass `defaultSort` to choose the start sort. Pass
   `sort` with `onSortChange` to control the sort yourself. `loading` shows placeholders, and `empty` replaces the default empty state.
