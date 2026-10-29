@@ -18,7 +18,7 @@ export type AppShellProps = {
   title?: ReactNode;
   /** Actions on the right of the top bar. Keep these few: they stay in view on a narrow screen. */
   topbar?: ReactNode;
-  /** Less used actions, for example a theme picker. Below 48rem they sit behind a "More" button, under the top bar. */
+  /** Less used actions, for example a theme picker. Below 48rem they sit behind a "More options" button, under the top bar. */
   secondary?: ReactNode;
   children: ReactNode;
 } & (
@@ -117,7 +117,7 @@ export function AppShell({ brand, sidebar, title, topbar, secondary, panel, pane
           <IconButton
             ref={moreRef}
             className="agd-shell__more"
-            label="More"
+            label="More options"
             icon={<MoreIcon />}
             aria-expanded={moreOpen}
             aria-controls={secondaryId}

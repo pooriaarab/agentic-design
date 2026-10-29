@@ -8,13 +8,13 @@ All notable changes to this package are in this file. The format follows
 
 ### Added
 
-- `AppShell` takes a `secondary` prop for less used actions. Below 48rem they fold behind a "More" button under the top bar. The button has `aria-expanded`, and Escape closes it and returns focus to it. On a wide screen they stay in the top bar.
+- `AppShell` takes a `secondary` prop for less used actions. Below 48rem they fold behind a "More options" button under the top bar. The button has `aria-expanded`, and Escape closes it and returns focus to it. On a wide screen they stay in the top bar.
 
 ### Fixed
 
-- The top bar no longer makes the page scroll sideways on a 360px to 390px screen. The product name and the title shorten with an ellipsis, and the actions wrap.
-- A remote cursor name tag grows toward the start on a narrow screen, so it stays inside the page.
-- An end-to-end test loads every demo page at 360px and 390px and checks that the page and the top bar are not wider than the screen.
+- The top bar no longer makes the page scroll sideways on a 360px to 390px screen. The product name and the title shorten with an ellipsis, and the actions wrap. A focus ring on the name is not clipped, and the title is not clipped at all, so a `DocumentTitle` keeps its focus ring and its error text.
+- A remote cursor name tag (`PresenceCursor`) moves back inside the screen when it would be cut off at either edge, so the name and the word Agent stay readable. Its text does not clip, and a chip note wraps and does not widen the page.
+- An end-to-end test loads every demo page at 320px, 360px, and 390px, in both text directions for the editor, and checks that the page and the top bar are not wider than the screen.
 
 ## 0.6.0 - 2026-10-29
 
