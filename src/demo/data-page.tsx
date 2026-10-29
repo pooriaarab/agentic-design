@@ -30,6 +30,7 @@ export function DataPage() {
         <h2 id="demo-data-h">Tasks</h2>
         <div className="demo-cluster">
           <Button onClick={() => setSize(10000)}>10,000 rows</Button>
+          <Button onClick={() => setSize(100)}>100 rows</Button>
           <Button onClick={() => setSize(0)}>Show empty</Button>
           <Button onClick={() => setState((s) => (s === "ready" ? "loading" : "ready"))}>{state === "ready" ? "Show loading" : "Show rows"}</Button>
         </div>

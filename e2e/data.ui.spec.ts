@@ -123,7 +123,9 @@ test("the bar does not cover the row that has focus", async ({ page }) => {
   await page.keyboard.press("Space");
   const row = await page.locator('[data-index="8"]').boundingBox();
   const bar = await page.getByRole("region", { name: "Bulk actions" }).boundingBox();
-  expect((row?.y ?? 0) + (row?.height ?? 0)).toBeLessThanOrEqual(bar?.y ?? 0);
+  expect(row).not.toBeNull();
+  expect(bar).not.toBeNull();
+  expect(row!.y + row!.height).toBeLessThanOrEqual(bar!.y);
 });
 
 test("on a narrow screen the headers line up with the cells", async ({ page }) => {
@@ -132,5 +134,50 @@ test("on a narrow screen the headers line up with the cells", async ({ page }) =
   const grid = page.getByRole("grid", { name: "Tasks" });
   const header = await grid.getByRole("columnheader", { name: "Owner" }).boundingBox();
   const cell = await grid.getByRole("row", { name: /Task 1\b/ }).getByRole("gridcell").last().boundingBox();
-  expect(Math.abs((header?.x ?? 0) - (cell?.x ?? 99))).toBeLessThan(1);
+  expect(header).not.toBeNull();
+  expect(cell).not.toBeNull();
+  expect(Math.abs(header!.x - cell!.x)).toBeLessThan(1);
+});
+
+test("at 320px the bulk bar and its last button fit inside the table", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/data");
+  await page.getByRole("checkbox", { name: "Select Task 1", exact: true }).click();
+  const bar = await page.getByRole("region", { name: "Bulk actions" }).boundingBox();
+  const clear = await page.getByRole("button", { name: "Clear selection" }).boundingBox();
+  const frame = await page.getByRole("grid", { name: "Tasks" }).boundingBox();
+  expect(bar && clear && frame).toBeTruthy();
+  expect(clear!.x + clear!.width).toBeLessThanOrEqual(bar!.x + bar!.width);
+  expect(bar!.x + bar!.width).toBeLessThanOrEqual(frame!.x + frame!.width);
+});
+
+test("select-all after a wheel scroll does not move the grid", async ({ page }) => {
+  await page.goto("/data");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await grid.evaluate((el) => { el.scrollTop = 200000; });
+  await expect(page.getByRole("row", { name: /Task 5001\b/ })).toBeVisible();
+  await page.getByRole("checkbox", { name: "Select all 10000 rows" }).click();
+  await expect(page.getByRole("region", { name: "Bulk actions" })).toBeVisible();
+  expect(await grid.evaluate((el) => el.scrollTop)).toBe(200000);
+});
+
+test("a range from a row that is gone becomes a plain pick", async ({ page }) => {
+  await page.goto("/data");
+  await page.locator('[data-index="0"]').focus();
+  await page.keyboard.press("End");
+  await page.keyboard.press("Space");
+  await page.getByRole("button", { name: "100 rows" }).click();
+  await page.getByRole("grid", { name: "Tasks" }).evaluate((el) => { el.scrollTop = 0; });
+  await page.getByRole("checkbox", { name: "Select Task 5", exact: true }).click({ modifiers: ["Shift"] });
+  await expect(page.getByRole("region", { name: "Bulk actions" })).toContainText("1 selected");
+});
+
+test("clearing the selection scrolls focus back into view", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("checkbox", { name: "Select Task 1", exact: true }).click();
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await grid.evaluate((el) => { el.scrollTop = 100000; });
+  await page.getByRole("button", { name: "Clear selection" }).click();
+  await expect(page.locator('[data-index="0"]')).toBeFocused();
+  expect(await grid.evaluate((el) => el.scrollTop)).toBe(0);
 });

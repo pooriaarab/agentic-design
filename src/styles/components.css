@@ -712,11 +712,12 @@
 .agd-datatable__inner { min-width: var(--agd-dt-min); }
 .agd-datatable__head { position: sticky; top: 0; z-index: 1; background: var(--agd-color-surface-sunken); }
 .agd-datatable__head .agd-datatable__row { border-bottom: 1px solid var(--agd-color-border); }
+/* The head row is one row high, and the scroll code relies on that. */
 .agd-datatable__row { box-sizing: border-box; display: grid; grid-template-columns: var(--agd-dt-cols); align-items: center; height: var(--agd-dt-row); }
 .agd-datatable__body { position: relative; }
 .agd-datatable__row--body { position: absolute; inset-inline: 0; border-bottom: 1px solid var(--agd-color-border); }
 .agd-datatable__row--body:hover { background: var(--agd-color-surface-sunken); }
-.agd-datatable__row--body.is-selected { background: var(--agd-color-accent-subtle); }
+.agd-datatable__row--body.agd-datatable__row--selected { background: var(--agd-color-accent-subtle); }
 .agd-datatable__row--body:focus-visible { outline: 2px solid var(--agd-color-focus); outline-offset: -2px; }
 .agd-datatable__cell { min-width: 0; padding: 0 var(--agd-space-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--agd-font-size-sm); }
 .agd-datatable__head .agd-datatable__cell { color: var(--agd-color-text-muted); font-size: var(--agd-font-size-xs); font-weight: var(--agd-font-weight-semibold); }
@@ -725,12 +726,12 @@
 .agd-datatable__state { position: absolute; inset: var(--agd-dt-row) 0 0; display: grid; place-items: center; }
 .agd-datatable__bar {
   position: absolute; inset-inline: var(--agd-space-3); inset-block-end: var(--agd-space-3);
-  display: flex; align-items: center; gap: var(--agd-space-3); padding: var(--agd-space-2) var(--agd-space-3);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--agd-space-3); padding: var(--agd-space-2) var(--agd-space-3);
   border: 1px solid var(--agd-color-border); border-radius: var(--agd-radius-md); background: var(--agd-color-surface-raised);
   box-shadow: var(--agd-shadow-floating);
 }
 .agd-datatable__bar-count { font-size: var(--agd-font-size-sm); font-weight: var(--agd-font-weight-medium); }
 .agd-datatable__bar-actions { display: flex; flex: 1; flex-wrap: wrap; gap: var(--agd-space-2); }
 @media (forced-colors: active) {
-  .agd-datatable__row--body.is-selected { border-inline-start: 0.25rem solid Highlight; }
+  .agd-datatable__row--body.agd-datatable__row--selected { border-inline-start: 0.25rem solid Highlight; }
 }

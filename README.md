@@ -102,7 +102,8 @@ themes.dark.accent; // "#8EA4FF"
   bar at the bottom with your `bulkActions` and "Clear selection". `loading` shows placeholders and says so to a
   screen reader. `empty` replaces the default empty state. The grid has one tab stop. Arrow keys, Home, End,
   and Page Up and Down move between rows. Space selects a row (with Shift, a range), Enter calls `onRowActivate`,
-  and Escape clears the selection.
+  and Escape clears the selection. Keep focusable controls out of cells, because each one adds a tab stop.
+  A selection keeps the ids of rows that leave the list, and they count again when the rows return.
 
 ```tsx
 <DataTable

@@ -10,7 +10,7 @@ export interface DataTableColumn<T> {
   /** The column name. Always text, so a screen reader can read it. */
   header: string;
   cell: (row: T) => ReactNode;
-  /** A CSS length, for example `12rem`. The default shares the rest of the width, and is never under 8rem. */
+  /** A fixed CSS length such as `12rem` or `120px`. Not `fr` or `minmax`. The default shares the rest of the width, and is never under 8rem. */
   width?: string;
 }
 
@@ -39,13 +39,12 @@ export interface DataTableProps<T> {
   bulkActions?: (selected: ReadonlySet<string>) => ReactNode;
   /** Called on Enter or double click on a row. */
   onRowActivate?: (row: T) => void;
-  /** Shown above the grid, for example a `DataTableToolbar`. */
+  /** Shown above the grid. */
   toolbar?: ReactNode;
 }
 
 const CHECK_WIDTH = "2.75rem";
 const FLEX_MIN = "8rem";
-const BAR_GAP = 12;
 const PLACEHOLDERS = 8;
 const noRows: readonly never[] = [];
 
@@ -53,6 +52,7 @@ const noRows: readonly never[] = [];
  * A table for many rows. Only the rows in view are in the page, so 10,000 rows scroll smoothly.
  * It is a grid. The rows are one tab stop, and arrow keys, Home, End, and Page Up and Down move between them.
  * Space selects a row, Shift with a click or Space selects a range, Enter opens a row, and Escape clears the selection.
+ * Keep focusable controls out of cells: each one adds a tab stop. A selection keeps the ids of rows that are out of the list, and they count again when the rows return.
  */
 export function DataTable<T>({
   label, rows, columns, getRowId, rowLabel, rowHeight = 40, height = "28rem", loading = false, empty,
@@ -96,16 +96,17 @@ export function DataTable<T>({
   const [activeRaw, setActive] = useState(0);
   const active = Math.min(activeRaw, Math.max(0, count - 1));
   const wantFocus = useRef(false);
-  const anchor = useRef(0);
+  const anchor = useRef<string | null>(null);
   const barVisible = selectable && selected.size > 0 && !loading;
   const [barSize, setBarSize] = useState(0);
-  const barHeight = barVisible ? barSize + BAR_GAP : 0;
+  const barHeight = barVisible ? barSize : 0;
   const bar = useRef<HTMLDivElement>(null);
   // The bar grows when its buttons wrap, so watch its size.
   useLayoutEffect(() => {
     const el = bar.current;
     if (!el) return;
-    const measure = () => setBarSize(el.offsetHeight);
+    // From the top of the bar to the bottom of the frame: the bar and the gap under it.
+    const measure = () => setBarSize((el.offsetParent?.clientHeight ?? el.offsetHeight) - el.offsetTop);
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
@@ -132,12 +133,18 @@ export function DataTable<T>({
   const barWas = useRef(false);
   useLayoutEffect(() => {
     const el = scroller.current;
-    if (barVisible && el) {
-      const next = scrollToRow(active, el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
+    // Move only when focus is on a row. A click on select-all must not pull the grid back to the top.
+    const focusedRow = document.activeElement?.closest<HTMLElement>("[data-index]");
+    if (barVisible && el && focusedRow && el.contains(focusedRow)) {
+      const next = scrollToRow(Number(focusedRow.dataset.index), el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
       if (next !== el.scrollTop) el.scrollTop = next;
     }
     if (barWas.current && !barVisible && count > 0 && (!document.activeElement || document.activeElement === document.body)) {
-      el?.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
+      if (el) {
+        const next = scrollToRow(active, el.scrollTop, el.clientHeight, rowHeight, rowHeight, 0);
+        if (next !== el.scrollTop) el.scrollTop = next;
+        el.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
+      }
     }
     barWas.current = barVisible;
   }, [barVisible, barHeight]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -148,15 +155,17 @@ export function DataTable<T>({
 
   const toggle = (index: number, withRange: boolean) => {
     const next = new Set(selected);
-    if (withRange) {
-      const [from, to] = [Math.min(anchor.current, index), Math.max(anchor.current, index)];
+    // The anchor is an id, so a change of rows cannot point it at another row. A lost anchor makes a plain toggle.
+    const from = withRange && anchor.current !== null ? ids.indexOf(anchor.current) : -1;
+    if (from >= 0) {
+      const [lo, hi] = [Math.min(from, index), Math.max(from, index)];
       const on = !selected.has(ids[index] as string);
-      for (let i = from; i <= to; i++) on ? next.add(ids[i] as string) : next.delete(ids[i] as string);
+      for (let i = lo; i <= hi; i++) on ? next.add(ids[i] as string) : next.delete(ids[i] as string);
     } else {
       const id = ids[index] as string;
       next.has(id) ? next.delete(id) : next.add(id);
-      anchor.current = index;
     }
+    anchor.current = ids[index] as string;
     setSelected(next);
   };
 
@@ -200,7 +209,7 @@ export function DataTable<T>({
 
   const tracks = [selectable ? CHECK_WIDTH : null, ...columns.map((c) => c.width ?? `minmax(${FLEX_MIN}, 1fr)`)].filter(Boolean).join(" ");
   // The head and every row share one width. It is the sum of the minimums, so a narrow screen scrolls sideways.
-  const minWidth = `calc(${[selectable ? CHECK_WIDTH : null, ...columns.map((c) => c.width ?? FLEX_MIN)].filter(Boolean).join(" + ")})`;
+  const minWidth = `calc(${[selectable ? CHECK_WIDTH : null, ...columns.map((c) => (c.width && !/fr|minmax/.test(c.width) ? c.width : FLEX_MIN))].filter(Boolean).join(" + ")})`;
   const style = { "--agd-dt-cols": tracks, "--agd-dt-min": minWidth, "--agd-dt-row": `${rowHeight}px`, "--agd-dt-height": typeof height === "number" ? `${height}px` : height } as CSSProperties;
   const nameOf = (row: T) => rowLabel?.(row) ?? getRowId(row);
   const status = loading ? "Loading rows" : selectable && selected.size > 0 ? `${selected.size} of ${count} selected` : "";
@@ -259,7 +268,7 @@ export function DataTable<T>({
                       key={id}
                       role="row"
                       data-index={i}
-                      className={cx("agd-datatable__row", "agd-datatable__row--body", isSelected && "is-selected")}
+                      className={cx("agd-datatable__row", "agd-datatable__row--body", isSelected && "agd-datatable__row--selected")}
                       style={{ top: i * rowHeight }}
                       aria-rowindex={i + 2}
                       aria-selected={selectable ? isSelected : undefined}
