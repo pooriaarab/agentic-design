@@ -87,6 +87,10 @@ themes.dark.accent; // "#8EA4FF"
   cancels. `AgentBadge` marks anything an agent made, with the words "Made by an agent" by default, a
   square avatar, and who the agent acts for. A custom `label` should say that an agent made the item. A `Toolbar` takes `ToolbarGroup` for named
   groups of buttons and `ToolbarOverflow` for a "More tools" menu.
+- Landmarks and links: `AppShell` puts `brand` first in the top bar, inside the banner landmark.
+  `SidebarNav` renders plain anchors. To use a router link, pass `linkComponent`, or pass
+  `renderLink={(props, item) => <Link to={props.href} className={props.className} aria-current={props["aria-current"]}>{props.children}</Link>}`.
+  `renderLink` wins over `linkComponent`. Keep `className` and `aria-current` on the element you render.
 - File lists for React: `FileList` with `items` shows a table with sortable column headers (name, owner,
   modified). Pass `view="grid"` for a grid with a "Sort by" select. `loading` shows placeholders, and
   `empty` replaces the default empty state. `locale` (default `en`) sets the date and sort language.

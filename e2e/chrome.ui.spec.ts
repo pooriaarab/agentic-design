@@ -204,3 +204,28 @@ test("in a right-to-left page the toolbar arrow keys follow the page direction",
   await page.keyboard.press("ArrowLeft");
   await expect(toolbar.getByRole("button", { name: "Italic" })).toBeFocused();
 });
+
+test("the brand sits in the banner landmark, and every landmark holds all content", async ({ page }) => {
+  await page.goto("/chrome");
+  const banner = page.getByRole("banner");
+  await expect(banner).toHaveCount(1);
+  await expect(banner.getByText("agentic-design", { exact: true })).toBeVisible();
+  // Everything outside the skip link must sit in a landmark. Axe reports this as `region`.
+  const result = await new AxeBuilder({ page }).withRules(["region", "landmark-one-main", "landmark-no-duplicate-banner", "landmark-banner-is-top-level"]).analyze();
+  expect(result.violations.map((v) => v.id)).toEqual([]);
+});
+
+test("SidebarNav keeps plain anchors by default and accepts a host link component or a render prop", async ({ page }) => {
+  await page.goto("/chrome");
+  const plain = page.getByRole("navigation", { name: "Demo pages" }).getByRole("link", { name: "Tokens" });
+  await expect(plain).toHaveCount(1);
+  await expect(plain).not.toHaveAttribute("data-host-link", /.*/);
+  const component = page.getByRole("navigation", { name: "Host component links" }).getByRole("link", { name: "Component link" });
+  await expect(component).toHaveAttribute("data-host-link", "component");
+  await expect(component).toHaveAttribute("aria-current", "page");
+  await expect(component).toHaveClass(/ad-sidebar-nav__link/);
+  const render = page.getByRole("navigation", { name: "Render prop links" }).getByRole("link", { name: "Render prop link" });
+  await expect(render).toHaveAttribute("data-host-link", "render");
+  await expect(render).toHaveClass(/ad-sidebar-nav__link/);
+  expect(await violations(page, "#demo-links")).toEqual([]);
+});
