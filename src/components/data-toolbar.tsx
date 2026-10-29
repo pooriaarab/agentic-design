@@ -110,9 +110,14 @@ export function FilterChips({ chips, onRemove, addItems, addLabel = "Add filter"
           ))}
         </ul>
       )}
-      {addItems && (addItems.length > 0
-        ? <Menu align="start" trigger={<Button size="sm" variant="ghost" className="agd-filterchips__add"><PlusIcon />{addLabel}</Button>} items={addItems} />
-        : <Button size="sm" variant="ghost" className="agd-filterchips__add" aria-disabled="true"><PlusIcon />{addLabel}</Button>)}
+      {/* One trigger stays in the page, so focus has a place to return when the last value is used. */}
+      {addItems && (
+        <Menu
+          align="start"
+          trigger={<Button size="sm" variant="ghost" className="agd-filterchips__add"><PlusIcon />{addLabel}</Button>}
+          items={addItems.length > 0 ? addItems : [{ label: "No more filters", onSelect: () => undefined, disabled: true }]}
+        />
+      )}
     </div>
   );
 }

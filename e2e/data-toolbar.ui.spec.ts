@@ -231,3 +231,34 @@ test("clearing a selection does not say an old row count again", async ({ page }
   await page.keyboard.press("Escape");
   await expect(page.getByRole("status").filter({ hasText: "10000 rows" })).toHaveCount(0);
 });
+
+test("using the last filter value keeps focus on the add button", async ({ page }) => {
+  await page.goto("/data");
+  const add = page.getByRole("button", { name: "Add filter" });
+  for (let i = 0; i < 5; i++) {
+    await add.focus();
+    await page.keyboard.press("Enter");
+    await page.getByRole("menuitem").first().focus();
+    await page.keyboard.press("Enter");
+  }
+  await expect(page.getByRole("list", { name: "Active filters" }).getByRole("listitem")).toHaveCount(5);
+  await expect(add).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("menuitem", { name: "No more filters" })).toHaveAttribute("aria-disabled", "true");
+});
+
+test("Direction flips the groups when order and group use the same field", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Display" }).click();
+  await page.getByLabel("Group by").selectOption("status");
+  await page.getByLabel("Order by").selectOption("status");
+  await page.getByLabel("Direction").selectOption("descending");
+  await expect(page.getByRole("gridcell", { name: "Open 6666 rows" })).toBeVisible();
+});
+
+test("the popover takes focus when it opens", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Display" }).click();
+  await expect(page.getByRole("dialog", { name: "Display options" })).toBeVisible();
+  expect(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'))).toBe(true);
+});

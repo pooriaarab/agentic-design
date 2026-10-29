@@ -43,7 +43,7 @@ export const fieldText = <T,>(field: DataField<T>, row: T): string => text(field
 /**
  * Search, filter, order, and group rows. It returns a new array, in group order when `groupBy` is set,
  * so it can go straight into a `DataTable` with a `groupBy` that reads the same field. Groups run in text
- * order. `direction` flips the groups when there is no `orderBy`, and the rows inside them when there is.
+ * order. `direction` flips the groups when there is no `orderBy` or it is the same field, and the rows inside them otherwise.
  * A field id that is not in `fields` is ignored.
  */
 export function applyDataView<T>(rows: readonly T[], view: DataView, fields: readonly DataField<T>[], locale = "en"): T[] {
@@ -75,7 +75,7 @@ export function applyDataView<T>(rows: readonly T[], view: DataView, fields: rea
     return sign * collator.compare(text(x), text(y));
   };
   // Groups are told apart by exact text. The collator ignores case and accents, and equal groups must never split.
-  const groupSign = order ? 1 : sign;
+  const groupSign = order && order !== group ? 1 : sign;
   const compareGroup = (a: T, b: T): number => {
     if (!group) return 0;
     const [x, y] = [fieldText(group, a), fieldText(group, b)];

@@ -115,3 +115,8 @@ test("the group of missing values runs last in both directions", () => {
     expect(applyDataView(owners, { ...emptyDataView, groupBy: "status", direction }, fields).at(-1)?.name).toBe("a");
   }
 });
+
+test("direction flips the groups when the order field is the group field", () => {
+  const out = applyDataView(rows, { ...emptyDataView, groupBy: "status", orderBy: "status", direction: "descending" }, fields).map((r) => r.status);
+  expect(out).toEqual(["Open", "Open", "Done", "Done"]);
+});
