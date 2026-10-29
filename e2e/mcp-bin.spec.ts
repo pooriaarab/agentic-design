@@ -69,19 +69,23 @@ for (const flag of ["--help", "-h"]) {
 }
 
 test("mcp --verbose --help prints usage, as the package CLI reads flags after mcp", async () => {
+  const started = Date.now();
   const result = await run(["mcp", "--verbose", "--help"]);
   expect(result.timedOut).toBe(false);
   expect(result.code).toBe(0);
   expect(result.stdout).toContain("Usage: agentic-design-mcp [mcp] [--help | --version]");
   expect(result.stderr).toBe("");
+  expect(Date.now() - started).toBeLessThan(5000);
 });
 
 test("mcp --version --help prints usage, because help is checked first, as in the CLI", async () => {
+  const started = Date.now();
   const result = await run(["mcp", "--version", "--help"]);
   expect(result.timedOut).toBe(false);
   expect(result.code).toBe(0);
   expect(result.stdout).toContain("Usage: agentic-design-mcp [mcp] [--help | --version]");
   expect(result.stderr).toBe("");
+  expect(Date.now() - started).toBeLessThan(5000);
 });
 
 test("--version --help without the mcp word prints the version, as before", async () => {
@@ -89,6 +93,7 @@ test("--version --help without the mcp word prints the version, as before", asyn
   expect(result.timedOut).toBe(false);
   expect(result.code).toBe(0);
   expect(result.stdout).toBe(`${version}\n`);
+  expect(result.stderr).toBe("");
 });
 
 for (const flag of ["--version", "-V"]) {
@@ -104,7 +109,7 @@ for (const flag of ["--version", "-V"]) {
 }
 
 // The form an MCP client uses: no argument, or the `mcp` word alone. Both start the server.
-for (const args of [[], ["mcp"]]) {
+for (const args of [[], ["mcp"], ["mcp", "--verbose"]]) {
   test(`${JSON.stringify(args)} starts the MCP server on stdio`, async () => {
     const client = new Client({ name: "e2e", version: "0.0.0" });
     await client.connect(new StdioClientTransport({ command: process.execPath, args: [BIN, ...args] }));
