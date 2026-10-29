@@ -19,3 +19,5 @@ export type { PresenceEntry, PresenceKind, PresenceStatus } from "./presence.js"
 export { usableName, usableText, usableProse, MAX_NAME_LENGTH } from "./safe-name.js";
 export { ShareDialog } from "./share-dialog.js";
 export type { LinkExpiry, ShareDialogProps, ShareEntry, ShareLink, ShareRole } from "./share-dialog.js";
+export { DataTable } from "./data-table.js";
+export type { DataTableColumn, DataTableProps } from "./data-table.js";

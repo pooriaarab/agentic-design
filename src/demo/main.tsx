@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { ToastProvider, TooltipProvider } from "../react.js";
 import { ThemeProvider } from "../theme.js";
 import { ChromePage } from "./chrome-page.js";
+import { DataPage } from "./data-page.js";
 import { EditorPage } from "./editor-page.js";
 import { PatternsPage } from "./patterns-page.js";
 import { PrimitivesPage } from "./primitives-page.js";
@@ -14,6 +15,7 @@ const pages: Record<string, () => ReactElement> = {
   "/patterns": PatternsPage,
   "/editor": EditorPage,
   "/chrome": ChromePage,
+  "/data": DataPage,
 };
 // The Worker serves a page only for these paths. Any other path never reaches this script.
 const Page = pages[window.location.pathname.replace(/\/$/, "") || "/"];

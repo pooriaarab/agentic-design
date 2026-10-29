@@ -8,6 +8,7 @@ const pages = [
   ["/patterns", "Patterns"],
   ["/editor", "Editor"],
   ["/chrome", "App chrome"],
+  ["/data", "Data table"],
 ] as const;
 
 export function DemoShell({ title, description, actions, panel, children }: { title: string; description: string; actions?: ReactNode; panel?: ReactNode; children: ReactNode }) {
