@@ -4,6 +4,26 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.3.3 - 2026-10-29
+
+### Security
+
+- The `zod` dependency is `^4.6.7`. zod 3.25.76 was below the fixed version for
+  GHSA-mrhx-c7xc-m3w5, which allows memory exhaustion when validating oversized
+  constrained collections. The package API is unchanged.
+
+### Fixed
+
+- `agentic-design mcp --help` and `-h` print the usage and exit 0. `mcp --version`
+  and `-V` print the version. Before, these flags exited 2 with an error.
+
+### Changed
+
+- The field components have a spec for the controlled value. It checks a user change
+  and a parent change, both ways, for each field.
+- The publish workflow runs one publish at a time for each ref, so two runs cannot
+  publish at once.
+
 ## 0.3.2 - 2026-10-29
 
 ### Changed
