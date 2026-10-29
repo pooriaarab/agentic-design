@@ -100,7 +100,7 @@ test("tabs have one tab stop, move with the arrow keys, and label their panel", 
   await expect(overview).toHaveAttribute("tabindex", "0");
   await expect(history).toHaveAttribute("tabindex", "-1");
   await page.keyboard.press("Shift+Tab");
-  expect(await page.evaluate(() => document.activeElement?.getAttribute("role"))).not.toBe("tablist");
+  await expect(overview).toBeFocused();
   await overview.focus();
   await page.keyboard.press("ArrowRight");
   await expect(history).toBeFocused();

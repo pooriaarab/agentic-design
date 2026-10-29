@@ -122,9 +122,11 @@ export interface TabItem {
 export function Tabs({ label, tabs, value, defaultValue, onValueChange }: { label: string; tabs: TabItem[]; defaultValue?: string; value?: string; onValueChange?: (value: string) => void }) {
   if (label.trim() === "") throw new Error("Tabs need a non-empty label.");
   // Roving tabindex: only the active tab is a tab stop, and the list is none. Radix makes the list
-  // the stop and hands focus on, so the list showed a focus ring and did nothing.
+  // the stop and hands focus on, so the list was an extra stop. If the value names no tab, the
+  // first tab is the stop, so the tabs stay reachable.
   const [inner, setInner] = useState(defaultValue ?? tabs[0]?.value);
   const active = value ?? inner;
+  const stop = tabs.some((tab) => tab.value === active) ? active : tabs[0]?.value;
   return (
     <RadixTabs.Root
       className="agd-tabs"
@@ -136,7 +138,7 @@ export function Tabs({ label, tabs, value, defaultValue, onValueChange }: { labe
     >
       <RadixTabs.List className="agd-tabs__list" aria-label={label} tabIndex={-1}>
         {tabs.map((tab) => (
-          <RadixTabs.Trigger key={tab.value} value={tab.value} className="agd-tabs__trigger" tabIndex={tab.value === active ? 0 : -1}>
+          <RadixTabs.Trigger key={tab.value} value={tab.value} className="agd-tabs__trigger" tabIndex={tab.value === stop ? 0 : -1}>
             {tab.label}
           </RadixTabs.Trigger>
         ))}
