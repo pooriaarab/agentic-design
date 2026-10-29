@@ -58,8 +58,9 @@ function Messages({ hintId, errorId, hint, error }: { hintId?: string; errorId?:
   );
 }
 
-function Shell({ id, label, required, children, ...messages }: FieldProps & {
+function Shell({ id, label, hideLabel, required, children, ...messages }: FieldProps & {
   id: string;
+  hideLabel?: boolean;
   required?: boolean;
   hintId?: string;
   errorId?: string;
@@ -67,7 +68,7 @@ function Shell({ id, label, required, children, ...messages }: FieldProps & {
 }) {
   return (
     <div className="ad-field">
-      <label className="ad-field__label" htmlFor={id}>
+      <label className={cx("ad-field__label", hideLabel && "ad-sr-only")} htmlFor={id}>
         {label}
         {required && <span aria-hidden="true"> *</span>}
       </label>
@@ -105,16 +106,24 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   );
 });
 
-export type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & FieldProps;
+export type SelectProps = SelectHTMLAttributes<HTMLSelectElement> &
+  FieldProps & {
+    /**
+     * Hide the label from sight. It stays in the accessible name. Only a select has this, for a
+     * place where nearby text already names it, such as a role in a list row or a theme in a top bar.
+     * Repeat the label in the option text or on a nearby element. Every other field shows its label.
+     */
+    hideLabel?: boolean;
+  };
 
 /** A native select. It works with every screen reader and every keyboard. */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { label, hint, error, className, id: idProp, children, ...rest },
+  { label, hideLabel, hint, error, className, id: idProp, children, ...rest },
   ref,
 ) {
   const field = useField(idProp, { label, hint, error });
   return (
-    <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
+    <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
       <span className="ad-select">
         <select ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]}>
           {children}

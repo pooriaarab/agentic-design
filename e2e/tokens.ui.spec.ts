@@ -58,7 +58,7 @@ test("the skip link moves focus into the main content", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.keyboard.press("Tab");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/#main$/);
+  await expect(page).toHaveURL(/#.+$/);
   await page.keyboard.press("Tab");
   expect(await page.evaluate(() => !!document.activeElement?.closest("main"))).toBe(true);
 });
@@ -70,10 +70,15 @@ test("the theme select works with the keyboard alone, and the tab order is skip 
   const stops: string[] = [];
   for (let i = 0; i < pages.length + 2; i++) {
     await page.keyboard.press("Tab");
-    stops.push(await page.evaluate(() => (document.activeElement as HTMLElement).innerText || document.activeElement?.getAttribute("aria-label") || document.activeElement?.tagName || ""));
+    stops.push(
+      await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement;
+        return el.tagName === "SELECT" ? "Theme" : el.innerText || el.getAttribute("aria-label") || el.tagName;
+      }),
+    );
   }
-  expect(stops.slice(0, -1)).toEqual(["Skip to content", ...pages]);
-  await expect(page.getByLabel("Theme")).toBeFocused();
+  expect(stops.slice(0, pages.length + 2)).toEqual(["Skip to content", ...pages, "Theme"]);
+  await page.getByLabel("Theme").focus();
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowDown");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");

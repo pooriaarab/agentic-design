@@ -7,7 +7,7 @@
 Accessible design tokens and UI primitives for calm, minimal apps.
 
 > Status: early. The design tokens, the contrast check, and the fonts work.
-> The form controls and the overlays work. The app patterns and the editor demo are not built yet.
+> The form controls, the overlays, and most app patterns work. The share dialog and the editor demo are not built yet.
 > The package is not on npm yet.
 
 ## Install
@@ -69,6 +69,15 @@ themes.dark.accent; // "#8EA4FF"
 - Overlays for React, on Radix UI (MIT): `Dialog`, `Menu`, `Tooltip`, `Tabs`, and
   a toast (`ToastProvider`, `useToast`). Dialogs trap focus and give it back. An
   icon button shows its label as a tooltip. An error toast stays until dismissed.
+- App patterns for React: `AppShell` (sidebar, top bar, skip link, a menu button on narrow screens),
+  `SidebarNav`, a roving-focus `Toolbar`, `EmptyState`, `FileList` and `FileRow`, and
+  `PresenceChip` and `PresenceStack`. A chip shows an agent by the word Agent in a pill, a
+  square avatar with a robot, and who it acts for, never by color alone. The stack is a row of
+  avatars: the shape shows an agent, and the name of each avatar and the count in words say
+  who is an agent and who it acts for. A name can still resemble another where a script
+  needs a joiner, so show an account handle where two people must be told apart. Display names pass a
+  closed allow-list (`usableName`): a name with a hidden text-direction character or a
+  zero-width space shows as unnamed.
 - `ThemeProvider` and `useTheme` for React, from `agentic-design/react`. They set `data-theme`, keep the pick on the device, and sync it across tabs. `themeInitScript()` returns a script for the page head, so a saved dark pick never flashes light. React is an optional peer: the root entry and the CLI do not need it.
 - A token page at `/` from the Worker. Run `npm run build` first, then `npx wrangler dev`.
 - A CLI and an MCP server so an agent can read the tokens:
@@ -78,7 +87,7 @@ themes.dark.accent; // "#8EA4FF"
 
 ## Limits
 
-- The app patterns (shell, share dialog, presence) are not built yet.
+- The share dialog and the editor demo are not built yet.
 - Fonts cover Latin and Latin Extended only, and only upright faces ship. Italic text is
   synthesized by the browser.
 - `Checkbox` and `Switch` have no error state yet, so a required checkbox cannot show an

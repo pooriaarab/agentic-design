@@ -30,7 +30,7 @@ writeFileSync(site("styles.css"), styles);
 for (const name of readdirSync(src("fonts/"))) copyFileSync(src(`fonts/${name}`), site(`fonts/${name}`));
 // Each page is the same shell with the saved theme applied before first paint. main.js picks the page from the path.
 const html = readFileSync(src("demo/index.html"), "utf8").replace("<!--theme-init-->", `<script>${themeInitScript()}</script>`);
-for (const name of ["index", "primitives"]) writeFileSync(site(`${name}.html`), html);
+for (const name of ["index", "primitives", "patterns"]) writeFileSync(site(`${name}.html`), html);
 copyFileSync(src("demo/demo.css"), site("demo.css"));
 await build({
   entryPoints: [fileURLToPath(src("demo/main.tsx"))],
