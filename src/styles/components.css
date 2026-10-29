@@ -199,12 +199,13 @@
   border-radius: var(--ad-radius-full);
   background: var(--ad-color-text-muted);
   transform: translateY(-50%);
-  transition: transform var(--ad-duration-base) var(--ad-easing-out);
+  transition: inset-inline-start var(--ad-duration-base) var(--ad-easing-out);
 }
 .ad-switch:checked { background: var(--ad-color-accent); border-color: var(--ad-color-accent); }
+/* The thumb moves by a logical inset, so it follows the page direction. */
 .ad-switch:checked::before {
   background: var(--ad-color-text-on-accent);
-  transform: translate(0.875rem, -50%);
+  inset-inline-start: calc(100% - 0.875rem - 0.2rem);
 }
 .ad-checkbox:disabled,
 .ad-switch:disabled { background: var(--ad-color-surface-sunken); border-color: var(--ad-color-border); cursor: not-allowed; }
@@ -297,7 +298,6 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  outline: none;
 }
 .ad-toast {
   display: grid;

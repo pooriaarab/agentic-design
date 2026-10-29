@@ -101,7 +101,7 @@ test("a caller's aria-invalid is kept when the field has no error of its own", a
   await expect(page.getByLabel("Email")).not.toHaveAttribute("aria-invalid", /.*/);
 });
 
-test("checked and busy states stay visible in forced colors", async ({ page }) => {
+test("checked, selected, and busy states stay visible in forced colors", async ({ page }) => {
   await page.emulateMedia({ forcedColors: "active" });
   await page.goto("/primitives");
   const fill = (loc: Locator) => loc.evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -113,6 +113,10 @@ test("checked and busy states stay visible in forced colors", async ({ page }) =
   const offFill = await fill(sw);
   await sw.check();
   await expect.poll(() => fill(sw)).not.toBe(offFill);
+  // A loading button gets a dashed line, so it differs from an idle one without color.
+  const saving = page.getByRole("button", { name: "Saving" });
+  expect(await saving.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("dashed");
+  expect(await page.getByRole("button", { name: "Count a click" }).evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("solid");
 });
 
 test("targets are at least 24 by 24 CSS pixels", async ({ page }) => {
@@ -125,3 +129,19 @@ test("targets are at least 24 by 24 CSS pixels", async ({ page }) => {
   }
   expect(small).toEqual([]);
 });
+
+for (const dir of ["ltr", "rtl"] as const) {
+  test(`the switch thumb moves to the end side and stays inside the track in ${dir}`, async ({ page }) => {
+    await page.goto("/primitives");
+    await page.evaluate((d) => (document.documentElement.dir = d), dir);
+    const sw = page.getByRole("switch", { name: "Allow agents to suggest edits" });
+    const left = () => sw.evaluate((el) => parseFloat(getComputedStyle(el, "::before").left));
+    const trackWidth = (await sw.boundingBox())?.width ?? 0;
+    await sw.uncheck();
+    await expect.poll(left).toBeGreaterThanOrEqual(0);
+    const off = await left();
+    await sw.check();
+    await expect.poll(async () => (dir === "ltr" ? (await left()) > off : (await left()) < off)).toBe(true);
+    await expect.poll(async () => (await left()) >= 0 && (await left()) <= trackWidth).toBe(true);
+  });
+}

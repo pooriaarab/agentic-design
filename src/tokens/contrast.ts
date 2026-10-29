@@ -26,12 +26,13 @@ export interface ContrastResult extends ContrastPair {
 const THEME_NAMES: readonly ThemeName[] = ["light", "dark"];
 
 /**
- * Check every pair in both themes. Pass your own themes to check them instead of the shipped ones.
- * It throws when a theme or a color is missing, so bad input can never read as a pass.
+ * Check every pair in both themes you give it. It throws when a theme or a color is missing, or
+ * when `themes` is not an object, so bad input can never read as a pass.
  */
-export function checkContrast(themes: Record<ThemeName, Theme> = shippedThemes): ContrastResult[] {
+export function checkThemes(themes: Record<ThemeName, Theme>): ContrastResult[] {
+  if (typeof themes !== "object" || themes === null) throw new Error("themes must be an object with light and dark");
   return THEME_NAMES.flatMap((theme) => {
-    const colors = themes?.[theme];
+    const colors = themes[theme];
     if (typeof colors !== "object" || colors === null) throw new Error(`theme "${theme}" is missing`);
     return contrastPairs.map((pair) => {
       for (const name of [pair.fg, pair.bg]) {
@@ -41,4 +42,9 @@ export function checkContrast(themes: Record<ThemeName, Theme> = shippedThemes):
       return { ...pair, theme, ratio, pass: ratio >= pair.min };
     });
   });
+}
+
+/** Check the shipped themes. */
+export function checkContrast(): ContrastResult[] {
+  return checkThemes(shippedThemes);
 }
