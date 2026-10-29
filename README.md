@@ -2,7 +2,7 @@
 
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit)
 
-[Source](https://github.com/pooriaarab/agentic-design) · [Support](https://github.com/pooriaarab/agentic-design/issues)
+[Live demo](https://agentic-design-demo.hello-fd1.workers.dev) · [Source](https://github.com/pooriaarab/agentic-design) · [Support](https://github.com/pooriaarab/agentic-design/issues)
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
@@ -101,7 +101,8 @@ themes.dark.accent; // "#8EA4FF"
   shows a remote cursor, and an agent's tag says Agent.
 - `ThemeProvider` and `useTheme` for React, from `agentic-design/react`. They set `data-theme`, keep the pick on the device, and sync it across tabs. `themeInitScript()` returns a script for the page head, so a saved dark pick never flashes light. React is an optional peer: the root entry and the CLI do not need it.
 - A demo site from the Worker: tokens, primitives, patterns, app chrome, and an editor-like page with
-  presence, an agent suggestion, and the share dialog. Run `npm run build` first, then
+  presence, an agent suggestion, and the share dialog. It runs live at
+  https://agentic-design-demo.hello-fd1.workers.dev. To run it here, run `npm run build`, then
   `npx wrangler dev`.
 - A CLI and an MCP server so an agent can read the tokens:
   `npx agentic-design tokens --format json`, `npx agentic-design contrast`,
