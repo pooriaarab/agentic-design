@@ -95,9 +95,18 @@ test("tabs have one tab stop, move with the arrow keys, and label their panel", 
   await expect(overview).toBeFocused();
   await page.keyboard.press("Tab");
   expect(await page.evaluate(() => !!document.activeElement?.closest('[role="tablist"]'))).toBe(false);
+  // The list itself is no tab stop: only the active tab is.
+  // Keep this line: the key presses below pass even if the list is a stop, because Radix hands focus on.
+  await expect(tablist).toHaveAttribute("tabindex", "-1");
+  await expect(overview).toHaveAttribute("tabindex", "0");
+  await expect(history).toHaveAttribute("tabindex", "-1");
+  await page.keyboard.press("Shift+Tab");
+  await expect(overview).toBeFocused();
   await overview.focus();
   await page.keyboard.press("ArrowRight");
   await expect(history).toBeFocused();
+  await expect(history).toHaveAttribute("tabindex", "0");
+  await expect(overview).toHaveAttribute("tabindex", "-1");
   await expect(history).toHaveAttribute("aria-selected", "true");
   const panel = page.getByRole("tabpanel");
   await expect(panel).toContainText("keeps its author");
