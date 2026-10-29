@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { build } from "esbuild";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { createElement as h, Fragment, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Checkbox, Input, Select, Switch, Textarea } from "../src/components/fields.js";
@@ -11,6 +13,48 @@ const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 async function mount(page: Page, ...els: ReactElement[]) {
   const body = renderToStaticMarkup(h(Fragment, null, ...els));
   await page.setContent(`<!doctype html><html lang="en"><head><title>Fields</title><style>${css}</style></head><body><main>${body}</main></body></html>`);
+}
+
+// Controlled state needs React in the browser, so bundle a small harness once per run.
+const HARNESS = `
+import { createElement as h, Fragment, useState } from "react";
+import { createRoot } from "react-dom/client";
+import { Checkbox, Input, Select, Switch, Textarea } from "./fields.js";
+
+const fields = { Input, Textarea, Select, Checkbox, Switch };
+const opts = [h("option", { key: "a", value: "a" }, "Viewer"), h("option", { key: "b", value: "b" }, "Editor")];
+
+function Controlled({ kind }) {
+  const [text, setText] = useState(kind === "Select" ? "a" : "start");
+  const [on, setOn] = useState(false);
+  const isToggle = kind === "Checkbox" || kind === "Switch";
+  const props = isToggle
+    ? { label: "Name", checked: on, onChange: (e) => setOn(e.currentTarget.checked) }
+    : { label: "Name", value: text, onChange: (e) => setText(e.currentTarget.value) };
+  const parentSet = () => (isToggle ? setOn(!on) : setText(kind === "Select" ? "b" : "from parent"));
+  return h(Fragment, null,
+    kind === "Select" ? h(Select, props, opts) : h(fields[kind], props),
+    h("output", { id: "state" }, isToggle ? String(on) : text),
+    h("button", { type: "button", onClick: parentSet }, "Set from parent"),
+  );
+}
+
+window.mountControlled = (kind) => createRoot(document.getElementById("root")).render(h(Controlled, { kind }));
+`;
+
+const harness = build({
+  stdin: { contents: HARNESS, resolveDir: fileURLToPath(new URL("../src/components/", import.meta.url)), loader: "tsx" },
+  bundle: true,
+  write: false,
+  format: "iife",
+  platform: "browser",
+  define: { "process.env.NODE_ENV": '"development"' },
+}).then((out) => out.outputFiles[0].text);
+
+async function mountControlled(page: Page, kind: string) {
+  await page.setContent(`<!doctype html><html lang="en"><head><title>Controlled</title><style>${css}</style></head><body><main><div id="root"></div></main></body></html>`);
+  await page.addScriptTag({ content: await harness });
+  await page.evaluate((k) => (window as unknown as { mountControlled: (k: string) => void }).mountControlled(k), kind);
 }
 
 const opts = [h("option", { key: "a", value: "a" }, "Viewer"), h("option", { key: "b", value: "b" }, "Editor")];
@@ -186,3 +230,37 @@ test("an error alone describes the control, and the caller's aria-invalid is kep
   await expect(page.getByLabel("Name")).toHaveAccessibleDescription("Enter a name.");
   await expect(page.getByLabel("Phone")).toHaveAttribute("aria-invalid", "true");
 });
+
+const controlled = [
+  { kind: "Input", role: "textbox", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", parent: "from parent" },
+  { kind: "Textarea", role: "textbox", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", parent: "from parent" },
+  { kind: "Select", role: "combobox", change: (p: Page) => p.getByLabel("Name").selectOption("b"), typed: "b", parent: "b" },
+  { kind: "Checkbox", role: "checkbox", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", parent: "true" },
+  { kind: "Switch", role: "switch", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", parent: "true" },
+] as const;
+
+for (const c of controlled) {
+  test.describe(`${c.kind} as a controlled component`, () => {
+    test("a user change reaches the parent state and the control shows it", async ({ page }) => {
+      await mountControlled(page, c.kind);
+      await c.change(page);
+      await expect(page.locator("#state")).toHaveText(c.typed);
+      if (c.role === "checkbox" || c.role === "switch") {
+        await expect(page.getByRole(c.role, { name: "Name" })).toBeChecked();
+      } else {
+        await expect(page.getByLabel("Name")).toHaveValue(c.typed);
+      }
+    });
+
+    test("a change made by the parent reaches the control", async ({ page }) => {
+      await mountControlled(page, c.kind);
+      await page.getByRole("button", { name: "Set from parent" }).click();
+      await expect(page.locator("#state")).toHaveText(c.parent);
+      if (c.role === "checkbox" || c.role === "switch") {
+        await expect(page.getByRole(c.role, { name: "Name" })).toBeChecked();
+      } else {
+        await expect(page.getByLabel("Name")).toHaveValue(c.parent);
+      }
+    });
+  });
+}
