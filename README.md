@@ -71,8 +71,11 @@ themes.dark.accent; // "#8EA4FF"
   icon button shows its label as a tooltip. An error toast stays until dismissed.
 - App patterns for React: `AppShell` (sidebar, top bar, skip link, a menu button on narrow screens),
   `SidebarNav`, a roving-focus `Toolbar`, `EmptyState`, `FileList` and `FileRow`, and
-  `PresenceChip` and `PresenceStack`. An agent shows as an agent by the word Agent in a
-  pill and by a square avatar with a robot, never by color alone. Display names pass a
+  `PresenceChip` and `PresenceStack`. A chip shows an agent by the word Agent in a pill, a
+  square avatar with a robot, and who it acts for, never by color alone. The stack is a row of
+  avatars: the shape shows an agent, and the name of each avatar and the count in words say
+  who is an agent and who it acts for. A name can still resemble another where a script
+  needs a joiner, so show an account handle where two people must be told apart. Display names pass a
   closed allow-list (`usableName`): a name with a hidden text-direction character or a
   zero-width space shows as unnamed.
 - `ShareDialog`: people and agents with roles, an invite field (an email invites a person, an

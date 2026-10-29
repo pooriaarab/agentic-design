@@ -20,7 +20,9 @@ const statusLabel = { active: "", away: "Away", paused: "Paused" } as const;
 // Entries come from other peers. Anything that is not "person" is shown as an agent, so a
 // malformed kind never hides the word Agent. An unknown status shows no status word.
 const kindOf = (entry: Pick<PresenceEntry, "kind">): PresenceKind => (entry.kind === "person" ? "person" : "agent");
-const statusOf = (entry: Pick<PresenceEntry, "status">): string => statusLabel[entry.status as PresenceStatus] ?? "";
+// An own-key check, so "constructor" or "toString" from a peer is not read as a status.
+const statusOf = (entry: Pick<PresenceEntry, "status">): string =>
+  typeof entry.status === "string" && Object.hasOwn(statusLabel, entry.status) ? statusLabel[entry.status] : "";
 
 export function displayName(entry: Pick<PresenceEntry, "name" | "kind">): string {
   return usableName(entry.name) ?? (kindOf(entry) === "agent" ? "Unnamed agent" : "Unnamed person");

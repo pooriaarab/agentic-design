@@ -195,6 +195,9 @@ test("a malformed peer entry still renders, and an unknown kind shows as an agen
   const trent = list.getByRole("listitem").filter({ hasText: "Trent" });
   await expect(trent).toBeVisible();
   await expect(trent).not.toContainText("busy");
+  // A status that is an inherited object key must not crash the page or show as a status.
+  await expect(list.getByRole("listitem").filter({ hasText: "Oscar" })).toBeVisible();
+  await expect(page.getByRole("list", { name: "Here now" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Patterns");
 });
 
