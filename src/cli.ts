@@ -29,6 +29,15 @@ export async function runCli(argv: string[], out = console.log, err = console.er
     out(VERSION);
     return 0;
   }
+  // `mcp --help` and `mcp --version` answer and exit. They never start the server.
+  if (command === "mcp" && rest.some((a) => a === "--help" || a === "-h")) {
+    out(HELP);
+    return 0;
+  }
+  if (command === "mcp" && rest.some((a) => a === "--version" || a === "-V")) {
+    out(VERSION);
+    return 0;
+  }
   if (command === "tokens") {
     const flag = rest.length === 0 ? "css" : rest.length === 2 && rest[0] === "--format" ? rest[1] : undefined;
     if (flag !== "css" && flag !== "json") {
