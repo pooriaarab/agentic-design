@@ -10,7 +10,9 @@ Runs the MCP server on stdio. An MCP client starts it.
 // The `mcp` word may come first, as the package CLI takes it: `agentic-design-mcp mcp --help`.
 const argv = process.argv.slice(2);
 const args = argv[0] === "mcp" ? argv.slice(1) : argv;
-const has = (...names: string[]) => args.some((a) => names.includes(a));
+// Without the mcp word, only the first argument is a flag, as before. After it, every argument is read, as the package CLI does.
+const flags = argv[0] === "mcp" ? args : args.slice(0, 1);
+const has = (...names: string[]) => flags.some((a) => names.includes(a));
 
 if (has("--help", "-h")) {
   process.stdout.write(HELP);
