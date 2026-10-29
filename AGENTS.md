@@ -4,14 +4,17 @@ Accessible design tokens and UI primitives for calm, minimal apps.
 
 ## Mental model
 
-Text goes in. Stats or a route receipt come out. One core serves
-all three faces, so each face returns the same shape.
+Tokens are the source of truth. They live in `src/tokens/tokens.ts`. The build
+turns them into CSS variables. The CLI, the MCP server, and the Worker all read
+the same object, so each returns the same shape.
 
-## The three faces
+## The faces
 
-- SDK: `import { summarizeText } from "agentic-design"`.
-- CLI: `npx agentic-design summary --text "..."`.
+- Library: `import { themes, scale } from "agentic-design/tokens"`.
+- CSS: `import "agentic-design/styles.css"`, then use `var(--ad-color-*)`.
+- CLI: `npx agentic-design tokens --format json`.
 - MCP: `npx agentic-design mcp`, then call a tool below.
+- HTTP: `GET /api/v1/tokens`.
 
 Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,dark-mode.
 
@@ -19,22 +22,13 @@ Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,da
 
 | Tool | Use it for |
 | --- | --- |
-| summarize_text | Count chars, words, lines, top words. |
-| dispatch_text | Route one text. Pass dryRun to preview. |
-| get_cost_report | Read session cost totals. |
-
-## The loop
-
-1. Discover the tools with `tools/list`.
-2. Run `summarize_text` on a sample.
-3. Preview a route with `dispatch_text` and dryRun true.
-4. Run the real route when the preview looks right.
-5. Read `get_cost_report` and state the cost.
+| get_tokens | Read the tokens as JSON or CSS. |
+| check_contrast | Check every text and background pair against WCAG 2.2 AA. |
 
 ## Rules
 
-- Preview with dry run before each real dispatch.
-- Stop when a guard denies the call. State the reason.
-- Never retry a denied call with changed text to dodge a guard.
-- Report adapter errors as errors. Never present them as success.
-- State the cost report before you claim the task is done.
+- Use semantic tokens only. Never use a hex value or a palette step in a component.
+- Add a contrast pair in `src/tokens/tokens.ts` for each new color use.
+- Run `npm run check:contrast` after any color change. Do not lower a minimum to pass.
+- Never load a font or asset from a remote host.
+- Never use color as the only signal. Pair it with text, a shape, or an icon.

@@ -1,39 +1,24 @@
-import { summarizeText } from "./core.js";
+import { tokensJson } from "./tokens/index.js";
 import { VERSION } from "./version.js";
 
-export interface WorkerEnv {
-  PACK_NAME?: string;
-}
-
-function json(value: unknown, status = 200): Response {
+function json(value: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(value), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...headers },
   });
 }
 
+const routes: Record<string, () => unknown> = {
+  "/health": () => ({ ok: true, name: "agentic-design", version: VERSION }),
+  "/api/v1/tokens": () => tokensJson(),
+};
+
 export default {
-  async fetch(request: Request, env: WorkerEnv): Promise<Response> {
-    const url = new URL(request.url);
-    if (request.method === "GET" && url.pathname === "/health") {
-      return json({ ok: true, pack: env.PACK_NAME ?? "agentic-design", version: VERSION });
-    }
-    if (request.method === "POST" && url.pathname === "/summarize") {
-      let body: unknown;
-      try {
-        body = await request.json();
-      } catch {
-        return json({ error: "body must be JSON" }, 400);
-      }
-      if (typeof body !== "object" || body === null || !("text" in body)) {
-        return json({ error: "body needs a text string" }, 400);
-      }
-      const { text } = body as { text: unknown };
-      if (typeof text !== "string") {
-        return json({ error: "body needs a text string" }, 400);
-      }
-      return json(summarizeText(text));
-    }
-    return json({ error: "not found" }, 404);
+  async fetch(request: Request): Promise<Response> {
+    const route = routes[new URL(request.url).pathname];
+    if (!route) return json({ error: "not found" }, 404);
+    if (request.method !== "GET" && request.method !== "HEAD") return json({ error: "method not allowed" }, 405, { allow: "GET, HEAD" });
+    const response = json(route());
+    return request.method === "HEAD" ? new Response(null, response) : response;
   },
 };

@@ -7,29 +7,34 @@ description: Accessible design tokens and UI primitives for calm, minimal apps. 
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
-## Use the SDK
+## Use the CSS
 
 ```js
-import { summarizeText, dispatchText } from "agentic-design";
-
-summarizeText("some text");
-await dispatchText("some text", { dryRun: true });
+import "agentic-design/styles.css";
 ```
 
-## Use the CLI
+```css
+.panel { background: var(--ad-color-surface); color: var(--ad-color-text); }
+```
+
+Set `data-theme="dark"` on `<html>` for dark. Leave it off to follow the system.
+
+## Use the tokens in code
+
+```ts
+import { themes, scale } from "agentic-design/tokens";
+```
+
+## Use the CLI and MCP
 
 ```sh
-agentic-design summary --text "some text"
-agentic-design dispatch --text "some text" --dry-run
+npx agentic-design tokens --format json
+npx agentic-design contrast
+npx agentic-design mcp
 ```
-
-## Use the MCP server
-
-Start the server with `agentic-design mcp`. Call `summarize_text`
-for stats, `dispatch_text` for routes, `get_cost_report` for costs.
 
 ## Rules
 
-- Preview each route with dry run first.
-- Report guard denials and adapter errors as failures.
-- Read the cost report at the end.
+- Use semantic tokens only.
+- Run the contrast check after a color change.
+- Never signal state by color alone.
