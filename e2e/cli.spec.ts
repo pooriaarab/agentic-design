@@ -44,6 +44,15 @@ test("bad input exits with a usage code", () => {
   expect(cli("nope").status).toBe(2);
 });
 
+test("the base styles keep the focus ring, the skip link, hidden text, and reduced motion", () => {
+  const css = readFileSync("dist/styles.css", "utf8");
+  expect(css).toMatch(/:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--ad-color-focus\)/);
+  expect(css).toMatch(/\.ad-skip-link:focus\s*\{\s*transform:\s*none/);
+  expect(css).toMatch(/\.ad-sr-only\s*\{[^}]*clip:/);
+  expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*\*,[^}]*transition-duration:\s*0\.01ms !important/);
+  // The same rules run in a real browser in the next PR: focus ring, skip link, and reduced motion.
+});
+
 test("the stylesheet only loads fonts that ship in the package", () => {
   const css = readFileSync("dist/styles.css", "utf8");
   expect(css).not.toMatch(/https?:\/\//);

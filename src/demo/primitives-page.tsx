@@ -66,6 +66,7 @@ export function PrimitivesPage() {
           />
           <p id="name-extra" className="demo-muted demo-note">Use the name on your badge.</p>
           <Input label="Phone" hint="Checked by the page, not by the field." aria-invalid="true" autoComplete="tel" />
+          <Input label="Nickname" id="" />
           <Input label="Email" type="email" autoComplete="email" placeholder="you@example.org" />
           <Textarea label="Notes" hint="Optional." />
           <Select label="Role" defaultValue="viewer">
@@ -112,6 +113,7 @@ export function PrimitivesPage() {
               { label: "Delete", danger: true, onSelect: () => setLastAction("delete") },
             ]}
           />
+          <Button onClick={() => toast({ title: "Something odd happened", tone: "error" as never })}>Show odd-tone toast</Button>
           <Button onClick={() => toast({ title: "Link copied", description: "Anyone with the link can view.", tone: "info" })}>Show toast</Button>
           <Button onClick={() => toast({ title: "We couldn't save your changes", description: "Your draft is safe on this device. Try again.", tone: "danger" })}>
             Show error toast
