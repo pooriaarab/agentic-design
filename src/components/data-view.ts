@@ -79,6 +79,8 @@ export function applyDataView<T>(rows: readonly T[], view: DataView, fields: rea
   const compareGroup = (a: T, b: T): number => {
     if (!group) return 0;
     const [x, y] = [fieldText(group, a), fieldText(group, b)];
+    // The group of missing values runs last in both directions.
+    if (x === "" || y === "") return x === y ? 0 : x === "" ? 1 : -1;
     return groupSign * (collator.compare(x, y) || (x < y ? -1 : x > y ? 1 : 0));
   };
   return kept

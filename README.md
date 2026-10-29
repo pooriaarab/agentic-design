@@ -163,6 +163,7 @@ const rows = useMemo(() => applyDataView(all, view, fields), [all, view]);
   The height is in pixels, but the text scales with the root font size. If people enlarge text only, raise `rowHeight` so cells do not clip.
   Focus moves by row, not by cell: Left and Right do nothing. A screen reader user reads a cell with the reader's own table commands.
 - Group labels are not focusable. Arrow keys move from row to row, and a screen reader reads the label when it passes it. A group with no text shows as "No value".
+- Group labels are not focusable. Arrow keys move from row to row, and the first row of a group is described by its label, so a screen reader says the group when focus enters it. A group with no text shows as "No value" and runs last.
 - `applyDataView` runs in the browser over all the rows you pass. For data that lives on a server, filter there and pass the result as `rows`. Search matches every word anywhere in the field text.
 - `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.
 - `FileList` sorts only the `items` you pass, and only when it is not controlled. If you pass `sort`,

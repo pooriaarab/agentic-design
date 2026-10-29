@@ -101,6 +101,7 @@ test("with groups, a long scroll still draws few rows and keys skip the labels",
   await page.getByRole("button", { name: "Display" }).click();
   await page.getByLabel("Group by").selectOption("owner");
   await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Display" })).toBeFocused();
   const grid = page.getByRole("grid", { name: "Tasks" });
   await expect.poll(() => page.locator("[data-index]").count()).toBeLessThan(60);
   await grid.evaluate((el) => { el.scrollTop = el.scrollHeight; });
@@ -199,6 +200,7 @@ test("arrow keys across a group boundary bring the next label into view", async 
   await page.getByLabel("Group by").selectOption("status");
   await page.getByLabel("Direction").selectOption("descending");
   await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Display" })).toBeFocused();
   await page.locator('[data-index="0"]').focus();
   for (let i = 0; i < 66; i++) await page.keyboard.press("ArrowDown");
   await expect(page.locator('[data-index="66"]')).toBeFocused();
@@ -208,4 +210,24 @@ test("arrow keys across a group boundary bring the next label into view", async 
   // The label sits under the sticky header, inside the grid.
   expect(label!.y).toBeGreaterThanOrEqual(frame!.y + 40);
   expect(label!.y + label!.height).toBeLessThanOrEqual(frame!.y + frame!.height);
+});
+
+test("the first row of a group is described by its label", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Display" }).click();
+  await page.getByLabel("Group by").selectOption("status");
+  await page.keyboard.press("Escape");
+  await expect(page.locator('[data-index="0"]')).toHaveAccessibleDescription("Done 3334 rows");
+  await expect(page.locator('[data-index="1"]')).not.toHaveAccessibleDescription(/rows/);
+});
+
+test("clearing a selection does not say an old row count again", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Show loading" }).click();
+  await page.getByRole("button", { name: "Show rows" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "10000 rows" })).toBeAttached();
+  await page.locator('[data-index="0"]').focus();
+  await page.keyboard.press("Space");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("status").filter({ hasText: "10000 rows" })).toHaveCount(0);
 });

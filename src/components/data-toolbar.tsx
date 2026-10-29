@@ -94,6 +94,10 @@ export function FilterChips({ chips, onRemove, addItems, addLabel = "Add filter"
     const buttons = root.current?.querySelectorAll<HTMLElement>(".agd-filterchip__remove");
     (buttons && buttons.length > 0 ? buttons[Math.min(at, buttons.length - 1)] : root.current?.querySelector<HTMLElement>(".agd-filterchips__add") ?? root.current)?.focus();
   }, [chipKey]);
+  // A removal the parent refused leaves nothing to act on. Forget it after the next commit.
+  useEffect(() => {
+    removed.current = null;
+  });
   return (
     <div className="agd-filterchips" ref={root} tabIndex={-1}>
       {chips.length > 0 && (

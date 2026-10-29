@@ -104,3 +104,14 @@ test("a value of only spaces counts as missing", () => {
   const out = applyDataView(blanks, { ...emptyDataView, orderBy: "status" }, fields).map((r) => r.name);
   expect(out[0]).toBe("c");
 });
+
+test("the group of missing values runs last in both directions", () => {
+  const owners = [
+    { name: "a", status: "", n: 1, when: null },
+    { name: "b", status: "Open", n: 2, when: null },
+    { name: "c", status: "Done", n: 3, when: null },
+  ];
+  for (const direction of ["ascending", "descending"] as const) {
+    expect(applyDataView(owners, { ...emptyDataView, groupBy: "status", direction }, fields).at(-1)?.name).toBe("a");
+  }
+});

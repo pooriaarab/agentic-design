@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { cx } from "../cx.js";
 import { Button } from "./button.js";
 import { EmptyState } from "./files.js";
@@ -70,7 +70,12 @@ export function DataTable<T>({
     onSelectedChange?.(next);
   }, [onSelectedChange]);
 
-  const columns = useMemo(() => (hiddenColumns ? allColumns.filter((c) => !hiddenColumns.has(c.id)) : allColumns), [allColumns, hiddenColumns]);
+  // At least one column stays, so the grid is never empty of columns.
+  const columns = useMemo(() => {
+    const shown = hiddenColumns ? allColumns.filter((c) => !hiddenColumns.has(c.id)) : allColumns;
+    return shown.length > 0 ? shown : allColumns.slice(0, 1);
+  }, [allColumns, hiddenColumns]);
+  const groupIds = useId();
   const items = loading ? noRows : rows;
   const count = items.length;
   const scroller = useRef<HTMLDivElement>(null);
@@ -303,6 +308,12 @@ export function DataTable<T>({
     const timer = setTimeout(() => setArrived(count), 500);
     return () => clearTimeout(timer);
   }, [count, loading]);
+  // Select, then clear: the old count must not be said again.
+  const hadSelection = useRef(false);
+  useEffect(() => {
+    if (hadSelection.current && selected.size === 0) setArrived(null);
+    hadSelection.current = selected.size > 0;
+  }, [selected.size]);
   const status = loading ? "Loading rows" : selectable && selected.size > 0 ? `${selected.size} of ${count} selected` : arrived !== null && arrived === count ? (count === 0 ? "No rows" : `${count} ${count === 1 ? "row" : "rows"}`) : "";
 
   return (
@@ -363,7 +374,7 @@ export function DataTable<T>({
                     <Fragment key={id}>
                     {group && (
                       <div role="row" className="agd-datatable__group" style={{ top: (layout.tops[i] as number) - rowHeight }} aria-rowindex={(layout.pos[i] as number) + 1}>
-                        <div role="gridcell" aria-colspan={columns.length + (selectable ? 1 : 0)} className="agd-datatable__group-cell">
+                        <div role="gridcell" id={`${groupIds}-${i}`} aria-colspan={columns.length + (selectable ? 1 : 0)} className="agd-datatable__group-cell">
                           {group.label.trim() === "" ? "No value" : group.label} <span className="agd-datatable__group-count">{group.size}<span className="agd-sr-only"> {group.size === 1 ? "row" : "rows"}</span></span>
                         </div>
                       </div>
@@ -375,6 +386,7 @@ export function DataTable<T>({
                       style={{ top: layout.tops[i] as number }}
                       aria-rowindex={(layout.pos[i] as number) + 2}
                       aria-selected={selectable ? isSelected : undefined}
+                      aria-describedby={group ? `${groupIds}-${i}` : undefined}
                       tabIndex={i === active ? 0 : -1}
                       onFocus={(event) => {
                         setActiveId(id);
