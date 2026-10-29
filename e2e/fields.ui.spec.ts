@@ -15,7 +15,7 @@ async function mount(page: Page, ...els: ReactElement[]) {
   await page.setContent(`<!doctype html><html lang="en"><head><title>Fields</title><style>${css}</style></head><body><main>${body}</main></body></html>`);
 }
 
-// Controlled state needs React in the browser, so bundle a small harness once per run.
+// Controlled state needs React in the browser, so bundle a small harness once per worker.
 const HARNESS = `
 import { createElement as h, Fragment, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -31,7 +31,12 @@ function Controlled({ kind }) {
   const props = isToggle
     ? { label: "Name", checked: on, onChange: (e) => setOn(e.currentTarget.checked) }
     : { label: "Name", value: text, onChange: (e) => setText(e.currentTarget.value) };
-  const parentSet = () => (isToggle ? setOn(!on) : setText(kind === "Select" ? "b" : "from parent"));
+  // Each click changes the parent value again, so a test can set it and then set it back.
+  const parentSet = () => {
+    if (isToggle) return setOn(!on);
+    if (kind === "Select") return setText(text === "b" ? "a" : "b");
+    return setText(text === "from parent" ? "" : "from parent");
+  };
   return h(Fragment, null,
     kind === "Select" ? h(Select, props, opts) : h(fields[kind], props),
     h("output", { id: "state" }, isToggle ? String(on) : text),
@@ -42,7 +47,8 @@ function Controlled({ kind }) {
 window.mountControlled = (kind) => createRoot(document.getElementById("root")).render(h(Controlled, { kind }));
 `;
 
-const harness = build({
+let harness: Promise<string> | undefined;
+const bundleHarness = () => build({
   stdin: { contents: HARNESS, resolveDir: fileURLToPath(new URL("../src/components/", import.meta.url)), loader: "tsx" },
   bundle: true,
   write: false,
@@ -53,6 +59,7 @@ const harness = build({
 
 async function mountControlled(page: Page, kind: string) {
   await page.setContent(`<!doctype html><html lang="en"><head><title>Controlled</title><style>${css}</style></head><body><main><div id="root"></div></main></body></html>`);
+  harness ??= bundleHarness();
   await page.addScriptTag({ content: await harness });
   await page.evaluate((k) => (window as unknown as { mountControlled: (k: string) => void }).mountControlled(k), kind);
 }
@@ -232,11 +239,11 @@ test("an error alone describes the control, and the caller's aria-invalid is kep
 });
 
 const controlled = [
-  { kind: "Input", role: "textbox", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", parent: "from parent" },
-  { kind: "Textarea", role: "textbox", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", parent: "from parent" },
-  { kind: "Select", role: "combobox", change: (p: Page) => p.getByLabel("Name").selectOption("b"), typed: "b", parent: "b" },
-  { kind: "Checkbox", role: "checkbox", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", parent: "true" },
-  { kind: "Switch", role: "switch", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", parent: "true" },
+  { kind: "Input", role: "textbox", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", parent: ["from parent", ""] },
+  { kind: "Textarea", role: "textbox", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", parent: ["from parent", ""] },
+  { kind: "Select", role: "combobox", change: (p: Page) => p.getByLabel("Name").selectOption("b"), typed: "b", parent: ["b", "a"] },
+  { kind: "Checkbox", role: "checkbox", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", parent: ["true", "false"] },
+  { kind: "Switch", role: "switch", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", parent: ["true", "false"] },
 ] as const;
 
 for (const c of controlled) {
@@ -252,14 +259,16 @@ for (const c of controlled) {
       }
     });
 
-    test("a change made by the parent reaches the control", async ({ page }) => {
+    test("a change made by the parent reaches the control, both ways", async ({ page }) => {
       await mountControlled(page, c.kind);
-      await page.getByRole("button", { name: "Set from parent" }).click();
-      await expect(page.locator("#state")).toHaveText(c.parent);
-      if (c.role === "checkbox" || c.role === "switch") {
-        await expect(page.getByRole(c.role, { name: "Name" })).toBeChecked();
-      } else {
-        await expect(page.getByLabel("Name")).toHaveValue(c.parent);
+      for (const expected of c.parent) {
+        await page.getByRole("button", { name: "Set from parent" }).click();
+        await expect(page.locator("#state")).toHaveText(expected);
+        if (c.role === "checkbox" || c.role === "switch") {
+          await expect(page.getByRole(c.role, { name: "Name" })).toBeChecked({ checked: expected === "true" });
+        } else {
+          await expect(page.getByLabel("Name")).toHaveValue(expected);
+        }
       }
     });
   });
