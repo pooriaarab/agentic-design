@@ -7,7 +7,7 @@ export interface AgentBadgeProps {
   name?: string;
   /** The person the agent acts for. Shown as "unknown" when missing. */
   actingFor?: string;
-  /** The visible words. Say what the agent did, for example "Edited by an agent". */
+  /** The visible words. They must say "agent", for example "Edited by an agent". */
   label?: string;
   /** Show only the square avatar. The same facts move into its accessible name. */
   compact?: boolean;
@@ -20,6 +20,8 @@ export interface AgentBadgeProps {
  * only signal. With `compact` there is room for the avatar only, and the facts sit in its name.
  */
 export function AgentBadge({ name, actingFor, label = "Made by an agent", compact = false, className }: AgentBadgeProps) {
+  // The word is the signal. A label without it would hide that an agent made the thing.
+  if (!/agent/i.test(label)) throw new Error('An agent badge label must say "agent".');
   const agent = displayName({ name: name ?? "", kind: "agent" });
   const who = name === undefined ? null : agent;
   const owner = actingFor === undefined ? "unknown" : (usableName(actingFor) ?? "Unnamed person");

@@ -20,7 +20,7 @@ export type AppShellProps = {
   topbar?: ReactNode;
   children: ReactNode;
 } & (
-  | { panel?: undefined; panelLabel?: undefined }
+  | { panel?: null | false; panelLabel?: string }
   /** A side panel after the content, for example comments or an assistant. Below 48rem it sits under the content. */
   | { panel: ReactNode; panelLabel: string }
 );
@@ -31,7 +31,9 @@ export type AppShellProps = {
  * returns focus to the button.
  */
 export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, children }: AppShellProps) {
-  if (panel !== undefined && (panelLabel ?? "").trim() === "") throw new Error("A side panel needs a non-empty label.");
+  // `panel={show && <Comments />}` gives false when hidden. Null and false mean no panel.
+  const hasPanel = panel !== undefined && panel !== null && panel !== false;
+  if (hasPanel && (panelLabel ?? "").trim() === "") throw new Error("A side panel needs a non-empty label.");
   const [open, setOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -116,12 +118,12 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
   );
 
   return (
-    <div className="ad-shell" data-panel={panel === undefined ? undefined : ""} onKeyDown={onKeyDown}>
+    <div className="ad-shell" data-panel={hasPanel ? "" : undefined} onKeyDown={onKeyDown}>
       <a className="ad-skip-link" href={`#${mainId}`}>Skip to content</a>
       {/* Keyed, so crossing the breakpoint moves the two parts and does not remount them. */}
       {narrow ? [topbarEl, sidebarEl] : [sidebarEl, topbarEl]}
       <main id={mainId} className="ad-shell__content" tabIndex={-1}>{children}</main>
-      {panel !== undefined && <aside className="ad-shell__panel" aria-label={panelLabel}>{panel}</aside>}
+      {hasPanel && <aside className="ad-shell__panel" aria-label={panelLabel}>{panel}</aside>}
     </div>
   );
 }

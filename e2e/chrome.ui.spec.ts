@@ -70,9 +70,15 @@ test("a blank or hidden-character title is refused with a message", async ({ pag
   await page.keyboard.press("Enter");
   await expect(page.getByRole("alert")).toContainText("no hidden characters");
   expect(await violations(page, "#demo-title")).toEqual([]);
-  // Leaving the field drops the bad edit and keeps the old title.
+  // A double space gets its own message, and leaving the field keeps the edit and the message.
+  await field.fill("Q4  roadmap");
   await page.getByRole("heading", { name: "Document title" }).click();
-  await expect(page.getByRole("button", { name: "Launch plan, rename" })).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveText("Use single spaces only.");
+  await expect(field).toHaveValue("Q4  roadmap");
+  // Escape drops the edit and keeps the old title.
+  await field.focus();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Launch plan, rename" })).toBeFocused();
 });
 
 test("leaving the field saves a good title", async ({ page }) => {

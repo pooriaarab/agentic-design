@@ -17,11 +17,13 @@ export interface DocumentTitleProps {
 /**
  * A title that renames in place. A button shows the name. Enter, Space, or F2 opens a field.
  * Enter or leaving the field saves. Escape cancels and returns focus to the button. A blank or
- * unsafe title is refused, with a message, and the old title stays.
+ * unsafe title is refused with a message that says what to fix, and the field stays open.
  */
 export function DocumentTitle({ value, onRename, label = "Document title", readOnly = false, maxLength = 120, className }: DocumentTitleProps) {
   // The stored title may come from a peer. A title with a hidden character shows as untitled.
-  const shown = usableText(value, maxLength) ?? "Untitled";
+  // A long one is safe to show, and the CSS cuts it with an ellipsis, so length alone never hides it.
+  const limit = Math.max(maxLength, typeof value === "string" ? value.length : 0);
+  const shown = usableText(value, limit) ?? "Untitled";
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(shown);
   const [error, setError] = useState<string | null>(null);
@@ -60,8 +62,13 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
       setError("Enter a title.");
       return false;
     }
-    if (usableText(next, maxLength) === null) {
-      setError(`Use up to ${maxLength} characters, with no hidden characters.`);
+    if (next.length > maxLength) {
+      setError(`Use up to ${maxLength} characters.`);
+      return false;
+    }
+    if (usableText(next, limit) === null) {
+      // Double spaces and wide spaces are refused too, and the message names what to fix.
+      setError(/\s{2,}|(?! )\p{Zs}/u.test(next) ? "Use single spaces only." : "Use letters, numbers, and punctuation, with no hidden characters.");
       return false;
     }
     if (next !== shown) onRename(next);
@@ -119,10 +126,9 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
           }
         }}
         onBlur={() => {
-          // Leaving the field saves a good title and drops a bad one, so the field never traps a person.
+          // Leaving the field saves a good title. A bad one stays open with its message, so the edit is not lost.
           if (finished.current) return;
-          if (error === null) commit();
-          close(false);
+          if (commit()) close(false);
         }}
       />
       {error && <span id={errorId} className="ad-title__error" role="alert">{error}</span>}

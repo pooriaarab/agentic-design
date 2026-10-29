@@ -28,6 +28,23 @@ test("a read-only title shows plain text, and an unsafe stored title shows as Un
   expect(bad).toContain("Untitled, rename");
 });
 
+test("a stored title that is long but safe is shown, and does not turn into Untitled", () => {
+  const long = "A".repeat(150);
+  expect(html(createElement(DocumentTitle, { value: long, onRename: () => undefined }))).toContain(`${long}, rename`);
+});
+
+test("a badge label that does not say agent is refused", () => {
+  expect(() => html(createElement(AgentBadge, { label: "Draft" }))).toThrow('must say "agent"');
+});
+
+test("a panel that is false or null draws no panel, and no label is needed", () => {
+  const shell = (panel: null | false) => html(createElement(AppShell, { brand: "x", sidebar: null, panel, panelLabel: "Notes", children: null }));
+  for (const panel of [false, null] as const) {
+    expect(shell(panel)).not.toContain("ad-shell__panel");
+    expect(shell(panel)).not.toContain("data-panel");
+  }
+});
+
 test("a side panel or a group without a name is refused", () => {
   expect(() => html(createElement(AppShell, { brand: "x", sidebar: null, panel: "p", panelLabel: " ", children: null }))).toThrow("non-empty label");
   expect(() => html(createElement(ToolbarGroup, { label: "", children: null }))).toThrow("non-empty label");

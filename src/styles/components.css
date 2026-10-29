@@ -375,7 +375,7 @@
 .ad-shell__actions { display: flex; align-items: center; gap: var(--ad-space-4); margin-inline-start: auto; }
 .ad-shell__content { grid-area: content; min-width: 0; padding: var(--ad-space-8) var(--ad-space-6) var(--ad-space-24); outline: none; }
 .ad-shell__menu { display: none; }
-.ad-shell[data-panel] { grid-template-columns: var(--ad-size-sidebar) minmax(0, 1fr) var(--ad-size-panel, 20rem); grid-template-areas: "sidebar topbar topbar" "sidebar content panel"; }
+.ad-shell[data-panel] { grid-template-columns: var(--ad-size-sidebar) minmax(0, 1fr) var(--ad-size-panel); grid-template-areas: "sidebar topbar topbar" "sidebar content panel"; }
 .ad-shell__panel { grid-area: panel; min-width: 0; padding: var(--ad-space-6) var(--ad-space-4); border-inline-start: 1px solid var(--ad-color-border); background: var(--ad-color-surface-sunken); }
 /* On a narrow screen the sidebar sits below the top bar, under the button that opens it. */
 @media (max-width: 47.99rem) {
