@@ -75,7 +75,7 @@ test("the toolbar is one tab stop, moves with arrow keys, and toggles", async ({
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
   // Tab enters the toolbar on one item, and the next Tab leaves it.
-  await page.getByRole("navigation", { name: "Demo pages" }).getByRole("link").last().focus();
+  await page.getByRole("combobox", { name: "Theme" }).focus();
   await page.keyboard.press("Tab");
   await expect(toolbar.locator(":focus")).toHaveCount(1);
   await page.keyboard.press("Tab");
