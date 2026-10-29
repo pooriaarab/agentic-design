@@ -4,6 +4,24 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.5.0 - 2026-10-29
+
+### Changed
+
+- A calmer look in light and dark. The neutrals are cooler and quieter, and the accent is indigo. Borders on cards, menus, and buttons are soft. Shadows are lighter. Controls are 2.25rem high. The large radius is 1rem, and the heading sizes are smaller. Dialogs and menus have more padding.
+- A text field, a select, and a checkbox keep a strong edge (3:1) so people can find them. A button has a soft edge because its label names it. The danger button keeps its red label and no longer has a red edge.
+- The focus ring keeps its 2px width and 2px gap. Its color follows the new indigo accent.
+- A disabled button has a dashed edge, so it differs from an enabled one by shape as well as color.
+- The token names and the `agd-` prefix do not change. Only values change, so apps that read semantic tokens need no edit.
+
+### Added
+
+- An end-to-end test reads the shipped `tokens.css` and checks text, control edge, focus, and accent pairs against WCAG 2.2 AA in both themes, with its own contrast math.
+
+### Notice
+
+- The look follows Tiny Little Office (https://github.com/aboard-io/tinylittleoffice, MIT; site https://tinylittleoffice.com): quiet neutrals, soft borders, and a restrained type scale. No code is copied. See `THIRD_PARTY_NOTICES.md`.
+
 ## 0.4.0 - 2026-10-29
 
 ### Changed

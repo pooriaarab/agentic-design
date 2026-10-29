@@ -2,13 +2,13 @@
 // Steps run from light (low) to dark (high). Only used steps exist.
 export const palette = {
   neutral: {
-    0: "#FFFFFF", 50: "#FAF9F7", 100: "#F3F1EE", 150: "#EDEBE7", 200: "#E9E6E1",
-    250: "#DAD7D1", 400: "#A9A49A", 500: "#827D73", 550: "#7A756B", 600: "#5E5A53",
-    700: "#2E2C29", 750: "#232220", 800: "#1D1C1A", 850: "#1B1A18", 900: "#141311", 950: "#100F0E",
+    0: "#FFFFFF", 50: "#FAFAFA", 100: "#F4F4F5", 150: "#ECECEE", 200: "#E4E4E7",
+    400: "#A1A1AA", 500: "#82828B", 550: "#7E7E88", 600: "#52525B",
+    700: "#2C2C31", 750: "#232326", 800: "#1D1D20", 850: "#1B1B1E", 900: "#151517", 950: "#101012",
   },
   blue: {
-    50: "#E8EDFC", 200: "#B3C2FF", 300: "#A9BAFF", 400: "#8EA4FF",
-    600: "#2B4BC4", 700: "#223D9F", 900: "#1E2745", 950: "#0E1633",
+    50: "#EEF0FF", 200: "#C3CDFF", 300: "#A9B8FF", 400: "#90A4FF",
+    600: "#4F46E5", 700: "#4338CA", 900: "#26264F", 950: "#14142E",
   },
   plum: {
     50: "#F7E8F5", 200: "#F0B8E9", 400: "#E49BDC", 600: "#8E2C86", 700: "#7A2273", 900: "#3A1F37",
@@ -54,15 +54,15 @@ export type Theme = Record<ColorName, string>;
 // Tier 2: semantic colors. Apps read only these.
 export const themes: Record<ThemeName, Theme> = deepFreeze({
   light: {
-    bg: n[50], surface: n[0], "surface-raised": n[0], "surface-sunken": n[100], "surface-hover": n[200],
+    bg: n[50], surface: n[0], "surface-raised": n[0], "surface-sunken": n[100], "surface-hover": n[150],
     text: n[800], "text-muted": n[600], "text-on-accent": n[0],
-    border: n[250], "border-strong": n[500],
+    border: n[200], "border-strong": n[500],
     accent: b[600], "accent-hover": b[700], "accent-subtle": b[50], "accent-text": b[700],
     agent: p[600], "agent-subtle": p[50], "agent-text": p[700],
     danger: r[600], "danger-subtle": r[50], "danger-text": r[700],
     warning: a[600], "warning-subtle": a[50], "warning-text": a[700],
     success: g[600], "success-subtle": g[50], "success-text": g[700],
-    focus: b[600], scrim: "rgb(29 28 26 / 0.4)",
+    focus: b[600], scrim: "rgb(24 24 27 / 0.32)",
   },
   dark: {
     bg: n[900], surface: n[850], "surface-raised": n[750], "surface-sunken": n[950], "surface-hover": n[700],
@@ -79,8 +79,8 @@ export const themes: Record<ThemeName, Theme> = deepFreeze({
 
 export const shadows: Record<ThemeName, Record<"raised" | "floating", string>> = deepFreeze({
   light: {
-    raised: "0 1px 2px rgb(29 28 26 / 0.06), 0 2px 16px rgb(29 28 26 / 0.08)",
-    floating: "0 2px 6px rgb(29 28 26 / 0.08), 0 8px 40px rgb(29 28 26 / 0.16)",
+    raised: "0 1px 2px rgb(24 24 27 / 0.04), 0 2px 8px rgb(24 24 27 / 0.05)",
+    floating: "0 2px 4px rgb(24 24 27 / 0.04), 0 8px 24px rgb(24 24 27 / 0.10)",
   },
   dark: {
     raised: "0 1px 2px rgb(0 0 0 / 0.3), 0 2px 16px rgb(0 0 0 / 0.3)",
@@ -91,17 +91,17 @@ export const shadows: Record<ThemeName, Record<"raised" | "floating", string>> =
 // Scales do not change with the theme.
 export const scale = deepFreeze({
   space: { 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem", 6: "1.5rem", 8: "2rem", 12: "3rem", 16: "4rem", 24: "6rem" },
-  radius: { sm: "0.25rem", md: "0.5rem", lg: "0.75rem", full: "9999px" },
+  radius: { sm: "0.25rem", md: "0.5rem", lg: "1rem", full: "9999px" },
   "font-family": {
     sans: '"Inter Variable", ui-sans-serif, system-ui, sans-serif',
     mono: '"JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace',
   },
-  "font-size": { xs: "0.75rem", sm: "0.875rem", md: "1rem", lg: "1.125rem", xl: "1.5rem", "2xl": "2rem" },
+  "font-size": { xs: "0.75rem", sm: "0.875rem", md: "1rem", lg: "1.125rem", xl: "1.375rem", "2xl": "1.75rem" },
   "line-height": { tight: "1.25", snug: "1.4", normal: "1.55" },
   "font-weight": { regular: "400", medium: "500", semibold: "600" },
   duration: { fast: "100ms", base: "160ms", slow: "240ms" },
   easing: { out: "cubic-bezier(0.16, 1, 0.3, 1)" },
-  size: { control: "2rem", "control-touch": "2.75rem", sidebar: "16rem", panel: "20rem", topbar: "3rem", content: "46rem" },
+  size: { control: "2.25rem", "control-touch": "2.75rem", sidebar: "16rem", panel: "20rem", topbar: "3rem", content: "46rem" },
 } as const);
 
 /** Colors a pair may use. The scrim is translucent, so it has no fixed ratio. */

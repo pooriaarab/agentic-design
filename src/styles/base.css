@@ -28,8 +28,8 @@ h1, h2, h3, h4 {
   font-weight: var(--agd-font-weight-semibold);
   text-wrap: balance;
 }
-h1 { font-size: var(--agd-font-size-2xl); }
-h2 { font-size: var(--agd-font-size-xl); }
+h1 { font-size: var(--agd-font-size-2xl); letter-spacing: -0.015em; }
+h2 { font-size: var(--agd-font-size-xl); letter-spacing: -0.01em; }
 h3 { font-size: var(--agd-font-size-lg); }
 h4 { font-size: var(--agd-font-size-md); }
 
