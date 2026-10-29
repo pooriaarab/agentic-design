@@ -12,17 +12,22 @@ All notable changes to this package are in this file. The format follows
   prop makes it a union. An interface that extends it no longer compiles. Write
   `type MyProps = AppShellProps & { ... }` instead. Code that only renders
   `AppShell` is not affected.
+- The props of `FileList` are now a union, because `items` is a second form. Code
+  that reads `ComponentProps<typeof FileList>["children"]` no longer compiles. Code
+  that renders `FileList` with `label` and `children` is not affected.
 
 ### Added
 
 - App chrome. `AppShell` takes `title`, a slot at the start of the top bar, and
   `panel` with `panelLabel`, a side panel after the content. Below 48rem the panel
-  sits under the content. Pass `panel={false}` or leave it out to hide it.
+  sits beside the content from 64rem up, and under it below that. Pass
+  `panel={false}` or leave it out to hide it.
 - `DocumentTitle`, a title that renames in place. Enter, Space, or F2 opens a field,
   and Escape cancels. A stored title with a hidden character shows as "Untitled".
-- `AgentBadge`, a visible marker for anything an agent made. It shows the word, a
-  square avatar, and who the agent acts for. `compact` keeps those facts in the
-  avatar's accessible name.
+- `AgentBadge`, a visible marker for anything an agent made. By default it shows
+  the words "Made by an agent", a square avatar, and who the agent acts for. Pass
+  `label` to change the words. `compact` keeps those facts in the avatar's
+  accessible name.
 - `ToolbarGroup`, a named group of buttons, and `ToolbarOverflow`, a "More tools"
   menu as the last stop of a `Toolbar`. `ToolbarButton` forwards its ref.
 - `FileList` takes `items` and shows a sortable table or grid. The table has
@@ -31,6 +36,8 @@ All notable changes to this package are in this file. The format follows
   it. `loading` shows placeholders, and `empty` replaces the default empty state.
   `FileItem`, `FileSort`, and `FileSortKey` are exported. `FileList` with
   `FileRow` children works as before.
+- The types `DocumentTitleProps`, `AgentBadgeProps`, and `FileListItemsProps` are
+  exported from `agentic-design/react`.
 - `size.panel` (20rem) in the scale tokens.
 - A `/chrome` page in the demo site on the Worker.
 

@@ -21,7 +21,7 @@ export type AppShellProps = {
   children: ReactNode;
 } & (
   | { panel?: null | false; panelLabel?: string }
-  /** A side panel after the content, for example comments or an assistant. Below 48rem it sits under the content. */
+  /** A side panel after the content, for example comments or an assistant. Below 64rem it sits under the content. */
   | { panel: ReactNode; panelLabel: string }
 );
 

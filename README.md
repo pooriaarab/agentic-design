@@ -82,9 +82,10 @@ themes.dark.accent; // "#8EA4FF"
   closed allow-list (`usableName`): a name with a hidden text-direction character or a
   zero-width space shows as unnamed.
 - App chrome for React: `AppShell` takes a `title` slot in the top bar and a side `panel` with a
-  `panelLabel` (below 48rem the panel sits under the content). `DocumentTitle` renames in place: Enter,
-  Space, or F2 opens the field, and Escape cancels. `AgentBadge` marks anything an agent made, with the
-  word Agent, a square avatar, and who the agent acts for. A `Toolbar` takes `ToolbarGroup` for named
+  `panelLabel` (from 64rem the panel sits beside the content, and below that it sits under it).
+  `DocumentTitle` renames in place: Enter, Space, or F2 opens the field, and Escape cancels.
+  `AgentBadge` marks anything an agent made, with a label that says agent (by default "Made by an
+  agent"), a square avatar, and who the agent acts for. A `Toolbar` takes `ToolbarGroup` for named
   groups of buttons and `ToolbarOverflow` for a "More tools" menu.
 - File lists for React: `FileList` with `items` shows a table with sortable column headers (name, owner,
   modified), or a grid with a "Sort by" select. `loading` shows placeholders, and `empty` replaces the
