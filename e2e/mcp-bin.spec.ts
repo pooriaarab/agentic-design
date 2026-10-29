@@ -89,11 +89,13 @@ test("mcp --version --help prints usage, because help is checked first, as in th
 });
 
 test("--version --help without the mcp word prints the version, as before", async () => {
+  const started = Date.now();
   const result = await run(["--version", "--help"]);
   expect(result.timedOut).toBe(false);
   expect(result.code).toBe(0);
   expect(result.stdout).toBe(`${version}\n`);
   expect(result.stderr).toBe("");
+  expect(Date.now() - started).toBeLessThan(5000);
 });
 
 for (const flag of ["--version", "-V"]) {
