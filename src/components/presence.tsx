@@ -137,30 +137,32 @@ export function PresenceCursor({ entry }: { entry: PresenceEntry }) {
   const tagRef = useRef<HTMLSpanElement>(null);
   // A tag near an edge of the screen would be cut off, and the name and the word Agent with it.
   // Shift it back inside. Measure with no shift, so the result does not depend on the last one.
+  const place = useRef(() => {});
+  place.current = () => {
+    const tag = tagRef.current;
+    if (!tag) return;
+    tag.style.removeProperty("--agd-cursor-shift");
+    const box = tag.getBoundingClientRect();
+    const rtl = getComputedStyle(tag).direction === "rtl";
+    const edge = document.documentElement.clientWidth - 8;
+    let dx = box.right > edge ? edge - box.right : 0;
+    if (box.left + dx < 8) dx = box.width > edge - 8 ? (rtl ? edge - box.right : 8 - box.left) : 8 - box.left;
+    // The offset is from the start side, so it points the other way in a right-to-left page.
+    if (dx !== 0) tag.style.setProperty("--agd-cursor-shift", `${Math.round(rtl ? -dx : dx)}px`);
+  };
+  useLayoutEffect(() => place.current());
   useLayoutEffect(() => {
-    const place = () => {
-      const tag = tagRef.current;
-      if (!tag) return;
-      tag.style.removeProperty("--agd-cursor-shift");
-      const box = tag.getBoundingClientRect();
-      const edge = document.documentElement.clientWidth - 8;
-      let dx = box.right > edge ? edge - box.right : 0;
-      if (box.left + dx < 8) dx = 8 - box.left;
-      // The offset is from the start side, so it points the other way in a right-to-left page.
-      const inline = getComputedStyle(tag).direction === "rtl" ? -dx : dx;
-      if (dx !== 0) tag.style.setProperty("--agd-cursor-shift", `${Math.round(inline)}px`);
-    };
-    place();
     // Text moves when a font loads or the page reflows, and the tag moves with it.
-    const watch = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(place);
+    const run = () => place.current();
+    const watch = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(run);
     watch?.observe(document.body);
-    void document.fonts?.ready.then(place);
-    window.addEventListener("resize", place);
+    void document.fonts?.ready.then(run);
+    window.addEventListener("resize", run);
     return () => {
       watch?.disconnect();
-      window.removeEventListener("resize", place);
+      window.removeEventListener("resize", run);
     };
-  });
+  }, []);
   return (
     <span className={cx("agd-cursor", `agd-cursor--${kindOf(entry)}`)} contentEditable={false} aria-hidden="true">
       <span className="agd-cursor__caret" />

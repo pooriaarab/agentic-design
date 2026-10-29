@@ -10,7 +10,7 @@ const onNarrowChange = (callback: () => void) => {
 };
 
 export type AppShellProps = {
-  /** The product name, shown at the start of the top bar, inside the banner landmark. */
+  /** The product name, shown at the start of the top bar, inside the banner landmark. Keep it short: below 48rem it ends in an ellipsis if it does not fit. */
   brand: ReactNode;
   /** Usually a `SidebarNav`. */
   sidebar: ReactNode;

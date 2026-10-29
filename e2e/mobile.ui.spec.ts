@@ -83,3 +83,43 @@ test("in a right-to-left page nothing leaves the screen at 390px", async ({ page
   expect(out.left).toBeGreaterThanOrEqual(0);
   expect(out.right).toBeLessThanOrEqual(390);
 });
+
+for (const dir of ["ltr", "rtl"]) {
+  test(`a very long agent cursor tag stays whole on a 320px ${dir} screen`, async ({ page }) => {
+    await page.addInitScript((d) => {
+      const set = () => document.documentElement && (document.documentElement.dir = d);
+      set();
+      new MutationObserver(set).observe(document, { childList: true });
+    }, dir);
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/editor");
+    const tag = page.locator(".agd-cursor--agent .agd-cursor__tag");
+    await tag.waitFor();
+    // The longest name the name check allows, twice: the agent and who it acts for.
+    const long = "A".repeat(20) + " " + "B".repeat(19);
+    await tag.evaluate((el, text) => {
+      el.textContent = `${text} · Agent · for ${text}`;
+      window.dispatchEvent(new Event("resize"));
+    }, long);
+    const box = await tag.evaluate((el) => {
+      const b = el.getBoundingClientRect();
+      return { left: b.left, right: b.right, scroll: document.scrollingElement!.scrollWidth <= document.scrollingElement!.clientWidth };
+    });
+    expect(box.left).toBeGreaterThanOrEqual(0);
+    expect(box.right).toBeLessThanOrEqual(320);
+    expect(box.scroll).toBe(true);
+  });
+}
+
+test("narrowing with focus in the folded actions opens them, and Escape returns focus to the button", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/editor");
+  await page.getByLabel("Theme").focus();
+  await page.setViewportSize({ width: 390, height: 800 });
+  const more = page.getByRole("button", { name: "More options", exact: true });
+  await expect(more).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByLabel("Theme")).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(more).toBeFocused();
+  await expect(page.getByLabel("Theme")).toBeHidden();
+});
