@@ -85,14 +85,15 @@ for (const scheme of ["light", "dark"] as const) {
         const s = getComputedStyle(el);
         return { width: s.outlineWidth, style: s.outlineStyle, color: s.outlineColor };
       });
-    await page.keyboard.press("Tab");
-    expect(await ringOf(page.getByRole("link", { name: "Skip to content" }))).toEqual(expected);
-    await page.keyboard.press("Tab");
-    expect(await ringOf(page.getByLabel("Theme"))).toEqual(expected);
-    await page.locator("summary").focus();
-    await page.keyboard.press("Shift+Tab");
-    await page.keyboard.press("Tab");
-    expect(await ringOf(page.locator("summary"))).toEqual(expected);
+    // Reach each target by Tab, as a keyboard user does. :focus-visible then applies.
+    const tabTo = async (target: Locator) => {
+      for (let i = 0; i < 30 && !(await target.evaluate((el) => el === document.activeElement)); i++) await page.keyboard.press("Tab");
+      await expect(target).toBeFocused();
+    };
+    for (const target of [page.getByRole("link", { name: "Skip to content" }), page.getByLabel("Theme"), page.locator("summary")]) {
+      await tabTo(target);
+      expect(await ringOf(target)).toEqual(expected);
+    }
   });
 }
 
