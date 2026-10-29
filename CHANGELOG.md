@@ -4,13 +4,18 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.9.0 - 2026-10-29
+
+### Added
+
+- `DataTableToolbar`, `TableSearch`, `FilterChips`, `DisplayPopover`, `filterMenuItems`, `applyDataView`, `emptyDataView`, `fieldText`, `sameDisplay`, and the icons `SearchIcon` and `SlidersIcon`. They add search, filters, grouping, ordering, and hidden columns to a `DataTable`. `DataTable` takes the new `groupBy` and `hiddenColumns` props.
+- `AppSidebar`, a left sidebar with a toggle button. It saves its state on the device, shares it between tabs, and starts collapsed on a narrow screen. It also adds `SIDEBAR_STORAGE_KEY`, `PanelLeftIcon`, and the size token `sidebar-rail`.
+
 ## 0.8.0 - 2026-10-29
 
 ### Added
 
 - `DataTable`, a virtualized table for large row sets. It keeps one tab stop, moves focus with the arrow keys, and announces its status and position.
-- `DataTableToolbar`, `TableSearch`, `FilterChips`, `DisplayPopover`, `filterMenuItems`, `applyDataView`, `emptyDataView`, `fieldText`, `sameDisplay`, and the icons `SearchIcon` and `SlidersIcon`. They add search, filters, grouping, ordering, and hidden columns to a `DataTable`. `DataTable` takes the new `groupBy` and `hiddenColumns` props.
-- `AppSidebar`, a left sidebar with a toggle button. It saves its state on the device, shares it between tabs, and starts collapsed on a narrow screen. It also adds `SIDEBAR_STORAGE_KEY`, `PanelLeftIcon`, and the size token `sidebar-rail`.
 
 ## 0.7.1 - 2026-10-29
 
