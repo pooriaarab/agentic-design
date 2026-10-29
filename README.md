@@ -23,9 +23,10 @@ import "agentic-design/styles.css";
 ```
 
 To use the tokens alone, import `agentic-design/tokens.css` instead. It sets the custom properties
-and the `color-scheme` for each theme. It loads no fonts and no base rules. The font tokens name
-Inter and JetBrains Mono, so load those fonts yourself. Otherwise the browser falls back to its own
-sans-serif and monospace fonts.
+and the `color-scheme` for each theme. It loads no fonts and no base rules. The font tokens use the
+family names `Inter Variable` and `JetBrains Mono Variable`. Register your font files under those
+names, or set `--ad-font-family-sans` and `--ad-font-family-mono` yourself. Otherwise the browser
+falls back to its own sans-serif and monospace fonts.
 
 ```js
 import "agentic-design/tokens.css";
