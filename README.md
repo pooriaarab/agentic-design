@@ -122,7 +122,7 @@ themes.dark.accent; // "#8EA4FF"
   `FilterChips` lists the filters in use, each with a remove button, and a menu to add one
   (`filterMenuItems` builds the menu from your rows). `DisplayPopover` opens a panel with "Group by", "Order by",
   a direction, a checkbox for each column, and "Reset to defaults". `applyDataView(rows, view, fields)` does the
-  searching, filtering, ordering, and grouping for you. Pass `groupBy` and `hiddenColumns` to `DataTable`.
+  searching, filtering, ordering, and grouping for you. Pass `groupBy` and `hiddenColumns` to `DataTable`. Keep both stable with `useMemo`, because each new function or set builds the layout again. The table says the new row count after a pause when a search or filter changes it.
 
 ```tsx
 const [view, setView] = useState<DataView>(emptyDataView);

@@ -83,23 +83,25 @@ export interface FilterChip {
 export function FilterChips({ chips, onRemove, addItems, addLabel = "Add filter" }: { chips: readonly FilterChip[]; onRemove: (id: string) => void; addItems?: MenuItem[]; addLabel?: string }) {
   const root = useRef<HTMLDivElement>(null);
   const chipKey = chips.map((c) => c.id).join("\n");
-  const removed = useRef<number | null>(null);
+  const removed = useRef<{ index: number; id: string } | null>(null);
   // The remove button leaves with its chip. Give focus to the next chip, the one before it, or the add button.
   useLayoutEffect(() => {
     if (removed.current === null) return;
-    const at = removed.current;
+    const { index: at, id } = removed.current;
     removed.current = null;
+    // A parent can refuse a removal. Then the chip is still here, and focus stays where it is.
+    if (chips.some((c) => c.id === id)) return;
     const buttons = root.current?.querySelectorAll<HTMLElement>(".agd-filterchip__remove");
-    (buttons && buttons.length > 0 ? buttons[Math.min(at, buttons.length - 1)] : root.current?.querySelector<HTMLElement>(".agd-filterchips__add"))?.focus();
+    (buttons && buttons.length > 0 ? buttons[Math.min(at, buttons.length - 1)] : root.current?.querySelector<HTMLElement>(".agd-filterchips__add") ?? root.current)?.focus();
   }, [chipKey]);
   return (
-    <div className="agd-filterchips" ref={root}>
+    <div className="agd-filterchips" ref={root} tabIndex={-1}>
       {chips.length > 0 && (
         <ul className="agd-filterchips__list" aria-label="Active filters">
           {chips.map((chip, index) => (
             <li key={chip.id} className="agd-filterchip">
               <span className="agd-filterchip__label">{chip.label}</span>
-              <IconButton label={`Remove filter ${chip.label}`} icon={<CloseIcon />} size="sm" tooltip={false} className="agd-filterchip__remove" onClick={() => { removed.current = index; onRemove(chip.id); }} />
+              <IconButton label={`Remove filter ${chip.label}`} icon={<CloseIcon />} size="sm" tooltip={false} className="agd-filterchip__remove" onClick={() => { removed.current = { index, id: chip.id }; onRemove(chip.id); }} />
             </li>
           ))}
         </ul>
@@ -111,7 +113,11 @@ export function FilterChips({ chips, onRemove, addItems, addLabel = "Add filter"
   );
 }
 
-/** Menu items that add a filter for each value a filterable field takes in `rows`, except the ones already in use. */
+/**
+ * Menu items that add a filter for each value a filterable field takes in `rows`, except the ones already in use.
+ * It offers the first `limit` values it meets in row order, not the most common ones. For a field with many
+ * values, build the menu yourself.
+ */
 export function filterMenuItems<T>(rows: readonly T[], fields: readonly DataField<T>[], view: DataView, onViewChange: (view: DataView) => void, limit = 12): MenuItem[] {
   const items: MenuItem[] = [];
   for (const field of fields) {

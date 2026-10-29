@@ -755,3 +755,4 @@
 .agd-display__columns { display: grid; gap: var(--agd-space-1); margin: 0; padding: 0; border: 0; }
 .agd-display__columns legend { padding: 0; margin-block-end: var(--agd-space-1); font-weight: var(--agd-font-weight-medium); }
 .agd-display .agd-button[aria-disabled="true"], .agd-filterchips .agd-button[aria-disabled="true"] { color: var(--agd-color-text-muted); cursor: not-allowed; }
+.agd-filterchips:focus { outline: none; }

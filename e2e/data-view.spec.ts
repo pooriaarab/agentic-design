@@ -94,3 +94,13 @@ test("NaN and an invalid date count as missing and sort last", () => {
 test("a date is searched as its local day", () => {
   expect(names({ query: "2026-03-01" })).toEqual(["Écrire le plan"]);
 });
+
+test("a value of only spaces counts as missing", () => {
+  const blanks = [
+    { name: "a", status: "  ", n: 1, when: null },
+    { name: "b", status: "", n: 2, when: null },
+    { name: "c", status: "Open", n: 3, when: null },
+  ];
+  const out = applyDataView(blanks, { ...emptyDataView, orderBy: "status" }, fields).map((r) => r.name);
+  expect(out[0]).toBe("c");
+});

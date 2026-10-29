@@ -39,7 +39,7 @@ export interface DataTableProps<T> {
   bulkActions?: (selected: ReadonlySet<string>) => ReactNode;
   /** Called on Enter or double click on a row. */
   onRowActivate?: (row: T) => void;
-  /** Draw a label above each run of rows that share a key. The rows must already be in group order. */
+  /** Draw a label above each run of rows that share a key. The rows must already be in group order. Keep the function stable (`useMemo` or `useCallback`), or every scroll builds the layout again. */
   groupBy?: (row: T) => string;
   /** Ids of columns to leave out. */
   hiddenColumns?: ReadonlySet<string>;
@@ -285,16 +285,24 @@ export function DataTable<T>({
   const style = { "--agd-dt-cols": tracks, "--agd-dt-min": minWidth, "--agd-dt-row": `${rowHeight}px`, "--agd-dt-height": typeof height === "number" ? `${height}px` : height } as CSSProperties;
   const nameOf = (row: T) => rowLabel?.(row) ?? getRowId(row);
   // Say how many rows arrived when loading ends, so the status does not just go quiet.
-  // The message holds only while the count and the selection are as they were when it was set.
+  // The message holds only while the count is as it was when it was set.
   const [arrived, setArrived] = useState<number | null>(null);
   const wasLoading = useRef(loading);
   useEffect(() => {
     if (wasLoading.current && !loading) setArrived(count);
     wasLoading.current = loading;
   }, [loading, count]);
+  // A search or a filter changes the count. Say the new count after a pause, so typing does not cut the message off.
+  const lastCount = useRef(count);
   useEffect(() => {
-    if (!loading) setArrived((n) => (n === count && selected.size === 0 ? n : null));
-  }, [count, selected.size, loading]);
+    if (loading || lastCount.current === count) {
+      lastCount.current = count;
+      return;
+    }
+    lastCount.current = count;
+    const timer = setTimeout(() => setArrived(count), 500);
+    return () => clearTimeout(timer);
+  }, [count, loading]);
   const status = loading ? "Loading rows" : selectable && selected.size > 0 ? `${selected.size} of ${count} selected` : arrived !== null && arrived === count ? (count === 0 ? "No rows" : `${count} ${count === 1 ? "row" : "rows"}`) : "";
 
   return (

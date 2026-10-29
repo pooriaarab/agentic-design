@@ -26,7 +26,7 @@ export interface DataView {
 
 export const emptyDataView: DataView = Object.freeze({ query: "", filters: [], groupBy: null, orderBy: null, direction: "ascending", hiddenColumns: [] });
 
-const missing = (value: unknown): boolean => value == null || value === "" || (typeof value === "number" && !Number.isFinite(value)) || (value instanceof Date && Number.isNaN(value.getTime()));
+const missing = (value: unknown): boolean => value == null || (typeof value === "string" && value.trim() === "") || (typeof value === "number" && !Number.isFinite(value)) || (value instanceof Date && Number.isNaN(value.getTime()));
 const pad = (n: number) => String(n).padStart(2, "0");
 // A date reads as the day on the person's clock, the same as a cell that shows it.
 const text = (value: ReturnType<DataField<never>["value"]>): string =>

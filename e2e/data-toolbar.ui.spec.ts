@@ -182,3 +182,30 @@ test("the search closes by itself when the text is cleared from outside", async 
   await page.getByRole("button", { name: "Clear search and filters" }).click();
   await expect(page.getByRole("searchbox")).toHaveCount(0);
 });
+
+test("a search says how many rows are left", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("searchbox", { name: "Search" }).fill("Task 10000");
+  await expect(page.getByRole("status").filter({ hasText: /^1 row$/ })).toBeAttached();
+  await page.getByRole("searchbox", { name: "Search" }).fill("zzzz");
+  await expect(page.getByRole("status").filter({ hasText: /^No rows$/ })).toBeAttached();
+});
+
+test("arrow keys across a group boundary bring the next label into view", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "100 rows" }).click();
+  await page.getByRole("button", { name: "Display" }).click();
+  await page.getByLabel("Group by").selectOption("status");
+  await page.getByLabel("Direction").selectOption("descending");
+  await page.keyboard.press("Escape");
+  await page.locator('[data-index="0"]').focus();
+  for (let i = 0; i < 66; i++) await page.keyboard.press("ArrowDown");
+  await expect(page.locator('[data-index="66"]')).toBeFocused();
+  const label = await page.getByRole("gridcell", { name: "Done 34 rows" }).boundingBox();
+  const frame = await page.getByRole("grid", { name: "Tasks" }).boundingBox();
+  expect(label && frame).toBeTruthy();
+  // The label sits under the sticky header, inside the grid.
+  expect(label!.y).toBeGreaterThanOrEqual(frame!.y + 40);
+  expect(label!.y + label!.height).toBeLessThanOrEqual(frame!.y + frame!.height);
+});
