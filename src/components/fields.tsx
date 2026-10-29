@@ -152,7 +152,10 @@ export const Checkbox = forwardRef<HTMLInputElement, ToggleProps>(function Check
     <div className="ad-toggle">
       <label className="ad-toggle__row" htmlFor={id}>
         <input ref={ref} id={id} type="checkbox" className={cx("ad-checkbox", className)} {...rest} aria-describedby={mergeDescribedBy(describedBy, rest["aria-describedby"])} />
-        <span>{label}</span>
+        <span>
+          {label}
+          {rest.required && <span aria-hidden="true"> *</span>}
+        </span>
       </label>
       {hint && <p id={hintId} className="ad-field__hint">{hint}</p>}
     </div>
@@ -168,7 +171,10 @@ export const Switch = forwardRef<HTMLInputElement, ToggleProps>(function Switch(
     <div className="ad-toggle">
       <label className="ad-toggle__row" htmlFor={id}>
         <input ref={ref} id={id} type="checkbox" role="switch" className={cx("ad-switch", className)} {...rest} aria-describedby={mergeDescribedBy(describedBy, rest["aria-describedby"])} />
-        <span>{label}</span>
+        <span>
+          {label}
+          {rest.required && <span aria-hidden="true"> *</span>}
+        </span>
       </label>
       {hint && <p id={hintId} className="ad-field__hint">{hint}</p>}
     </div>

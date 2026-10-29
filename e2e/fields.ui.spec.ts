@@ -59,6 +59,7 @@ for (const k of kinds) {
       const c = page.getByLabel("Name");
       await expect(c).toHaveAttribute("required", "");
       await expect(c).toHaveAccessibleName("Name");
+      await expect(page.locator("label span[aria-hidden]")).toBeVisible();
     });
 
     test("disabled is not focusable by keyboard", async ({ page }) => {
@@ -97,6 +98,8 @@ test("a Select hides its label from sight but keeps it in the name", async ({ pa
   await mount(page, h(Select, { label: "Role", hideLabel: true }, opts));
   await expect(page.getByRole("combobox", { name: "Role" })).toBeVisible();
   await expect(page.locator("label")).toHaveClass(/ad-sr-only/);
+  const box = await page.locator("label").boundingBox();
+  expect(box === null || (box.width <= 1 && box.height <= 1)).toBe(true);
 });
 
 test("a Select changes with the arrow keys", async ({ page }) => {
@@ -135,11 +138,17 @@ for (const [name, role, C] of [["Checkbox", "checkbox", Checkbox], ["Switch", "s
       await expect(page.getByRole(role)).toBeDisabled();
       await page.getByText("Notify me").click({ force: true });
       await expect(page.getByRole(role)).not.toBeChecked();
+      await page.keyboard.press("Tab");
+      await expect(page.getByRole(role)).not.toBeFocused();
+      await page.keyboard.press("Space");
+      await expect(page.getByRole(role)).not.toBeChecked();
     });
 
     test("required is exposed", async ({ page }) => {
       await mount(page, h(C, { label: "Agree", required: true }));
       await expect(page.getByRole(role)).toHaveAttribute("required", "");
+      await expect(page.getByRole(role)).toHaveAccessibleName("Agree");
+      await expect(page.locator("label span[aria-hidden]")).toBeVisible();
     });
 
     test("the caller's aria-describedby joins the hint", async ({ page }) => {
@@ -162,4 +171,18 @@ test("every field passes axe in the dark scheme", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
   await mount(page, h(Input, { label: "Name", error: "Enter a name.", hint: "Hint." }), h(Select, { label: "Role" }, opts), h(Switch, { label: "Agents" }), h(Checkbox, { label: "Replies" }), h(Textarea, { label: "Notes", disabled: true }));
   expect((await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()).violations).toEqual([]);
+});
+
+test("the dark scheme really changes the page colors", async ({ page }) => {
+  await mount(page, h(Input, { label: "Name" }));
+  await page.emulateMedia({ colorScheme: "light" });
+  const light = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await page.emulateMedia({ colorScheme: "dark" });
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe(light);
+});
+
+test("an error alone describes the control, and the caller's aria-invalid is kept", async ({ page }) => {
+  await mount(page, h(Input, { label: "Name", error: "Enter a name." }), h(Input, { label: "Phone", "aria-invalid": true }));
+  await expect(page.getByLabel("Name")).toHaveAccessibleDescription("Enter a name.");
+  await expect(page.getByLabel("Phone")).toHaveAttribute("aria-invalid", "true");
 });
