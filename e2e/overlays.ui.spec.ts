@@ -82,9 +82,9 @@ test("tabs move with the arrow keys and the panel follows", async ({ page }) => 
 
 test("an icon button shows its label as a tooltip on keyboard focus", async ({ page }) => {
   await open(page);
-  await page.getByRole("button", { name: "Add item" }).focus();
-  await page.keyboard.press("Shift+Tab");
+  await page.getByRole("button", { name: "Saving" }).focus();
   await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Add item" })).toBeFocused();
   await expect(page.getByRole("tooltip")).toHaveText("Add item");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("tooltip")).toBeHidden();
