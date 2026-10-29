@@ -7,7 +7,7 @@ const settle = (page: Page) =>
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   });
 
-const pages = ["/", "/primitives", "/patterns", "/editor", "/chrome"];
+const pages = ["/", "/primitives", "/patterns", "/editor", "/chrome", "/data"];
 
 for (const width of [320, 360, 390]) {
   for (const path of pages) {

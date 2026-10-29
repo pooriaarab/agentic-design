@@ -127,7 +127,7 @@ const status = (name: "danger" | "warning" | "success"): ContrastPair[] => [
 
 // Every pair the components use. Disabled controls are exempt by WCAG 1.4.3.
 export const contrastPairs: readonly ContrastPair[] = deepFreeze([
-  ...text("text", surfaces, "body text"),
+  ...text("text", [...surfaces, "accent-subtle"], "body text, and text on a selected row"),
   ...text("text-muted", surfaces, "secondary text and placeholders"),
   ...text("text-on-accent", ["accent", "accent-hover"], "text on a filled accent control"),
   ...text("accent-text", ["accent-subtle", ...surfaces], "accent text and links"),
@@ -135,7 +135,7 @@ export const contrastPairs: readonly ContrastPair[] = deepFreeze([
   ...status("danger"),
   ...status("warning"),
   ...status("success"),
-  ...ui("border-strong", surfaces, "control borders (WCAG 1.4.11)"),
+  ...ui("border-strong", [...surfaces, "accent-subtle"], "control borders (WCAG 1.4.11)"),
   ...ui("focus", [...surfaces, "accent-subtle", "agent-subtle", "danger-subtle", "warning-subtle", "success-subtle"], "focus ring (WCAG 1.4.11)"),
   ...ui("accent", ["accent-subtle", ...surfaces], "accent marks and checked controls"),
   ...ui("agent", ["agent-subtle", ...surfaces], "agent avatar outline"),

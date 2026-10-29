@@ -6,8 +6,8 @@
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
-> Status: 0.7.1. The design tokens, the contrast check, and the fonts work.
-> The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the share dialog, and the editor demo work.
+> Status: 0.8.0. The design tokens, the contrast check, and the fonts work.
+> The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the data table, the share dialog, and the editor demo work.
 > See [CHANGELOG.md](CHANGELOG.md) for what is in this release, its breaking changes, and its limits.
 
 ## Install
@@ -97,6 +97,26 @@ themes.dark.accent; // "#8EA4FF"
   modified). Pass `view="grid"` for a grid with a "Sort by" select. `loading` shows placeholders, and
   `empty` replaces the default empty state. `locale` (default `en`) sets the date and sort language.
   Pass `FileRow` children for a plain list.
+- `DataTable` for React: a grid for many rows. Only the rows in view are in the page, so 10,000 rows scroll
+  smoothly. Pass `rows`, `columns`, and `getRowId`. Add `selectable` for a checkbox column, select-all, and a
+  bar at the bottom with your `bulkActions` and "Clear selection". `loading` shows placeholders and says so to a
+  screen reader. `empty` replaces the default empty state. The rows are one tab stop
+  (with `selectable`, select-all is another). Arrow keys, Home, End,
+  and Page Up and Down move between rows. Space selects a row (with Shift, a range), Enter calls `onRowActivate`,
+  and Escape clears the selection. Keep focusable controls out of cells, because each one adds a tab stop.
+  A selection keeps the ids of rows that leave the list, and they count again when the rows return.
+
+```tsx
+<DataTable
+  label="Tasks"
+  rows={tasks}
+  columns={[{ id: "title", header: "Title", cell: (t) => t.title }]}
+  getRowId={(t) => t.id}
+  selectable
+  bulkActions={(ids) => <Button size="sm" onClick={() => archive(ids)}>Archive</Button>}
+/>
+```
+
 - `ShareDialog`: people and agents with roles, an invite field (an email invites a person, an
   `@handle` invites an agent, and anything else is refused), a link with role, expiry, and a
   sign-in rule, and a snapshot link that holds the page in the URL fragment. `PresenceCursor`
@@ -113,6 +133,10 @@ themes.dark.accent; // "#8EA4FF"
 
 ## Limits
 
+- `DataTable` rows have one fixed height (`rowHeight`), so a cell cannot wrap. It does not sort or fetch pages.
+  Long text in a cell is cut with an ellipsis, and nothing on screen shows the rest. Use wider columns, or show the full value somewhere else, for example where `onRowActivate` leads.
+  The height is in pixels, but the text scales with the root font size. If people enlarge text only, raise `rowHeight` so cells do not clip.
+  Focus moves by row, not by cell: Left and Right do nothing. A screen reader user reads a cell with the reader's own table commands.
 - `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.
 - `FileList` sorts only the `items` you pass, and only when it is not controlled. If you pass `sort`,
   your code must sort `items` itself. It does not paginate.
