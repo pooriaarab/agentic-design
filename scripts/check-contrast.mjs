@@ -15,7 +15,17 @@ if (Math.abs(white - 21) > 0.01 || justUnder >= 4.5 || justUnder < 4.4) {
 
 const file = process.argv[2];
 const custom = file ? JSON.parse(readFileSync(file, "utf8")) : undefined;
-const results = checkContrast(custom ? (custom.themes ?? custom) : undefined);
+let results;
+try {
+  results = checkContrast(custom ? (custom.themes ?? custom) : undefined);
+} catch (error) {
+  console.error(`cannot check contrast: ${error.message}`);
+  process.exit(2);
+}
+if (results.length === 0) {
+  console.error("cannot check contrast: no pairs were checked");
+  process.exit(2);
+}
 const failures = results.filter((r) => !r.pass);
 for (const r of failures) {
   console.error(`FAIL ${r.theme}: ${r.fg} on ${r.bg} is ${r.ratio.toFixed(2)}, needs ${r.min} (${r.use})`);

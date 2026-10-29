@@ -17,7 +17,8 @@ export default {
   async fetch(request: Request): Promise<Response> {
     const route = routes[new URL(request.url).pathname];
     if (!route) return json({ error: "not found" }, 404);
-    if (request.method !== "GET") return json({ error: "method not allowed" }, 405);
-    return json(route());
+    if (request.method !== "GET" && request.method !== "HEAD") return json({ error: "method not allowed" }, 405);
+    const response = json(route());
+    return request.method === "HEAD" ? new Response(null, response) : response;
   },
 };
