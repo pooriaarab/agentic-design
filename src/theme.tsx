@@ -30,10 +30,14 @@ function subscribeToSystem(onChange: () => void): () => void {
   return () => query.removeEventListener("change", onChange);
 }
 
+const PREFERENCES: readonly ThemePreference[] = ["light", "dark", "system"];
+const isPreference = (value: unknown): value is ThemePreference => PREFERENCES.includes(value as ThemePreference);
+
+// A saved value is data from the device. A value that is not one of the three is ignored.
 function readPreference(storageKey: string, fallback: ThemePreference): ThemePreference {
   try {
     const stored = window.localStorage.getItem(storageKey);
-    return stored === "light" || stored === "dark" || stored === "system" ? stored : fallback;
+    return isPreference(stored) ? stored : fallback;
   } catch {
     return fallback;
   }
@@ -51,6 +55,8 @@ export function ThemeProvider({
   defaultPreference = "system",
   storageKey = THEME_STORAGE_KEY,
 }: ThemeProviderProps) {
+  // A value from code that is not one of the three is a bug, and it stops here.
+  if (!isPreference(defaultPreference)) throw new Error(`defaultPreference must be one of ${PREFERENCES.join(", ")}`);
   const [preference, setPreferenceState] = useState(() => readPreference(storageKey, defaultPreference));
   const systemDark = useSyncExternalStore(
     subscribeToSystem,
@@ -78,6 +84,7 @@ export function ThemeProvider({
 
   const setPreference = useCallback(
     (next: ThemePreference) => {
+      if (!isPreference(next)) throw new Error(`The theme must be one of ${PREFERENCES.join(", ")}, got "${String(next)}"`);
       setPreferenceState(next);
       try {
         window.localStorage.setItem(storageKey, next);
