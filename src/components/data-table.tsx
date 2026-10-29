@@ -404,7 +404,7 @@ export function DataTable<T>({
                         // Tab or Shift+Tab into a row from anywhere but another row (outside the grid, or select-all): the browser thinks a row under the bar is in view, so keep it clear of the bar and the header.
                         const el = scroller.current;
                         if (el && event.target === event.currentTarget && !(event.relatedTarget as Element | null)?.closest?.("[data-index]")) {
-                          const next = scrollToRow(i, el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
+                          const next = reveal(i, el, barHeight);
                           if (next !== el.scrollTop) el.scrollTop = next;
                         }
                       }}
