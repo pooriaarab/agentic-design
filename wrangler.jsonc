@@ -1,7 +1,7 @@
 {
   // The demo site is static and served from site. A request with no file
   // there reaches the Worker, which serves /health and /api/v1/tokens.
-  "name": "agentic-design",
+  "name": "agentic-design-demo",
   "main": "src/worker.ts",
   "compatibility_date": "2026-01-01",
   "assets": {
