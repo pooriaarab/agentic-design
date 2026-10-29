@@ -14,7 +14,7 @@ All notable changes to this package are in this file. The format follows
 
 ### Added
 
-- End-to-end tests run the `mcp` forms of the bin with `--help`, `-h`, `--version`, and `-V`, and assert exit 0 within 5 s. They also check that `agentic-design-mcp mcp` alone still starts the server.
+- End-to-end tests run the `mcp` forms of the bin with `--help`, `-h`, `--version`, and `-V`, and assert exit 0 within 5 s. They also check that `mcp --version --help` and `--version --help` (without `mcp`) print the usage and the version as described above, that `mcp --verbose --help` prints the usage, and that the bin with no argument, with `mcp`, or with `mcp --verbose` still starts the server.
 
 ## 0.6.0 - 2026-10-29
 
