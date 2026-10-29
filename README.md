@@ -7,7 +7,7 @@
 Accessible design tokens and UI primitives for calm, minimal apps.
 
 > Status: 0.8.0. The design tokens, the contrast check, and the fonts work.
-> The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the share dialog, and the editor demo work.
+> The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the data table, the share dialog, and the editor demo work.
 > See [CHANGELOG.md](CHANGELOG.md) for what is in this release, its breaking changes, and its limits.
 
 ## Install
@@ -134,6 +134,7 @@ themes.dark.accent; // "#8EA4FF"
 ## Limits
 
 - `DataTable` rows have one fixed height (`rowHeight`), so a cell cannot wrap. It does not sort or fetch pages.
+  Focus moves by row, not by cell: Left and Right do nothing. A screen reader user reads a cell with the reader's own table commands.
 - `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.
 - `FileList` sorts only the `items` you pass, and only when it is not controlled. If you pass `sort`,
   your code must sort `items` itself. It does not paginate.
