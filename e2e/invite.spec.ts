@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { parseInvitee } from "../dist/index.js";
 
-// Written before the code. Each case is a way an invite could go to the wrong target.
+// Each case is a way an invite could go to the wrong target.
 const refused: [string, string][] = [
   ["empty", ""],
   ["only spaces", "   "],
@@ -18,6 +18,11 @@ const refused: [string, string][] = [
   ["a handle over 32 characters", `@${"a".repeat(33)}`],
   ["an address over 254 characters", `${"a".repeat(250)}@x.org`],
   ["a newline inside", "ada@exa\nmple.org"],
+  ["a zero-width space in the address", "ada\u200B@example.org"],
+  ["a right-to-left override in the address", "ada\u202E@example.org"],
+  ["a non-ASCII letter in the address", "ad\u00E9@example.org"],
+  ["a non-ASCII letter in the domain", "ada@ex\u00E4mple.org"],
+  ["a zero-width space in a handle", "@clau\u200Bde"],
 ];
 
 for (const [why, value] of refused) {

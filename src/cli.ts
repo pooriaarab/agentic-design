@@ -10,7 +10,8 @@ Accessible design tokens and UI primitives for calm, minimal apps.
 Usage: agentic-design <command> [flags]
 
 Commands:
-  tokens [--format css|json]  Print the design tokens. Default format is css.
+  tokens [--format css|json]  Print the design tokens. Default format is css. Write the
+                              flag and its value as two words, not --format=json.
   contrast                    Check every text and background pair. Print JSON.
   mcp                         Start the MCP server on stdio.
 
@@ -47,7 +48,8 @@ export async function runCli(argv: string[], out = console.log, err = console.er
     await startMcp();
     return 0;
   }
-  err(`Unknown command "${command}". Run "agentic-design --help".`);
+  const known = command === "contrast" || command === "mcp";
+  err(known ? `"${command}" takes no arguments. Run "agentic-design --help".` : `Unknown command "${command}". Run "agentic-design --help".`);
   return 2;
 }
 

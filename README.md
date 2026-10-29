@@ -91,8 +91,11 @@ themes.dark.accent; // "#8EA4FF"
 ## Limits
 
 - `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.
-- The demo snapshot link is not compressed or encrypted. It is a demonstration of the
-  idea, not a finished link format.
+- The demo snapshot link is not compressed or encrypted, and it holds text only. The demo page
+  opens it as a read-only copy after it checks the size, the shape, and every paragraph. It is
+  a demonstration of the idea, not a finished link format.
+- `parseInvitee` accepts printable ASCII only. An address with a non-ASCII letter is refused
+  until it is supported.
 - Fonts cover Latin and Latin Extended only, and only upright faces ship. Italic text is
   synthesized by the browser.
 - `Checkbox` and `Switch` have no error state yet, so a required checkbox cannot show an

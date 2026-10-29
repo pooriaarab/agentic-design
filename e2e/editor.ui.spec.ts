@@ -55,6 +55,8 @@ test("a person accepts an agent suggestion, and the edit stays labeled", async (
   await expect(card).toContainText("Agents suggest. Only people accept or reject.");
   await card.getByRole("button", { name: "Accept" }).click();
   await expect(card).toBeHidden();
+  // The card held focus and is gone, so focus must land in the text and not on the page body.
+  await expect(page.getByRole("textbox", { name: "Page text" })).toBeFocused();
   await expect(page.getByRole("textbox", { name: "Page text" })).toContainText("report the result to the whole team");
   await expect(page.locator(".ad-toast", { hasText: "labeled as made by Claude, an agent" })).toBeVisible();
 });
@@ -112,22 +114,58 @@ test("an email invites a person and an @handle invites an agent that shows as an
   const agent = people.getByRole("listitem").filter({ hasText: "@review-bot" });
   await expect(agent).toContainText("Agent");
   await expect(agent).toContainText("for Ada Lovelace");
-  await expect(agent.getByLabel("Access for @review-bot")).toHaveValue("commenter");
+  await expect(agent.getByLabel("Access for @review-bot", { exact: true })).toHaveValue("commenter");
   await expect(page.locator(".ad-stack__summary")).toHaveText("3 people, 2 agents");
 });
 
-test("roles change and access is removed from the list", async ({ page }) => {
+test("roles change, and access is removed with its own button that keeps focus on the page", async ({ page }) => {
   await page.goto("/editor");
   await openShare(page);
   const people = page.getByRole("list", { name: "People and agents with access" });
   await expect(people.getByRole("listitem").first()).toContainText("Owner");
-  await expect(people.getByLabel("Access for Ada Lovelace")).toHaveCount(0);
-  const grace = people.getByLabel("Access for Grace Hopper");
+  await expect(people.getByLabel("Access for Ada Lovelace", { exact: true })).toHaveCount(0);
+  const grace = people.getByLabel("Access for Grace Hopper", { exact: true });
   await grace.selectOption("viewer");
   await expect(grace).toHaveValue("viewer");
-  await grace.selectOption("remove");
+  // Stepping through the options never removes anyone. Removal is a button.
+  await expect(grace.locator("option")).toHaveText(["Can edit", "Can comment", "Can view"]);
+  await people.getByRole("button", { name: "Remove access for Grace Hopper" }).click();
   await expect(people.getByRole("listitem")).toHaveCount(2);
   await expect(people).not.toContainText("Grace Hopper");
+  await expect(page.getByLabel("Invite a person or an agent")).toBeFocused();
+});
+
+test("an agent can be invited to comment or view, never to edit", async ({ page }) => {
+  await page.goto("/editor");
+  await openShare(page);
+  const role = page.getByLabel("Role", { exact: true });
+  await expect(role.locator("option")).toHaveText(["Can edit", "Can comment", "Can view"]);
+  await page.getByLabel("Invite a person or an agent").fill("@review-bot");
+  await expect(role.locator("option")).toHaveText(["Can comment", "Can view"]);
+  await page.getByRole("button", { name: "Invite", exact: true }).click();
+  await expect(page.getByLabel("Access for @review-bot", { exact: true }).locator("option")).toHaveText(["Can comment", "Can view"]);
+  await expect(page.getByLabel("Access for Claude", { exact: true }).locator("option")).toHaveText(["Can comment", "Can view"]);
+});
+
+test("a long address is shown shortened and not as unnamed", async ({ page }) => {
+  await page.goto("/editor");
+  await openShare(page);
+  await page.getByLabel("Invite a person or an agent").fill("margaret.hamilton.engineering@example-company.org");
+  await page.getByRole("button", { name: "Invite", exact: true }).click();
+  const people = page.getByRole("list", { name: "People and agents with access" });
+  await expect(people).toContainText("margaret.hamilton.engineering@example…");
+  await expect(people).not.toContainText("Unnamed");
+});
+
+test("the first invite is announced: the status line was in the page before it had text", async ({ page }) => {
+  await page.goto("/editor");
+  await openShare(page);
+  const status = dialog(page).getByRole("status");
+  await expect(status).toHaveCount(1);
+  await expect(status).toHaveText("");
+  await page.getByLabel("Invite a person or an agent").fill("linus@example.org");
+  await page.getByRole("button", { name: "Invite", exact: true }).click();
+  await expect(status).toHaveText("Invited linus@example.org as viewer.");
 });
 
 test("the link tab sets role, expiry, and sign-in, and shows when the link stops working", async ({ page }) => {
@@ -146,29 +184,85 @@ test("the link tab sets role, expiry, and sign-in, and shows when the link stops
   await expect(page.getByText(/^Stops working on /)).toHaveCount(0);
   await expect(page.getByRole("textbox", { name: "Link", exact: true })).toHaveAttribute("readonly", "");
 
-  await page.getByRole("button", { name: "Copy link" }).click();
-  await expect(page.locator(".ad-toast", { hasText: "Link copied" })).toBeVisible();
 });
 
-test("a snapshot link holds the page in the fragment, so a server never sees it", async ({ page }) => {
+test("Copy link copies the link and says so", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/editor");
+  await openShare(page);
+  await page.getByRole("tab", { name: "Link" }).click();
+  await page.getByRole("switch", { name: "Anyone with the link" }).check();
+  const url = await page.getByRole("textbox", { name: "Link", exact: true }).inputValue();
+  await page.getByRole("button", { name: "Copy link" }).click();
+  await expect(page.locator(".ad-toast", { hasText: "Link copied" })).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(url);
+});
+
+test("when the copy fails, the page says it failed and never says Link copied", async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(navigator, "clipboard", { value: { writeText: () => Promise.reject(new Error("denied")) } }));
+  await page.goto("/editor");
+  await openShare(page);
+  await page.getByRole("tab", { name: "Link" }).click();
+  await page.getByRole("switch", { name: "Anyone with the link" }).check();
+  await page.getByRole("button", { name: "Copy link" }).click();
+  await expect(page.locator(".ad-toast", { hasText: "We couldn't copy the link" })).toBeVisible();
+  await expect(page.locator(".ad-toast", { hasText: "Link copied" })).toHaveCount(0);
+});
+
+async function makeSnapshotUrl(page: Page): Promise<string> {
   await page.goto("/editor");
   await openShare(page);
   await page.getByRole("tab", { name: "Snapshot" }).click();
   await expect(page.getByLabel("Snapshot link")).toHaveCount(0);
   await page.getByRole("button", { name: "Create snapshot link" }).click();
-  const url = await page.getByLabel("Snapshot link").inputValue();
+  return page.getByLabel("Snapshot link").inputValue();
+}
+
+test("a snapshot link carries the page text and no cursor names", async ({ page }) => {
+  const url = await makeSnapshotUrl(page);
   expect(url).toMatch(/\/editor#snapshot=[A-Za-z0-9_-]+$/);
-  const fragment = url.split("#snapshot=")[1];
-  const json = JSON.parse(Buffer.from(fragment.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8"));
+  const json = JSON.parse(Buffer.from(url.split("#snapshot=")[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8"));
   expect(json.v).toBe(1);
   expect(json.text).toContain("We ship the beta on 12 November.");
+  expect(json.text).toContain("practice the new flow before launch day.");
+  expect(json.text).not.toContain("Grace Hopper");
+  expect(json.text).not.toContain("Agent");
   await expect(page.getByText("Anyone who has this link can read this copy.")).toBeVisible();
-  // The server must never receive the fragment.
-  const requests: string[] = [];
-  page.on("request", (r) => requests.push(r.url()));
-  await page.goto(url);
-  expect(requests.some((r) => r.includes("snapshot="))).toBe(false);
 });
+
+test("opening a snapshot link shows a read-only copy and sends the page to no server", async ({ page, context }) => {
+  const url = await makeSnapshotUrl(page);
+  const payload = url.split("#snapshot=")[1];
+  const reader = await context.newPage();
+  const sent: string[] = [];
+  reader.on("request", (r) => sent.push(`${r.url()} ${r.postData() ?? ""}`));
+  await reader.goto(url);
+  const copy = reader.getByRole("article", { name: "Snapshot of Launch plan" });
+  await expect(copy).toContainText("We ship the beta on 12 November.");
+  await expect(reader.getByRole("textbox")).toHaveCount(0);
+  await expect(reader.getByText("It was not read from a server")).toBeVisible();
+  expect(sent.some((r) => r.includes(payload))).toBe(false);
+  // Control: the check does see a request that carries the payload.
+  await reader.evaluate((p) => fetch(`/health?x=${p}`), payload);
+  expect(sent.some((r) => r.includes(payload))).toBe(true);
+});
+
+for (const [why, hash] of [
+  ["is not base64", "#snapshot=%%%"],
+  ["is not JSON", `#snapshot=${Buffer.from("hello").toString("base64url")}`],
+  ["has the wrong version", `#snapshot=${Buffer.from(JSON.stringify({ v: 2, text: "x" })).toString("base64url")}`],
+  ["has no text", `#snapshot=${Buffer.from(JSON.stringify({ v: 1 })).toString("base64url")}`],
+  ["holds a hidden direction character", `#snapshot=${Buffer.from(JSON.stringify({ v: 1, text: "Ada\u202Eevil" })).toString("base64url")}`],
+  ["is far too long", `#snapshot=${"A".repeat(30_000)}`],
+]) {
+  test(`a snapshot link that ${why} opens nothing`, async ({ page }) => {
+    await page.goto("/editor");
+    const reader = await page.context().newPage();
+    await reader.goto(`/editor${hash}`);
+    await expect(reader.getByRole("alert")).toHaveText("This snapshot link is not valid, so nothing was opened.");
+    await expect(reader.getByRole("article")).toHaveCount(0);
+  });
+}
 
 test("targets in the open share dialog are at least 24 by 24 CSS pixels", async ({ page }) => {
   await page.goto("/editor");

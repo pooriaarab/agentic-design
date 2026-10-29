@@ -1,8 +1,8 @@
-import { useState, type ReactElement } from "react";
+import { useRef, useState, type ReactElement } from "react";
 import { Button } from "./button.js";
 import { Checkbox, Input, Select, Switch } from "./fields.js";
 import { Dialog, Tabs } from "./overlays.js";
-import { PresenceChip, type PresenceEntry } from "./presence.js";
+import { displayName, PresenceChip, type PresenceEntry } from "./presence.js";
 import { parseInvitee, type Invitee } from "./invite.js";
 
 export type ShareRole = "editor" | "commenter" | "viewer";
@@ -31,7 +31,9 @@ export interface ShareDialogProps {
   resourceName: string;
   people: ShareEntry[];
   onInvite: (invite: Invitee & { role: ShareRole }) => void;
-  onChangeRole: (id: string, role: ShareRole | "remove") => void;
+  onChangeRole: (id: string, role: ShareRole) => void;
+  /** Take away all access from one person or agent. */
+  onRemove: (id: string) => void;
   link: ShareLink;
   onChangeLink: (link: ShareLink) => void;
   /** A static copy inside a link. It needs no account and no server read. */
@@ -41,13 +43,20 @@ export interface ShareDialogProps {
 
 const roleLabel: Record<ShareRole, string> = { editor: "Can edit", commenter: "Can comment", viewer: "Can view" };
 const roles = ["editor", "commenter", "viewer"] as const;
+// Agents suggest edits and people accept them, so an agent never gets the editor role here.
+const rolesFor = (kind: "person" | "agent"): readonly ShareRole[] => (kind === "agent" ? ["commenter", "viewer"] : roles);
 const expiryLabel: Record<LinkExpiry, string> = { never: "Never", "1d": "In 1 day", "7d": "In 7 days", "30d": "In 30 days" };
 
-function PeopleTab({ people, onInvite, onChangeRole }: Pick<ShareDialogProps, "people" | "onInvite" | "onChangeRole">) {
+function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialogProps, "people" | "onInvite" | "onChangeRole" | "onRemove">) {
   const [text, setText] = useState("");
   const [role, setRole] = useState<ShareRole>("viewer");
   const [error, setError] = useState<string>();
-  const [sent, setSent] = useState<string>();
+  const [sent, setSent] = useState("");
+  const inviteRef = useRef<HTMLInputElement>(null);
+
+  const kind = parseInvitee(text)?.kind ?? "person";
+  const allowed = rolesFor(kind);
+  const chosen = allowed.includes(role) ? role : "viewer";
 
   return (
     <div className="ad-share">
@@ -58,30 +67,32 @@ function PeopleTab({ people, onInvite, onChangeRole }: Pick<ShareDialogProps, "p
           e.preventDefault();
           const invitee = parseInvitee(text);
           if (!invitee) {
-            setSent(undefined);
+            setSent("");
             setError("Enter an email like ada@example.org, or an agent handle like @claude.");
             return;
           }
-          onInvite({ ...invitee, role });
+          onInvite({ ...invitee, role: chosen });
           setError(undefined);
-          setSent(`Invited ${invitee.to} as ${role}.`);
+          setSent(`Invited ${invitee.to} as ${chosen}.`);
           setText("");
         }}
       >
         <Input
+          ref={inviteRef}
           label="Invite a person or an agent"
-          hint="An email invites a person. An @handle invites an agent. Agents suggest edits. People accept them."
+          hint="An email invites a person. An @handle invites an agent. An agent can comment or view, and suggests edits that people accept."
           value={text}
           onChange={(e) => setText(e.target.value)}
           error={error}
           autoComplete="off"
         />
-        <Select label="Role" value={role} onChange={(e) => setRole(e.target.value as ShareRole)}>
-          {roles.map((r) => <option key={r} value={r}>{roleLabel[r]}</option>)}
+        <Select label="Role" value={chosen} onChange={(e) => setRole(e.target.value as ShareRole)}>
+          {allowed.map((r) => <option key={r} value={r}>{roleLabel[r]}</option>)}
         </Select>
         <Button type="submit" variant="primary">Invite</Button>
       </form>
-      {sent && <p role="status" className="ad-share__sent">{sent}</p>}
+      {/* The status line is always in the page, so a screen reader announces the first message too. */}
+      <p role="status" className="ad-share__sent">{sent}</p>
       <ul className="ad-share__people" aria-label="People and agents with access">
         {people.map(({ entry, role: current }) => (
           <li key={entry.id}>
@@ -89,15 +100,28 @@ function PeopleTab({ people, onInvite, onChangeRole }: Pick<ShareDialogProps, "p
             {current === "owner" ? (
               <span className="ad-share__owner">Owner</span>
             ) : (
-              <Select
-                label={`Access for ${entry.name}`}
-                hideLabel
-                value={current}
-                onChange={(e) => onChangeRole(entry.id, e.target.value as ShareRole | "remove")}
-              >
-                {roles.map((r) => <option key={r} value={r}>{roleLabel[r]}</option>)}
-                <option value="remove">Remove access</option>
-              </Select>
+              <span className="ad-share__controls">
+                <Select
+                  label={`Access for ${displayName(entry)}`}
+                  hideLabel
+                  value={current}
+                  onChange={(e) => onChangeRole(entry.id, e.target.value as ShareRole)}
+                >
+                  {rolesFor(entry.kind === "person" ? "person" : "agent").map((r) => <option key={r} value={r}>{roleLabel[r]}</option>)}
+                </Select>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`Remove access for ${displayName(entry)}`}
+                  onClick={() => {
+                    onRemove(entry.id);
+                    // The row is gone and so is its button. Put focus on a control that still exists.
+                    inviteRef.current?.focus();
+                  }}
+                >
+                  Remove
+                </Button>
+              </span>
             )}
           </li>
         ))}
@@ -175,7 +199,7 @@ export function ShareDialog({ resourceName, trigger, open, onOpenChange, ...prop
       <Tabs
         label="Ways to share"
         tabs={[
-          { value: "people", label: "People and agents", content: <PeopleTab people={props.people} onInvite={props.onInvite} onChangeRole={props.onChangeRole} /> },
+          { value: "people", label: "People and agents", content: <PeopleTab people={props.people} onInvite={props.onInvite} onChangeRole={props.onChangeRole} onRemove={props.onRemove} /> },
           { value: "link", label: "Link", content: <LinkTab link={props.link} onChangeLink={props.onChangeLink} onCopy={props.onCopy} /> },
           { value: "snapshot", label: "Snapshot", content: <SnapshotTab snapshot={props.snapshot} onCopy={props.onCopy} /> },
         ]}

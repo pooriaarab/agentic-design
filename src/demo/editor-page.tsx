@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import {
   Button,
+  CheckIcon,
+  CloseIcon,
   PlusIcon,
   PresenceChip,
   PresenceCursor,
@@ -10,8 +12,7 @@ import {
   ToolbarButton,
   ToolbarSeparator,
   useToast,
-  CheckIcon,
-  CloseIcon,
+  usableText,
   type LinkExpiry,
   type PresenceEntry,
   type ShareEntry,
@@ -26,15 +27,67 @@ const claude: PresenceEntry = { id: "claude", name: "Claude", kind: "agent", act
 const DAY = 86_400_000;
 const expiryDays: Record<LinkExpiry, number | null> = { never: null, "1d": 1, "7d": 7, "30d": 30 };
 
-// A snapshot keeps the page inside the link fragment. A server never sees it.
+// The page is data: text, and the remote cursors that sit in it. A snapshot is made from the text only.
+type Part = string | PresenceEntry;
+const intro: Part[][] = [
+  ["We ship the beta on 12 November. Support and docs are ready one week earlier, so the team has time to practice the new flow ", grace, "before launch day."],
+  ["The announcement goes to the mailing list first, then to the blog.", claude, " Owners review the final draft."],
+];
+const lastBefore = "Measure sign-ups for two weeks.";
+const lastAfter = "Measure sign-ups for two weeks, and report the result to the whole team.";
+
+const plain = (parts: Part[]) => parts.filter((p): p is string => typeof p === "string").join("");
+
+// A snapshot keeps the page inside the link fragment, so a server never sees it.
 // This demo does not compress or encrypt it.
-function snapshotUrl(text: string): string {
-  const bytes = new TextEncoder().encode(JSON.stringify({ v: 1, text }));
+const SNAPSHOT_KEY = "#snapshot=";
+const MAX_SNAPSHOT = 20_000;
+
+function snapshotUrl(paragraphs: string[]): string {
+  const bytes = new TextEncoder().encode(JSON.stringify({ v: 1, text: paragraphs.join("\n\n") }));
   const base64 = btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  return `${window.location.origin}/editor#snapshot=${base64}`;
+  return `${window.location.origin}/editor${SNAPSHOT_KEY}${base64}`;
+}
+
+// A link is hostile input. Check its size, its shape, and every paragraph before showing any of it.
+function readSnapshot(hash: string): string[] | null {
+  if (!hash.startsWith(SNAPSHOT_KEY) || hash.length > MAX_SNAPSHOT) return null;
+  try {
+    const base64 = hash.slice(SNAPSHOT_KEY.length).replace(/-/g, "+").replace(/_/g, "/");
+    const data: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))));
+    if (typeof data !== "object" || data === null || (data as { v?: unknown }).v !== 1) return null;
+    const text = (data as { text?: unknown }).text;
+    if (typeof text !== "string") return null;
+    const paragraphs = text.split("\n\n");
+    return paragraphs.every((p) => usableText(p, 5_000) !== null) ? paragraphs : null;
+  } catch {
+    return null;
+  }
+}
+
+function SnapshotView({ hash }: { hash: string }) {
+  const paragraphs = readSnapshot(hash);
+  return (
+    <DemoShell title="Launch plan" description="A read-only copy from a link. It was not read from a server, and edits here are not saved.">
+      {paragraphs ? (
+        <article className="demo-page" aria-label="Snapshot of Launch plan">
+          <div className="demo-prose">
+            {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
+          </div>
+        </article>
+      ) : (
+        <p role="alert">This snapshot link is not valid, so nothing was opened.</p>
+      )}
+    </DemoShell>
+  );
 }
 
 export function EditorPage() {
+  const [hash] = useState(() => window.location.hash);
+  return hash.startsWith(SNAPSHOT_KEY) ? <SnapshotView hash={hash} /> : <Editor />;
+}
+
+function Editor() {
   const toast = useToast();
   const [bold, setBold] = useState(false);
   const [accepted, setAccepted] = useState<"pending" | "accepted" | "rejected">("pending");
@@ -47,10 +100,23 @@ export function EditorPage() {
   const [snapshot, setSnapshot] = useState<string>();
   const textRef = useRef<HTMLDivElement>(null);
 
+  const last = accepted === "accepted" ? lastAfter : lastBefore;
   const here = [ada, grace, claude, ...people.map((p) => p.entry).filter((e) => !["ada", "grace", "claude"].includes(e.id))];
+
   const copy = async (url: string) => {
-    await navigator.clipboard?.writeText(url).catch(() => undefined);
-    toast({ title: "Link copied", tone: "success" });
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Link copied", tone: "success" });
+    } catch {
+      toast({ title: "We couldn't copy the link", description: "Select the link and copy it yourself. Nothing was changed.", tone: "danger" });
+    }
+  };
+
+  // The suggestion card holds focus when a key is pressed. It is about to go, so focus the text.
+  const decide = (decision: "accepted" | "rejected") => {
+    textRef.current?.focus();
+    setAccepted(decision);
+    if (decision === "accepted") toast({ title: "Suggestion accepted", description: "The edit stays labeled as made by Claude, an agent.", tone: "success" });
   };
 
   return (
@@ -68,20 +134,20 @@ export function EditorPage() {
               setPeople((all) => [
                 ...all,
                 {
-                  entry: { id: invite.to, name: invite.to, kind: invite.kind, actingFor: invite.kind === "agent" ? "Ada Lovelace" : undefined },
+                  // A long address would fail the display-name limit, so the list shows a shortened one.
+                  entry: { id: invite.to, name: invite.to.length > 40 ? `${invite.to.slice(0, 37)}…` : invite.to, kind: invite.kind, actingFor: invite.kind === "agent" ? "Ada Lovelace" : undefined },
                   role: invite.role,
                 },
               ])
             }
-            onChangeRole={(id, role) =>
-              setPeople((all) => (role === "remove" ? all.filter((p) => p.entry.id !== id) : all.map((p) => (p.entry.id === id ? { ...p, role } : p))))
-            }
+            onChangeRole={(id, role) => setPeople((all) => all.map((p) => (p.entry.id === id ? { ...p, role } : p)))}
+            onRemove={(id) => setPeople((all) => all.filter((p) => p.entry.id !== id))}
             link={link}
             onChangeLink={(next) => {
               const days = expiryDays[next.expiry];
               setLink({ ...next, expiresAt: days === null ? null : new Date(Date.now() + days * DAY) });
             }}
-            snapshot={{ url: snapshot, onCreate: () => setSnapshot(snapshotUrl(textRef.current?.innerText ?? "")) }}
+            snapshot={{ url: snapshot, onCreate: () => setSnapshot(snapshotUrl([...intro.map(plain), last])) }}
             onCopy={copy}
           />
         </>
@@ -96,19 +162,12 @@ export function EditorPage() {
 
       <article className="demo-page">
         <div ref={textRef} className="demo-prose" role="textbox" aria-multiline="true" aria-label="Page text" contentEditable suppressContentEditableWarning spellCheck>
-          <p>
-            We ship the beta on 12 November. Support and docs are ready one week earlier, so the team has time to
-            practice the new flow <PresenceCursor entry={grace} />before launch day.
-          </p>
-          <p>
-            The announcement goes to the mailing list first, then to the blog.<PresenceCursor entry={claude} /> Owners
-            review the final draft.
-          </p>
-          <p>
-            {accepted === "accepted"
-              ? "Measure sign-ups for two weeks, and report the result to the whole team."
-              : "Measure sign-ups for two weeks."}
-          </p>
+          {intro.map((parts, i) => (
+            <p key={i}>
+              {parts.map((part, j) => (typeof part === "string" ? part : <PresenceCursor key={j} entry={part} />))}
+            </p>
+          ))}
+          <p>{last}</p>
         </div>
 
         {accepted === "pending" && (
@@ -116,12 +175,12 @@ export function EditorPage() {
             <p>
               <PresenceChip entry={claude} /> suggests a change to the last paragraph:
             </p>
-            <p className="demo-suggestion__text"><ins>Measure sign-ups for two weeks, and report the result to the whole team.</ins></p>
+            <p className="demo-suggestion__text"><ins>{lastAfter}</ins></p>
             <div className="demo-cluster">
-              <Button size="sm" variant="primary" onClick={() => { setAccepted("accepted"); toast({ title: "Suggestion accepted", description: "The edit stays labeled as made by Claude, an agent.", tone: "success" }); }}>
+              <Button size="sm" variant="primary" onClick={() => decide("accepted")}>
                 <CheckIcon /> Accept
               </Button>
-              <Button size="sm" onClick={() => setAccepted("rejected")}>
+              <Button size="sm" onClick={() => decide("rejected")}>
                 <CloseIcon /> Reject
               </Button>
             </div>
@@ -129,7 +188,6 @@ export function EditorPage() {
           </aside>
         )}
       </article>
-
     </DemoShell>
   );
 }

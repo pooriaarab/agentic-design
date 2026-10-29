@@ -12,6 +12,6 @@ export { EmptyState, FileList, FileRow } from "./files.js";
 export type { FileRowProps } from "./files.js";
 export { Avatar, PresenceChip, PresenceCursor, PresenceStack } from "./presence.js";
 export type { PresenceEntry, PresenceKind, PresenceStatus } from "./presence.js";
-export { usableName, MAX_NAME_LENGTH } from "./safe-name.js";
+export { usableName, usableText, MAX_NAME_LENGTH } from "./safe-name.js";
 export { ShareDialog } from "./share-dialog.js";
 export type { LinkExpiry, ShareDialogProps, ShareEntry, ShareLink, ShareRole } from "./share-dialog.js";

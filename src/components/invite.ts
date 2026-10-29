@@ -10,6 +10,9 @@ const HANDLE = /^@[a-z0-9][a-z0-9_-]{1,31}$/i;
 export function parseInvitee(text: string): Invitee | null {
   const value = text.trim();
   if (value.length === 0 || value.length > 254) return null;
+  // Printable ASCII only. A hidden or direction-changing character could point an invite elsewhere
+  // than what the person reads. Addresses with non-ASCII letters are refused until they are supported.
+  if (!/^[!-~]+$/.test(value)) return null;
   if (HANDLE.test(value)) return { kind: "agent", to: value };
   if (!value.startsWith("@") && EMAIL.test(value)) return { kind: "person", to: value };
   return null;
