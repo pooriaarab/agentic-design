@@ -17,6 +17,7 @@ export function ChromePage() {
       <section aria-labelledby="doc-title" id="demo-title">
         <h2 id="doc-title">Document title</h2>
         <DocumentTitle value={title} onRename={setTitle} />
+        <DocumentTitle value="A stored title that is longer than its limit" label="Imported title" maxLength={20} onRename={() => undefined} />
         <p className="demo-muted demo-note">Press Enter or F2 to rename. Enter saves. Escape cancels.</p>
       </section>
 

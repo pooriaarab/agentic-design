@@ -21,7 +21,7 @@ export interface AgentBadgeProps {
  */
 export function AgentBadge({ name, actingFor, label = "Made by an agent", compact = false, className }: AgentBadgeProps) {
   // The word is the signal. A label without it would hide that an agent made the thing.
-  if (!/agent/i.test(label)) throw new Error('An agent badge label must say "agent".');
+  if (!/\bagents?\b/i.test(label)) throw new Error('An agent badge label must say "agent".');
   const agent = displayName({ name: name ?? "", kind: "agent" });
   const who = name === undefined ? null : agent;
   const owner = actingFor === undefined ? "unknown" : (usableName(actingFor) ?? "Unnamed person");

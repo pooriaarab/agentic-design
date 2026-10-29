@@ -18,6 +18,7 @@ export interface DocumentTitleProps {
  * A title that renames in place. A button shows the name. Enter, Space, or F2 opens a field.
  * Enter or leaving the field saves. Escape cancels and returns focus to the button. A blank or
  * unsafe title is refused with a message that says what to fix, and the field stays open.
+ * Put it in the top bar. Inside a dialog, Escape also closes the dialog.
  */
 export function DocumentTitle({ value, onRename, label = "Document title", readOnly = false, maxLength = 120, className }: DocumentTitleProps) {
   // The stored title may come from a peer. A title with a hidden character shows as untitled.
@@ -58,6 +59,8 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
   /** Returns true when the field may close. */
   const commit = (): boolean => {
     const next = draft.trim();
+    // Nothing changed, so there is nothing to check. A long stored title must not trap a person who never edited it.
+    if (next === shown) return true;
     if (next === "") {
       setError("Enter a title.");
       return false;
@@ -71,7 +74,7 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
       setError(/\s{2,}|(?! )\p{Zs}/u.test(next) ? "Use single spaces only." : "Use letters, numbers, and punctuation, with no hidden characters.");
       return false;
     }
-    if (next !== shown) onRename(next);
+    onRename(next);
     return true;
   };
 

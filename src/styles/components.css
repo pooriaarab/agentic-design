@@ -375,14 +375,18 @@
 .ad-shell__actions { display: flex; align-items: center; gap: var(--ad-space-4); margin-inline-start: auto; }
 .ad-shell__content { grid-area: content; min-width: 0; padding: var(--ad-space-8) var(--ad-space-6) var(--ad-space-24); outline: none; }
 .ad-shell__menu { display: none; }
-.ad-shell[data-panel] { grid-template-columns: var(--ad-size-sidebar) minmax(0, 1fr) var(--ad-size-panel); grid-template-areas: "sidebar topbar topbar" "sidebar content panel"; }
-.ad-shell__panel { grid-area: panel; min-width: 0; padding: var(--ad-space-6) var(--ad-space-4); border-inline-start: 1px solid var(--ad-color-border); background: var(--ad-color-surface-sunken); }
+/* With the sidebar and the panel both beside it, the content needs room. Below 64rem the panel sits under the content. */
+.ad-shell[data-panel] { grid-template-rows: auto 1fr auto; grid-template-areas: "sidebar topbar" "sidebar content" "sidebar panel"; }
+@media (min-width: 64rem) {
+  .ad-shell[data-panel] { grid-template-columns: var(--ad-size-sidebar) minmax(0, 1fr) var(--ad-size-panel); grid-template-rows: auto 1fr; grid-template-areas: "sidebar topbar topbar" "sidebar content panel"; }
+}
+.ad-shell__panel { grid-area: panel; min-width: 0; padding: var(--ad-space-6) var(--ad-space-4); border-block-start: 1px solid var(--ad-color-border); background: var(--ad-color-surface-sunken); }
+@media (min-width: 64rem) { .ad-shell__panel { border-block-start: 0; border-inline-start: 1px solid var(--ad-color-border); } }
 /* On a narrow screen the sidebar sits below the top bar, under the button that opens it. */
 @media (max-width: 47.99rem) {
   .ad-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr; grid-template-areas: "topbar" "sidebar" "content"; }
   .ad-shell__menu { display: inline-flex; }
   .ad-shell[data-panel] { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; grid-template-areas: "topbar" "sidebar" "content" "panel"; }
-  .ad-shell__panel { border-inline-start: 0; border-block-start: 1px solid var(--ad-color-border); }
   .ad-shell__sidebar[data-open="false"] { display: none; }
   .ad-shell__sidebar { border-inline-end: 0; border-bottom: 1px solid var(--ad-color-border); }
   .ad-shell__topbar, .ad-shell__content { padding-inline: var(--ad-space-4); }

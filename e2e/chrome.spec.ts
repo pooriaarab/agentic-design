@@ -37,6 +37,11 @@ test("a badge label that does not say agent is refused", () => {
   expect(() => html(createElement(AgentBadge, { label: "Draft" }))).toThrow('must say "agent"');
 });
 
+test("a badge label that has agent only inside another word is refused", () => {
+  for (const label of ["Approved by management", "Reagent list"]) expect(() => html(createElement(AgentBadge, { label }))).toThrow('must say "agent"');
+  expect(html(createElement(AgentBadge, { label: "Edited by agents" }))).toContain("Edited by agents");
+});
+
 test("a panel that is false or null draws no panel, and no label is needed", () => {
   const shell = (panel: null | false) => html(createElement(AppShell, { brand: "x", sidebar: null, panel, panelLabel: "Notes", children: null }));
   for (const panel of [false, null] as const) {

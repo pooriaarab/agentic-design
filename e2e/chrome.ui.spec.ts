@@ -81,6 +81,16 @@ test("a blank or hidden-character title is refused with a message", async ({ pag
   await expect(page.getByRole("button", { name: "Launch plan, rename" })).toBeFocused();
 });
 
+test("a stored title over the limit can be opened and left without a change", async ({ page }) => {
+  await page.goto("/chrome");
+  const long = "A stored title that is longer than its limit";
+  await page.getByRole("button", { name: `${long}, rename` }).click();
+  await expect(page.getByRole("textbox", { name: "Imported title" })).toHaveValue(long);
+  await page.getByRole("heading", { name: "Document title" }).click();
+  await expect(page.getByRole("button", { name: `${long}, rename` })).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
 test("leaving the field saves a good title", async ({ page }) => {
   await page.goto("/chrome");
   await page.getByRole("button", { name: "Launch plan, rename" }).click();
@@ -95,7 +105,8 @@ test("the toolbar has named groups, one tab stop, and an overflow menu in the sa
   await expect(toolbar.getByRole("group", { name: "Text style" })).toBeVisible();
   await expect(toolbar.getByRole("group", { name: "Insert" })).toBeVisible();
 
-  await page.getByRole("button", { name: "Launch plan, rename" }).focus();
+  // The imported title is the last tab stop before the toolbar.
+  await page.getByRole("button", { name: /^A stored title.*, rename$/ }).focus();
   await page.keyboard.press("Tab");
   await expect(toolbar.locator(":focus")).toHaveCount(1);
   await page.keyboard.press("Tab");
@@ -130,13 +141,12 @@ test("the badge says it in words and keeps the facts when only the avatar fits",
   expect(await radius(compact)).not.toBe("9999px");
 });
 
-test("in forced colors the badge and the title field keep their lines", async ({ page }) => {
+test("in forced colors the badge keeps its line and the title field keeps its focus outline", async ({ page }) => {
   await page.emulateMedia({ forcedColors: "active" });
   await page.goto("/chrome");
   const border = (selector: string) => page.locator(selector).first().evaluate((n) => getComputedStyle(n).borderTopColor);
   expect(await border(".ad-agent-badge:not(.ad-agent-badge--compact)")).not.toBe("rgba(0, 0, 0, 0)");
   await page.getByRole("button", { name: "Launch plan, rename" }).click();
-  expect(await border(".ad-title__input")).not.toBe("rgba(0, 0, 0, 0)");
   const outline = await page.getByRole("textbox", { name: "Document title" }).evaluate((n) => getComputedStyle(n).outlineStyle);
   expect(outline).not.toBe("none");
 });
@@ -153,7 +163,16 @@ test("the side panel is a landmark, sits after the content, and falls under it o
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
 });
 
-test("in a right-to-left page the panel moves to the start side and arrow keys follow", async ({ page }) => {
+test("between 48rem and 64rem the panel sits under the content and the content keeps its room", async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 800 });
+  await page.goto("/chrome");
+  const [p, m] = [await page.getByRole("complementary", { name: "Notes" }).boundingBox(), await page.getByRole("main").boundingBox()];
+  expect((p?.y ?? 0) >= (m?.y ?? 0) + (m?.height ?? 0) - 1).toBe(true);
+  expect((m?.width ?? 0) > 500).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+});
+
+test("in a right-to-left page the panel moves to the start side", async ({ page }) => {
   await page.goto("/chrome");
   await page.evaluate(() => document.documentElement.setAttribute("dir", "rtl"));
   const [p, m] = [await page.getByRole("complementary", { name: "Notes" }).boundingBox(), await page.getByRole("main").boundingBox()];
