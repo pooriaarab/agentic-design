@@ -45,7 +45,8 @@ export interface ShareDialogProps {
 
 const roleLabel: Record<ShareRole, string> = { editor: "Can edit", commenter: "Can comment", viewer: "Can view" };
 const roles = ["editor", "commenter", "viewer"] as const;
-// Agents suggest edits and people accept them, so an agent never gets the editor role here.
+// Agents suggest edits and people accept them, so an invited agent never gets the editor role.
+// A link is different: whoever holds it gets its role, and the Link tab says so.
 const rolesFor = (kind: "person" | "agent"): readonly ShareRole[] => (kind === "agent" ? ["commenter", "viewer"] : roles);
 const expiryLabel: Record<LinkExpiry, string> = { never: "Never", "1d": "In 1 day", "7d": "In 7 days", "30d": "In 30 days" };
 
@@ -169,7 +170,13 @@ function LinkTab({ link, onChangeLink, onCopy }: Pick<ShareDialogProps, "link" |
             <Select
               label="Access"
               value={link.role}
-              hint={link.role === "editor" && !link.signedInOnly ? "Anyone with the link can edit without signing in. That includes agents." : undefined}
+              hint={
+                link.role === "editor"
+                  ? link.signedInOnly
+                    ? "Anyone who signs in with the link can edit. That includes agents."
+                    : "Anyone with the link can edit without signing in. That includes agents."
+                  : undefined
+              }
               onChange={(e) => onChangeLink({ ...link, role: e.target.value as ShareRole })}
             >
               {roles.map((r) => <option key={r} value={r}>{roleLabel[r]}</option>)}

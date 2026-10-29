@@ -43,7 +43,7 @@ for (const scheme of ["light", "dark"] as const) {
 test("the page says an agent edited it, and an agent cursor carries the word Agent", async ({ page }) => {
   await page.goto("/editor");
   await expect(page.getByText("Last edited by Claude, an agent.")).toBeVisible();
-  await expect(page.locator(".ad-cursor--agent")).toContainText("Claude · Agent");
+  await expect(page.locator(".ad-cursor--agent")).toContainText("Claude · Agent · for Ada Lovelace");
   await expect(page.locator(".ad-cursor--person")).not.toContainText("Agent");
   await expect(page.locator(".ad-stack__summary")).toHaveText("2 people, 1 agent");
 });
@@ -395,7 +395,7 @@ test("a link that anyone can edit without signing in says that agents can too", 
   await page.getByRole("tab", { name: "Link" }).click();
   await page.getByRole("switch", { name: "Anyone with the link" }).check();
   await page.getByLabel("Access", { exact: true }).selectOption("editor");
-  await expect(page.getByText("Anyone with the link can edit without signing in.")).toHaveCount(0);
+  await expect(page.getByText("Anyone who signs in with the link can edit. That includes agents.")).toBeVisible();
   await page.getByLabel("Require sign-in").uncheck();
   await expect(page.getByText("Anyone with the link can edit without signing in. That includes agents.")).toBeVisible();
 });

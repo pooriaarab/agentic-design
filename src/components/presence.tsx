@@ -136,7 +136,7 @@ export function PresenceCursor({ entry }: { entry: PresenceEntry }) {
       <span className="ad-cursor__caret" />
       <span className="ad-cursor__tag">
         {name}
-        {kindOf(entry) === "agent" && " · Agent"}
+        {kindOf(entry) === "agent" && ` · Agent · for ${entry.actingFor === undefined ? "unknown" : (usableName(entry.actingFor) ?? "Unnamed person")}`}
       </span>
     </span>
   );
