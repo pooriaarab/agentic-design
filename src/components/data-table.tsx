@@ -50,7 +50,7 @@ const noRows: readonly never[] = [];
 
 /**
  * A table for many rows. Only the rows in view are in the page, so 10,000 rows scroll smoothly.
- * It is a grid. The rows are one tab stop, and arrow keys, Home, End, and Page Up and Down move between them.
+ * It is a grid. The rows are one tab stop (with `selectable`, select-all is another), and arrow keys, Home, End, and Page Up and Down move between them.
  * Space selects a row, Shift with a click or Space selects a range, Enter opens a row, and Escape clears the selection.
  * Keep focusable controls out of cells: each one adds a tab stop. A selection keeps the ids of rows that are out of the list, and they count again when the rows return.
  */
@@ -260,7 +260,7 @@ export function DataTable<T>({
   useEffect(() => {
     if (!loading) setArrived((n) => (n === count && selected.size === 0 ? n : null));
   }, [count, selected.size, loading]);
-  const status = loading ? "Loading rows" : selectable && selected.size > 0 ? `${selected.size} of ${count} selected` : arrived !== null && arrived === count && count > 0 ? `${count} ${count === 1 ? "row" : "rows"}` : "";
+  const status = loading ? "Loading rows" : selectable && selected.size > 0 ? `${selected.size} of ${count} selected` : arrived !== null && arrived === count ? (count === 0 ? "No rows" : `${count} ${count === 1 ? "row" : "rows"}`) : "";
 
   return (
     <div className="agd-datatable" style={style}>

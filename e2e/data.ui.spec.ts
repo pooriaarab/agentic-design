@@ -261,7 +261,20 @@ test("the rows-arrived status does not come back with an old count", async ({ pa
   await page.locator('[data-index="0"]').focus();
   await page.keyboard.press("Space");
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("status").filter({ hasText: "10000 rows" })).toHaveCount(0);
+  // The positive state first: the status is empty. Then the old count must not return.
+  const status = page.locator(".agd-datatable [role=status]");
+  await expect(status).toHaveText("");
+  await expect(status).not.toHaveText(/10000 rows/);
+  await page.waitForTimeout(700);
+  await expect(status).toHaveText("");
+});
+
+test("a load that ends with no rows says so", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Show loading" }).click();
+  await page.getByRole("button", { name: "Show empty" }).click();
+  await page.getByRole("button", { name: "Show rows" }).click();
+  await expect(page.locator(".agd-datatable [role=status]")).toHaveText("No rows");
 });
 
 test("Home on the first row scrolls it back into view", async ({ page }) => {
