@@ -1,9 +1,8 @@
 # agentic-design
 
-[![npm version](https://img.shields.io/npm/v/agentic-design)](https://www.npmjs.com/package/agentic-design)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/license/mit)
 
-[Package](https://www.npmjs.com/package/agentic-design) · [Source](https://github.com/pooriaarab/agentic-design) · [Support](https://github.com/pooriaarab/agentic-design/issues)
+[Source](https://github.com/pooriaarab/agentic-design) · [Support](https://github.com/pooriaarab/agentic-design/issues)
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
@@ -13,8 +12,11 @@ Accessible design tokens and UI primitives for calm, minimal apps.
 
 ## Install
 
+The package is not on npm yet. Build it from a checkout and install the tarball:
+
 ```sh
-npm install agentic-design
+npm ci && npm run build && npm pack
+npm install ./agentic-design-0.0.0.tgz
 ```
 
 ## Quick start
@@ -67,7 +69,8 @@ themes.dark.accent; // "#8EA4FF"
 ## Limits
 
 - No React components yet.
-- Fonts cover Latin and Latin Extended only.
+- Fonts cover Latin and Latin Extended only, and only upright faces ship. Italic text is
+  synthesized by the browser.
 - The contrast check covers the pairs listed in `src/tokens/tokens.ts`. Add a
   pair there when you add a new use of color.
 
@@ -77,6 +80,9 @@ themes.dark.accent; // "#8EA4FF"
 npm ci
 npm run ci:local
 ```
+
+`ci:local` builds first. Run `npm run build` before `npm run typecheck` on a clean checkout,
+because the tests import `dist/`.
 
 ## License
 

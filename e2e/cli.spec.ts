@@ -63,10 +63,31 @@ test("the check script exits 1 and names the pair when a pair fails", () => {
   expect(result.stderr).toContain("FAIL light: text on bg is 1.00, needs 4.5");
 });
 
+test("the check script refuses input it cannot check, instead of passing", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ad-contrast-"));
+  const { themes } = JSON.parse(cli("tokens", "--format", "json").stdout);
+  const run = (value: unknown) => {
+    const file = join(dir, `${Math.random()}.json`);
+    writeFileSync(file, JSON.stringify(value));
+    return spawnSync("node", ["scripts/check-contrast.mjs", file], { encoding: "utf8" });
+  };
+  const empty = run({ themes: {} });
+  expect(empty.status).toBe(2);
+  expect(empty.stderr).toContain('theme "light" is missing');
+  expect(run({}).status).toBe(2);
+  const onlyLight = run({ themes: { light: themes.light } });
+  expect(onlyLight.status).toBe(2);
+  expect(onlyLight.stderr).toContain('theme "dark" is missing');
+  const { accent, ...noAccent } = themes.dark;
+  const missingColor = run({ themes: { light: themes.light, dark: noAccent } });
+  expect(missingColor.status).toBe(2);
+  expect(missingColor.stderr).toContain('has no color "accent"');
+});
+
 test("the shipped tokens cannot be changed at run time", () => {
   const { status } = spawnSync(
     "node",
-    ["--input-type=module", "-e", 'import { themes } from "./dist/tokens.js"; "use strict"; try { themes.light.text = "#000"; } catch { process.exit(0); } process.exit(1);'],
+    ["--input-type=module", "-e", 'import { themes } from "./dist/tokens.js"; try { themes.light.text = "#000"; } catch { process.exit(0); } process.exit(1);'],
     { encoding: "utf8" },
   );
   expect(status).toBe(0);
