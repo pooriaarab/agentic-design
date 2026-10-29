@@ -267,7 +267,7 @@ for (const [why, hash] of [
 test("targets in the open share dialog are at least 24 by 24 CSS pixels", async ({ page }) => {
   await page.goto("/editor");
   await openShare(page);
-  for (const tab of ["Link", "Snapshot"]) {
+  for (const tab of ["People and agents", "Link", "Snapshot"]) {
     await page.getByRole("tab", { name: tab }).click();
     if (tab === "Link") await page.getByRole("switch", { name: "Anyone with the link" }).check();
     const small: string[] = [];
@@ -277,4 +277,47 @@ test("targets in the open share dialog are at least 24 by 24 CSS pixels", async 
     }
     expect(small).toEqual([]);
   }
+});
+
+test("inviting the same address twice is refused, with a way to fix it", async ({ page }) => {
+  await page.goto("/editor");
+  await openShare(page);
+  const field = page.getByLabel("Invite a person or an agent");
+  await field.fill("linus@example.org");
+  await page.getByRole("button", { name: "Invite", exact: true }).click();
+  await field.fill("Linus@Example.org");
+  await page.getByRole("button", { name: "Invite", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("Linus@Example.org already has access. Change their role in the list below.");
+  await expect(page.getByRole("list", { name: "People and agents with access" }).getByRole("listitem")).toHaveCount(4);
+});
+
+test("changing another link setting keeps the expiry date it had", async ({ page }) => {
+  await page.clock.install({ time: new Date("2026-10-28T12:00:00Z") });
+  await page.goto("/editor");
+  await openShare(page);
+  await page.getByRole("tab", { name: "Link" }).click();
+  await page.getByRole("switch", { name: "Anyone with the link" }).check();
+  await page.getByLabel("Link expires").selectOption("1d");
+  await expect(page.getByText("Stops working on Oct 29, 2026.")).toBeVisible();
+  await page.clock.fastForward("48:00:00");
+  await page.getByLabel("Require sign-in").uncheck();
+  await page.getByLabel("Access", { exact: true }).selectOption("commenter");
+  await expect(page.getByText("Stops working on Oct 29, 2026.")).toBeVisible();
+  await page.getByLabel("Link expires").selectOption("7d");
+  await expect(page.getByText("Stops working on Nov 6, 2026.")).toBeVisible();
+});
+
+test("a snapshot carries the text as edited, and no cursor names", async ({ page }) => {
+  await page.goto("/editor");
+  const text = page.getByRole("textbox", { name: "Page text" });
+  await text.locator("p").last().click();
+  await page.keyboard.press("End");
+  await page.keyboard.type(" Edited by hand.");
+  await openShare(page);
+  await page.getByRole("tab", { name: "Snapshot" }).click();
+  await page.getByRole("button", { name: "Create snapshot link" }).click();
+  const url = await page.getByLabel("Snapshot link").inputValue();
+  const json = JSON.parse(Buffer.from(url.split("#snapshot=")[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8"));
+  expect(json.text).toContain("Measure sign-ups for two weeks. Edited by hand.");
+  expect(json.text).not.toContain("Grace Hopper");
 });

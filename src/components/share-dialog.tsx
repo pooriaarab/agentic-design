@@ -11,6 +11,8 @@ export type LinkExpiry = "never" | "1d" | "7d" | "30d";
 export interface ShareEntry {
   entry: PresenceEntry;
   role: ShareRole | "owner";
+  /** The email or @handle this entry was invited with. The dialog refuses a second invite to it. */
+  invitedAs?: string;
 }
 
 export interface ShareLink {
@@ -47,6 +49,15 @@ const roles = ["editor", "commenter", "viewer"] as const;
 const rolesFor = (kind: "person" | "agent"): readonly ShareRole[] => (kind === "agent" ? ["commenter", "viewer"] : roles);
 const expiryLabel: Record<LinkExpiry, string> = { never: "Never", "1d": "In 1 day", "7d": "In 7 days", "30d": "In 30 days" };
 
+// The row shows the role the entry really has. If it is not allowed for an agent, it still shows,
+// marked, so the list never hides a right the agent holds.
+function optionsFor(entry: PresenceEntry, current: ShareRole): { role: ShareRole; allowed: boolean }[] {
+  const kind = entry.kind === "person" ? "person" : "agent";
+  const allowed = rolesFor(kind);
+  const options = allowed.map((role) => ({ role, allowed: true }));
+  return allowed.includes(current) ? options : [{ role: current, allowed: false }, ...options];
+}
+
 function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialogProps, "people" | "onInvite" | "onChangeRole" | "onRemove">) {
   const [text, setText] = useState("");
   const [role, setRole] = useState<ShareRole>("viewer");
@@ -69,6 +80,11 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
           if (!invitee) {
             setSent("");
             setError("Enter an email like ada@example.org, or an agent handle like @claude.");
+            return;
+          }
+          if (people.some((p) => p.invitedAs?.toLowerCase() === invitee.to.toLowerCase())) {
+            setSent("");
+            setError(`${invitee.to} already has access. Change their role in the list below.`);
             return;
           }
           onInvite({ ...invitee, role: chosen });
@@ -107,7 +123,9 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
                   value={current}
                   onChange={(e) => onChangeRole(entry.id, e.target.value as ShareRole)}
                 >
-                  {rolesFor(entry.kind === "person" ? "person" : "agent").map((r) => <option key={r} value={r}>{roleLabel[r]}</option>)}
+                  {optionsFor(entry, current).map(({ role: r, allowed: ok }) => (
+                    <option key={r} value={r} disabled={!ok}>{ok ? roleLabel[r] : `${roleLabel[r]} (not allowed for agents)`}</option>
+                  ))}
                 </Select>
                 <Button
                   variant="ghost"

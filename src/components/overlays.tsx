@@ -147,7 +147,12 @@ const toneWord = { info: "Notice", success: "Success", warning: "Warning", dange
 /** Mount once near the root. A danger toast stays until it is dismissed. Others close after 8 seconds. */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastEntry[]>([]);
-  const toast = useCallback((options: ToastOptions) => setToasts((all) => [...all, { ...options, id: Date.now() + Math.random() }]), []);
+  const toast = useCallback((options: ToastOptions) => {
+    if (typeof options.title !== "string" || options.title.trim() === "") throw new Error("A toast needs a non-empty title.");
+    // An unknown tone, such as "error", is treated as danger. It stays until dismissed, so it is never missed.
+    const tone: ToastTone = options.tone === undefined ? "info" : options.tone in toneIcon ? options.tone : "danger";
+    setToasts((all) => [...all, { ...options, tone, id: Date.now() + Math.random() }]);
+  }, []);
   const remove = (id: number) => setToasts((all) => all.filter((t) => t.id !== id));
 
   return (

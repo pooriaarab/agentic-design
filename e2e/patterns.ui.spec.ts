@@ -117,6 +117,8 @@ test("an agent is labeled as an agent by a word and a shape, never by color alon
   const bot = chips.filter({ hasText: "Review bot" });
   await expect(bot).toContainText("Agent");
   await expect(bot).toContainText("Paused");
+  // An agent with no principal says so. It never leaves the line out.
+  await expect(bot).toContainText("for unknown");
   await expect(chips.filter({ hasText: "Grace Hopper" }).first()).toContainText("Away");
 
   const radius = (selector: string) => page.locator(selector).first().evaluate((el) => getComputedStyle(el).borderTopLeftRadius);
@@ -137,9 +139,9 @@ test("the stack counts people and agents in words and names every avatar", async
   await page.goto("/patterns");
   const stack = page.getByRole("list", { name: "Here now" });
   await expect(stack.getByRole("img")).toHaveCount(5);
-  await expect(stack.getByRole("img", { name: "Claude, agent" })).toBeVisible();
-  await expect(stack.getByRole("img", { name: "Review bot, agent, paused" })).toBeVisible();
-  await expect(stack.getByRole("img", { name: "Grace Hopper, away" })).toBeVisible();
+  await expect(stack.getByRole("img", { name: "Claude, agent, acting for Ada Lovelace" })).toBeVisible();
+  await expect(stack.getByRole("img", { name: "Review bot, agent, acting for an unknown person, paused" })).toBeVisible();
+  await expect(stack.getByRole("img", { name: "Grace Hopper, person, away" })).toBeVisible();
   await expect(stack.getByRole("img", { name: "2 more" })).toBeVisible();
   await expect(page.locator(".ad-stack__summary")).toHaveText("4 people, 2 agents");
 });
@@ -221,4 +223,28 @@ test("on a narrow screen the tab order follows what is on the screen", async ({ 
   await nav.getByRole("link").last().focus();
   await page.keyboard.press("Tab");
   expect(await inMain()).toBe(true);
+});
+
+test("a screen reader gets one built sentence per chip, so a person named Agent still reads as a person", async ({ page }) => {
+  await page.goto("/patterns");
+  const claude = page.locator(".ad-chip").filter({ hasText: "Claude" }).first();
+  await expect(claude.locator(".ad-sr-only")).toHaveText("Claude, agent, acting for Ada Lovelace");
+  await expect(claude.locator('[aria-hidden="true"]').first()).toBeAttached();
+  const trickster = page.locator(".ad-chip").filter({ hasText: "Ada Agent for Bob" });
+  await expect(trickster.locator(".ad-sr-only")).toHaveText("Ada Agent for Bob, person");
+  await expect(trickster.locator(".ad-pill")).toHaveCount(0);
+});
+
+test("the toolbar arrow keys follow a right-to-left page", async ({ page }) => {
+  // The root element does not exist when the init script runs, so set the direction when it appears.
+  await page.addInitScript(() => {
+    const set = () => document.documentElement && (document.documentElement.dir = "rtl");
+    set();
+    new MutationObserver(set).observe(document, { childList: true });
+  });
+  await page.goto("/patterns");
+  const toolbar = page.getByRole("toolbar", { name: "Text formatting" });
+  await toolbar.getByRole("button", { name: "Bold" }).focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(toolbar.getByRole("button", { name: "Italic" })).toBeFocused();
 });

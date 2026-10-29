@@ -49,29 +49,44 @@ export function Avatar({ entry, label }: { entry: PresenceEntry; label?: string 
   );
 }
 
+/** One sentence for a screen reader, built from the fields. It never trusts the peer's own words. */
+function describe(entry: PresenceEntry): string {
+  const agent = kindOf(entry) === "agent";
+  const actingFor = entry.actingFor === undefined ? null : (usableName(entry.actingFor) ?? "Unnamed person");
+  return [
+    displayName(entry),
+    agent ? "agent" : "person",
+    agent && `acting for ${actingFor ?? "an unknown person"}`,
+    statusOf(entry).toLowerCase(),
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
 /**
- * A name with its avatar. An agent always carries the word "Agent" in a hairline pill,
- * and the person it acts for. Away and Paused are words too. Order: identity, then state.
+ * A name with its avatar. An agent always carries the word "Agent" in a hairline pill, and the
+ * person it acts for, or "unknown" when none is given. Away and Paused are words too. Order:
+ * identity, then state. The visible parts are hidden from assistive technology, and one
+ * sentence built by `describe` replaces them, so a person who names themselves "Agent" is
+ * still read as a person.
  */
 export function PresenceChip({ entry, className }: { entry: PresenceEntry; className?: string }) {
   const name = displayName(entry);
   const status = statusOf(entry);
-  // A name that fails the check still shows who the agent acts for, as unnamed.
+  const agent = kindOf(entry) === "agent";
   const actingFor = entry.actingFor === undefined ? null : (usableName(entry.actingFor) ?? "Unnamed person");
   return (
     <span className={cx("ad-chip", className)}>
       <Avatar entry={entry} />
-      <span className="ad-chip__name" title={name}>{name}</span>
-      {kindOf(entry) === "agent" && (
-        <span
-          className="ad-pill"
-          title={actingFor ? `An agent acting for ${actingFor}.` : "An agent, not a person."}
-        >
+      <span className="ad-chip__name" title={name} aria-hidden="true">{name}</span>
+      {agent && (
+        <span className="ad-pill" aria-hidden="true" title={actingFor ? `An agent acting for ${actingFor}.` : "An agent, not a person."}>
           Agent
         </span>
       )}
-      {kindOf(entry) === "agent" && actingFor && <span className="ad-chip__meta">for {actingFor}</span>}
-      {status && <span className="ad-chip__meta">{status}</span>}
+      {agent && <span className="ad-chip__meta" aria-hidden="true">for {actingFor ?? "unknown"}</span>}
+      {status && <span className="ad-chip__meta" aria-hidden="true">{status}</span>}
+      <span className="ad-sr-only">{describe(entry)}</span>
     </span>
   );
 }
@@ -91,7 +106,7 @@ export function PresenceStack({ entries, max = 4, label = "Here now" }: { entrie
     <div className="ad-stack">
       <ul className="ad-stack__list" aria-label={label}>
         {shown.map((entry) => {
-          const text = [displayName(entry), kindOf(entry) === "agent" && "agent", statusOf(entry).toLowerCase()].filter(Boolean).join(", ");
+          const text = describe(entry);
           return (
             <li key={entry.id} title={text}>
               <Avatar entry={entry} label={text} />

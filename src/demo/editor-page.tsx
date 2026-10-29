@@ -36,8 +36,6 @@ const intro: Part[][] = [
 const lastBefore = "Measure sign-ups for two weeks.";
 const lastAfter = "Measure sign-ups for two weeks, and report the result to the whole team.";
 
-const plain = (parts: Part[]) => parts.filter((p): p is string => typeof p === "string").join("");
-
 // A snapshot keeps the page inside the link fragment, so a server never sees it.
 // This demo does not compress or encrypt it.
 const SNAPSHOT_KEY = "#snapshot=";
@@ -63,6 +61,14 @@ function readSnapshot(hash: string): string[] | null {
   } catch {
     return null;
   }
+}
+
+// The snapshot holds the text as it is now, including edits, and none of the remote cursor tags.
+function liveParagraphs(root: HTMLElement | null): string[] {
+  if (!root) return [];
+  const copy = root.cloneNode(true) as HTMLElement;
+  copy.querySelectorAll(".ad-cursor").forEach((node) => node.remove());
+  return [...copy.querySelectorAll("p")].map((p) => p.textContent ?? "");
 }
 
 function SnapshotView({ hash }: { hash: string }) {
@@ -134,6 +140,7 @@ function Editor() {
               setPeople((all) => [
                 ...all,
                 {
+                  invitedAs: invite.to,
                   // A long address would fail the display-name limit, so the list shows a shortened one.
                   entry: { id: invite.to, name: invite.to.length > 40 ? `${invite.to.slice(0, 37)}…` : invite.to, kind: invite.kind, actingFor: invite.kind === "agent" ? "Ada Lovelace" : undefined },
                   role: invite.role,
@@ -144,10 +151,12 @@ function Editor() {
             onRemove={(id) => setPeople((all) => all.filter((p) => p.entry.id !== id))}
             link={link}
             onChangeLink={(next) => {
+              // Only a change to the expiry starts a new clock. Any other setting keeps the date it had.
+              if (next.expiry === link.expiry) return setLink(next);
               const days = expiryDays[next.expiry];
               setLink({ ...next, expiresAt: days === null ? null : new Date(Date.now() + days * DAY) });
             }}
-            snapshot={{ url: snapshot, onCreate: () => setSnapshot(snapshotUrl([...intro.map(plain), last])) }}
+            snapshot={{ url: snapshot, onCreate: () => setSnapshot(snapshotUrl(liveParagraphs(textRef.current))) }}
             onCopy={copy}
           />
         </>

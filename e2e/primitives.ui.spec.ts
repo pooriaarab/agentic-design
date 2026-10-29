@@ -54,9 +54,24 @@ test("an error names the field, is announced, and clears when fixed", async ({ p
   await expect(page.getByRole("status").filter({ hasText: "Saved." })).toHaveText("Saved.");
 });
 
+test("a loading button says it is loading in its name, not only in an attribute", async ({ page }) => {
+  await page.goto("/primitives");
+  const saving = page.getByRole("button", { name: /^Saving/ });
+  await expect(saving).toHaveAttribute("aria-busy", "true");
+  await expect(saving).toHaveAccessibleName(/^Saving\s*,\s*loading$/);
+  await expect(page.getByRole("button", { name: "Count a click" })).toHaveAccessibleName("Count a click");
+});
+
+test("a field given an empty id still has its label tied to it", async ({ page }) => {
+  await page.goto("/primitives");
+  const input = page.getByLabel("Nickname");
+  await expect(input).toBeVisible();
+  expect(await input.evaluate((el) => el.id)).not.toBe("");
+});
+
 test("a loading button ignores clicks and stays focusable, while a normal one counts them", async ({ page }) => {
   await page.goto("/primitives");
-  const saving = page.getByRole("button", { name: "Saving" });
+  const saving = page.getByRole("button", { name: /^Saving/ });
   await expect(saving).toHaveAttribute("aria-busy", "true");
   await saving.click({ force: true });
   await saving.focus();
@@ -72,7 +87,7 @@ test("Tab skips a disabled button and reaches the rest", async ({ page }) => {
     await page.keyboard.press("Tab");
     stops.push(await page.evaluate(() => document.activeElement?.getAttribute("aria-label") ?? document.activeElement?.textContent ?? ""));
   }
-  expect(stops).toContain("Saving");
+  expect(stops.some((stop) => stop.startsWith("Saving"))).toBe(true);
   expect(stops).toContain("Add item");
   expect(stops).not.toContain("Disabled");
 });
@@ -114,7 +129,7 @@ test("checked, selected, and busy states stay visible in forced colors", async (
   await sw.check();
   await expect.poll(() => fill(sw)).not.toBe(offFill);
   // A loading button gets a dashed line, so it differs from an idle one without color.
-  const saving = page.getByRole("button", { name: "Saving" });
+  const saving = page.getByRole("button", { name: /^Saving/ });
   expect(await saving.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("dashed");
   expect(await page.getByRole("button", { name: "Count a click" }).evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("solid");
 });

@@ -23,9 +23,11 @@ const claude: PresenceEntry = { id: "3", name: "Claude", kind: "agent", actingFo
 const reviewer: PresenceEntry = { id: "4", name: "Review bot", kind: "agent", status: "paused" };
 const hostile: PresenceEntry = { id: "5", name: "Eve\u202Eevil", kind: "person" };
 // Entries from peers can be malformed. They must still render, and an agent must still say Agent.
+const trickster: PresenceEntry = { id: "9", name: "Ada Agent for Bob", kind: "person" };
 const malformed = [
   { id: "7", name: "Mallory", kind: "bot" },
   { id: "8", name: "Trent", kind: "person", status: "busy" },
+  trickster,
 ] as unknown as PresenceEntry[];
 const crowd: PresenceEntry[] = [ada, grace, claude, reviewer, hostile, { id: "6", name: "Linus", kind: "person" }];
 
