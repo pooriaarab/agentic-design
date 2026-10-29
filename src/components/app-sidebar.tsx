@@ -85,10 +85,13 @@ export function AppSidebar({ label, children, defaultCollapsed, collapsed: contr
   // Focus inside the content can vanish when the sidebar collapses on its own (a narrow window, another tab, or your own state): the links hide or unmount. Keep focus on the toggle.
   // A removed element sends no blur, so the last focused element tells us focus was inside.
   const lastFocus = useRef<EventTarget | null>(null);
+  const contentBox = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
-    const was = lastFocus.current;
-    if (!collapsed || !was) return;
-    if (!(was as Node).isConnected || hidesContent) {
+    if (!collapsed) return;
+    const was = lastFocus.current as Node | null;
+    // A tab that is in the background blurs its focus, but the element stays the active one. Check that too.
+    const stillHere = hidesContent && !!contentBox.current?.contains(document.activeElement);
+    if ((was && (!was.isConnected || hidesContent)) || stillHere) {
       lastFocus.current = null;
       toggleButton.current?.focus();
     }
@@ -119,6 +122,7 @@ export function AppSidebar({ label, children, defaultCollapsed, collapsed: contr
         onClick={toggle}
       />
       <div
+        ref={contentBox}
         id={`${id}-content`}
         className="agd-appsidebar__content"
         hidden={hidesContent}
