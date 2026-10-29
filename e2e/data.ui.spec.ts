@@ -287,3 +287,25 @@ test("Home on the first row scrolls it back into view", async ({ page }) => {
   await expect(page.locator('[data-index="0"]')).toBeFocused();
   expect(await grid.evaluate((el) => el.scrollTop)).toBe(0);
 });
+
+test("Shift+Tab back into the grid does not leave the focused row under the bar", async ({ page }) => {
+  await page.goto("/data");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await page.locator('[data-index="0"]').focus();
+  for (let i = 0; i < 10; i++) await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Space");
+  const bar = page.getByRole("region", { name: "Bulk actions" });
+  // Scroll so that row 10 sits behind the bar, then leave and come back with the keyboard.
+  const before = await page.locator('[data-index="10"]').boundingBox();
+  const barAt = await bar.boundingBox();
+  const up = barAt!.y + 4 - before!.y;
+  await grid.evaluate((el, by) => { el.scrollTop = el.scrollTop - by; }, up);
+  const hidden = await page.locator('[data-index="10"]').boundingBox();
+  expect(hidden!.y).toBeGreaterThanOrEqual(barAt!.y);
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Shift+Tab");
+  const row = await page.locator('[data-index="10"]').boundingBox();
+  const barBox = await bar.boundingBox();
+  await expect(page.locator('[data-index="10"]')).toBeFocused();
+  expect(row!.y + row!.height).toBeLessThanOrEqual(barBox!.y + 1);
+});

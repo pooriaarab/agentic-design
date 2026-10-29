@@ -134,6 +134,7 @@ themes.dark.accent; // "#8EA4FF"
 ## Limits
 
 - `DataTable` rows have one fixed height (`rowHeight`), so a cell cannot wrap. It does not sort or fetch pages.
+  Long text in a cell is cut with an ellipsis, and nothing on screen shows the rest. Use wider columns, or show the full value somewhere else, for example where `onRowActivate` leads.
   The height is in pixels, but the text scales with the root font size. If people enlarge text only, raise `rowHeight` so cells do not clip.
   Focus moves by row, not by cell: Left and Right do nothing. A screen reader user reads a cell with the reader's own table commands.
 - `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.

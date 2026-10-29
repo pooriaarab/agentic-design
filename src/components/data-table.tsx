@@ -325,7 +325,15 @@ export function DataTable<T>({
                       aria-rowindex={i + 2}
                       aria-selected={selectable ? isSelected : undefined}
                       tabIndex={i === active ? 0 : -1}
-                      onFocus={() => setActiveId(id)}
+                      onFocus={(event) => {
+                        setActiveId(id);
+                        // Tab or Shift+Tab back into the grid: the browser thinks a row under the bar is in view, so keep it clear of the bar.
+                        const el = scroller.current;
+                        if (barHeight > 0 && el && event.target === event.currentTarget && !el.contains(event.relatedTarget as Node | null)) {
+                          const next = scrollToRow(i, el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
+                          if (next !== el.scrollTop) el.scrollTop = next;
+                        }
+                      }}
                       onDoubleClick={onRowActivate ? (event) => { if (!(event.target as HTMLElement).closest(".agd-datatable__cell--check")) onRowActivate(row); } : undefined}
                     >
                       {selectable && (
