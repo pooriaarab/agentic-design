@@ -327,3 +327,23 @@ test("Shift+Tab back into the grid does not leave the focused row under the head
   const after = await row.boundingBox();
   expect(after!.y).toBeGreaterThanOrEqual(headBox!.y + headBox!.height - 1);
 });
+
+test("Tab from select-all does not leave the focused row under the bar", async ({ page }) => {
+  await page.goto("/data");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await page.locator('[data-index="0"]').focus();
+  for (let i = 0; i < 9; i++) await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Space");
+  const bar = page.getByRole("region", { name: "Bulk actions" });
+  await expect(bar).toBeVisible();
+  const row = page.locator('[data-index="9"]');
+  const at = await row.boundingBox();
+  const barAt = await bar.boundingBox();
+  await grid.evaluate((el, by) => { el.scrollTop = el.scrollTop - by; }, barAt!.y + 4 - at!.y);
+  expect((await row.boundingBox())!.y).toBeGreaterThanOrEqual(barAt!.y);
+  await page.keyboard.press("Tab");
+  await expect(row).toBeFocused();
+  const after = await row.boundingBox();
+  expect(after!.y + after!.height).toBeLessThanOrEqual(barAt!.y + 1);
+});
