@@ -15,12 +15,15 @@ All notable changes to this package are in this file. The format follows
 - The props of `FileList` are now a union, because `items` is a second form. Code
   that reads `ComponentProps<typeof FileList>["children"]` no longer compiles. Code
   that renders `FileList` with `label` and `children` is not affected.
+- `ToolbarButton` is now a `forwardRef` component. It can no longer be called as a
+  plain function, such as `ToolbarButton({ ... })`, and a type that says
+  `typeof ToolbarButton` as a function no longer compiles. Render it as JSX, as before.
 
 ### Added
 
 - App chrome. `AppShell` takes `title`, a slot at the start of the top bar, and
-  `panel` with `panelLabel`, a side panel after the content. Below 48rem the panel
-  sits beside the content from 64rem up, and under it below that. Pass
+  `panel` with `panelLabel`, a side panel after the content. From 64rem the panel
+  sits beside the content, and below that it sits under it. Pass
   `panel={false}` or leave it out to hide it.
 - `DocumentTitle`, a title that renames in place. Enter, Space, or F2 opens a field,
   and Escape cancels. A stored title with a hidden character shows as "Untitled".
