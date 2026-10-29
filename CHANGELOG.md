@@ -24,13 +24,14 @@ All notable changes to this package are in this file. The format follows
 - App chrome. `AppShell` takes `title`, a slot at the start of the top bar, and
   `panel` with `panelLabel`, a side panel after the content. From 64rem the panel
   sits beside the content, and below that it sits under it. Pass
-  `panel={false}` or leave it out to hide it.
+  `panel={false}` or leave it out to hide it. A blank `panelLabel` throws when a
+  panel is passed, and so does a blank `ToolbarGroup` label.
 - `DocumentTitle`, a title that renames in place. Enter, Space, or F2 opens a field,
   and Escape cancels. A stored title with a hidden character shows as "Untitled".
 - `AgentBadge`, a visible marker for anything an agent made. By default it shows
   the words "Made by an agent", a square avatar, and who the agent acts for. Pass
-  `label` to change the words. `compact` keeps those facts in the avatar's
-  accessible name.
+  `label` to change the words, and make the label say that an agent made the
+  item. `compact` keeps those facts in the avatar's accessible name.
 - `ToolbarGroup`, a named group of buttons, and `ToolbarOverflow`, a "More tools"
   menu as the last stop of a `Toolbar`. `ToolbarButton` forwards its ref.
 - `FileList` takes `items` and shows a sortable table or grid. The table has
