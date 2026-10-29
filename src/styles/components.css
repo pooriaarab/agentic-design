@@ -755,3 +755,18 @@
 .agd-display__columns { display: grid; gap: var(--agd-space-1); margin: 0; padding: 0; border: 0; }
 .agd-display__columns legend { padding: 0; margin-block-end: var(--agd-space-1); font-weight: var(--agd-font-weight-medium); }
 .agd-display .agd-button[aria-disabled="true"] { --button-bg: var(--agd-color-surface-sunken); --button-bg-hover: var(--agd-color-surface-sunken); --button-fg: var(--agd-color-text-muted); --button-border: var(--agd-color-border); border-style: dashed; cursor: not-allowed; }
+
+/* App sidebar -------------------------------------------------------- */
+.agd-appsidebar {
+  display: flex; flex-direction: column; gap: var(--agd-space-2); flex: none; box-sizing: border-box;
+  width: var(--agd-size-sidebar); padding: var(--agd-space-2);
+  border-inline-end: 1px solid var(--agd-color-border); background: var(--agd-color-surface-sunken);
+}
+.agd-appsidebar[data-ready] { transition: width var(--agd-duration-base) var(--agd-easing-out); }
+@media (max-width: 47.99rem) { .agd-appsidebar:not([data-collapsed="true"]) { max-width: 60vw; } }
+.agd-appsidebar[data-collapsed="true"] { width: var(--agd-size-sidebar-rail); align-items: center; padding-inline: var(--agd-space-1); }
+.agd-appsidebar__toggle { align-self: flex-start; }
+/* The toggle moves to the center at once while the width eases. This is cosmetic, and it is kept simple on purpose. */
+.agd-appsidebar[data-collapsed="true"] .agd-appsidebar__toggle { align-self: center; }
+.agd-appsidebar__content { flex: 1; box-sizing: border-box; padding: var(--agd-space-1); min-width: 0; min-height: 0; width: 100%; overflow-x: hidden; overflow-y: auto; }
+.agd-appsidebar__content[hidden] { display: none; }

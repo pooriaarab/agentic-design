@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   AgentBadge,
+  AppSidebar,
   Button,
   DocumentTitle,
   FileList,
@@ -43,6 +44,7 @@ const items: FileItem[] = [
 export function ChromePage() {
   const [view, setView] = useState<"table" | "grid">("table");
   const [state, setState] = useState<"ready" | "loading" | "empty">("ready");
+  const [railCollapsed, setRailCollapsed] = useState(false);
   const [people, setPeople] = useState<ShareEntry[]>([{ entry: ada, role: "owner" }, { entry: claude, role: "commenter" }]);
   const [link, setLink] = useState<ShareLink>({ enabled: true, role: "viewer", expiry: "never", signedInOnly: false, url: "https://example.com/s/abc" });
   const [title, setTitle] = useState("Launch plan");
@@ -111,6 +113,36 @@ export function ChromePage() {
           <Button onClick={() => setState("ready")}>Show files</Button>
         </div>
         <FileList label="Recent files" view={view} items={state === "empty" ? [] : items} loading={state === "loading"} />
+      </section>
+
+      <section aria-labelledby="demo-appsidebar-h" id="demo-appsidebar">
+        <h2 id="demo-appsidebar-h">App sidebar</h2>
+        <div className="demo-sidebar-frame">
+          <AppSidebar label="Project" storageKey="demo-sidebar">
+            <SidebarNav
+              label="Project pages"
+              items={[
+                { href: "/chrome#overview", label: "Overview", current: true },
+                { href: "/chrome#tasks", label: "Tasks" },
+                { href: "/chrome#files", label: "Files" },
+              ]}
+            />
+          </AppSidebar>
+          <p className="demo-muted demo-sidebar-frame__body">Collapse the sidebar with its button. The choice stays after a reload.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="demo-railbar-h" id="demo-railbar">
+        <h2 id="demo-railbar-h">Controlled sidebar</h2>
+        <Button id="demo-rail-collapse" onClick={() => setRailCollapsed(true)}>Collapse the rail from outside</Button>
+        <div className="demo-sidebar-frame demo-sidebar-frame--short">
+          <AppSidebar label="Rail" collapsed={railCollapsed} onCollapsedChange={setRailCollapsed}>
+            {({ collapsed }) =>
+              collapsed ? <p className="demo-muted">T</p> : <SidebarNav label="Rail pages" items={Array.from({ length: 30 }, (_, i) => ({ href: `/chrome#item-${i + 1}`, label: `Item ${i + 1}` }))} />
+            }
+          </AppSidebar>
+          <p className="demo-muted demo-sidebar-frame__body">You own the state of this sidebar. Nothing is saved.</p>
+        </div>
       </section>
 
       <section aria-labelledby="demo-share-h" id="demo-share">

@@ -144,6 +144,18 @@ const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all
 />
 ```
 
+- `AppSidebar` for React: a left sidebar with a toggle button. The button says what it does ("Collapse sidebar"
+  or "Expand sidebar") and has `aria-expanded`. The choice is saved in `localStorage` (set `storageKey` per sidebar)
+  and follows across tabs. Collapsed, it is a narrow rail with the button, and its content leaves the page and
+  the tab order. Pass a function as the child to keep the content and draw icons only. Pass `collapsed` and
+  `onCollapsedChange` to control it, and nothing is saved then.
+
+```tsx
+<AppSidebar label="Project">
+  <SidebarNav label="Project pages" items={items} />
+</AppSidebar>
+```
+
 - `ShareDialog`: people and agents with roles, an invite field (an email invites a person, an
   `@handle` invites an agent, and anything else is refused), a link with role, expiry, and a
   sign-in rule, and a snapshot link that holds the page in the URL fragment. `PresenceCursor`
@@ -166,6 +178,7 @@ const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all
   Focus moves by row, not by cell: Left and Right do nothing. A screen reader user reads a cell with the reader's own table commands.
 - Group labels are not focusable. Arrow keys move from row to row, and the first row of a group is described by its label, so a screen reader says the group when focus reaches that first row. A group with no text shows as "No value" and runs last.
 - `applyDataView` runs in the browser over all the rows you pass. For data that lives on a server, filter there and pass the result as `rows`. Search matches every word anywhere in the field text.
+- `AppSidebar` is its own layout part. `AppShell` keeps its own sidebar column and menu button, so use `AppSidebar` in your own layout. It starts open, and collapsed below 48rem when no choice is saved. With server rendering, a saved choice applies after the page loads. It saves the choice per device, not per person. Where storage is blocked, the choice lasts for the page.
 - `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.
 - `FileList` sorts only the `items` you pass, and only when it is not controlled. If you pass `sort`,
   your code must sort `items` itself. It does not paginate.
