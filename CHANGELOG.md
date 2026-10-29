@@ -19,7 +19,7 @@ All notable changes to this package are in this file. The format follows
 
 ### Notice
 
-- The look follows Tiny Little Office (https://tinylittleoffice.com, MIT): quiet neutrals, soft borders, and a restrained type scale. No code is copied. See `THIRD_PARTY_NOTICES.md`.
+- The look follows Tiny Little Office (https://github.com/aboard-io/tinylittleoffice, MIT; site https://tinylittleoffice.com): quiet neutrals, soft borders, and a restrained type scale. No code is copied. See `THIRD_PARTY_NOTICES.md`.
 
 ## 0.4.0 - 2026-10-29
 
