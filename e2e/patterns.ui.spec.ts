@@ -330,6 +330,8 @@ test("closing the nav in the narrow layout, then widening, does not move focus t
   // A click that does not move focus to the button: the link blurs because it is hidden.
   await toggle.dispatchEvent("click");
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  // The browser drops focus from a hidden link on its next frame. Widen only after it has.
+  await page.waitForFunction(() => document.activeElement === document.body);
   await page.setViewportSize({ width: 1280, height: 800 });
   await expect(page.getByRole("navigation", { name: "Demo pages" })).toBeVisible();
   expect(await page.evaluate(() => document.activeElement?.closest("nav") !== null)).toBe(false);
