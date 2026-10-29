@@ -57,7 +57,14 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   // A value from code that is not one of the three is a bug, and it stops here.
   if (!isPreference(defaultPreference)) throw new Error(`defaultPreference must be one of ${PREFERENCES.join(", ")}`);
-  const [preference, setPreferenceState] = useState(() => readPreference(storageKey, defaultPreference));
+  // The first render uses the default on the server and in the browser, so they match. The saved
+  // pick is read right after mount. The head script has already applied it, so nothing flashes.
+  const [preference, setPreferenceState] = useState<ThemePreference>(defaultPreference);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setPreferenceState(readPreference(storageKey, defaultPreference));
+    setReady(true);
+  }, [storageKey, defaultPreference]);
   const systemDark = useSyncExternalStore(
     subscribeToSystem,
     () => window.matchMedia(DARK_QUERY).matches,
@@ -66,11 +73,13 @@ export function ThemeProvider({
   const theme: ThemeName = preference === "system" ? (systemDark ? "dark" : "light") : preference;
 
   useEffect(() => {
+    // Until the saved pick is read, leave the attribute the head script set.
+    if (!ready) return;
     const root = document.documentElement;
     if (preference === "system") root.removeAttribute("data-theme");
     else root.setAttribute("data-theme", preference);
     return () => root.removeAttribute("data-theme");
-  }, [preference]);
+  }, [preference, ready]);
 
   // Another tab of the same app changed the pick.
   useEffect(() => {
