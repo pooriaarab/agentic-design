@@ -44,3 +44,14 @@ export function usableText(text: unknown, maxLength: number): string | null {
   if (/^\s|\s$|\s{2,}|(?! )\p{Zs}|[\u200C-\u200F]$|[\u200C-\u200F]{2,}/u.test(text)) return null;
   return text;
 }
+
+const HIDDEN_PROSE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}\p{Co}\p{Cn}\p{Default_Ignorable_Code_Point}\u2800]/u;
+
+/**
+ * The same kind of check for running text, such as a paragraph. It refuses controls, bidi marks,
+ * zero-width and filler characters, and allows spaces, because prose has edge and double spaces.
+ */
+export function usableProse(text: unknown, maxLength: number): string | null {
+  if (typeof text !== "string" || text.length > maxLength) return null;
+  return HIDDEN_PROSE.test(text.replace(JOINER_IN_PLACE, "")) ? null : text;
+}

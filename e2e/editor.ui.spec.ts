@@ -115,7 +115,8 @@ test("an email invites a person and an @handle invites an agent that shows as an
   await expect(agent).toContainText("Agent");
   await expect(agent).toContainText("for Ada Lovelace");
   await expect(agent.getByLabel("Access for @review-bot", { exact: true })).toHaveValue("commenter");
-  await expect(page.locator(".ad-stack__summary")).toHaveText("3 people, 2 agents");
+  // Inviting someone gives access. It does not put them here.
+  await expect(page.locator(".ad-stack__summary")).toHaveText("2 people, 1 agent");
 });
 
 test("roles change, and access is removed with its own button that keeps focus on the page", async ({ page }) => {
@@ -419,4 +420,39 @@ test("a blank paragraph does not stop a snapshot, and a page over the limit says
   await page.getByRole("tab", { name: "Snapshot" }).click();
   await page.getByRole("button", { name: /snapshot link/ }).first().click();
   await expect(page.locator(".ad-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
+});
+
+test("removing an agent's access removes its presence, its cursor, and its suggestion", async ({ page }) => {
+  await page.goto("/editor");
+  await openShare(page);
+  await page.getByRole("button", { name: "Remove access for Claude" }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".ad-stack__summary")).toHaveText("2 people");
+  await expect(page.locator(".ad-cursor--agent")).toHaveCount(0);
+  await expect(page.getByRole("complementary", { name: "Suggestion from Claude" })).toHaveCount(0);
+});
+
+test("spaces at the end and doubled spaces do not stop a snapshot", async ({ page }) => {
+  await page.goto("/editor");
+  const text = page.getByRole("textbox", { name: "Page text" });
+  await text.locator("p").last().click();
+  await page.keyboard.press("End");
+  await page.keyboard.type("  Ship it  ");
+  await openShare(page);
+  await page.getByRole("tab", { name: "Snapshot" }).click();
+  await page.getByRole("button", { name: "Create snapshot link" }).click();
+  await expect(page.getByLabel("Snapshot link")).toBeVisible();
+});
+
+test("a very large page says it is too long and does not fail silently", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/editor");
+  const text = page.getByRole("textbox", { name: "Page text" });
+  await text.evaluate((el) => el.insertAdjacentHTML("beforeend", `<p>${"c".repeat(400_000)}</p>`));
+  await openShare(page);
+  await page.getByRole("tab", { name: "Snapshot" }).click();
+  await page.getByRole("button", { name: "Create snapshot link" }).click();
+  await expect(page.locator(".ad-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
+  expect(errors).toEqual([]);
 });

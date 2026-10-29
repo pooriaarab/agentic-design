@@ -12,7 +12,7 @@ import {
   ToolbarButton,
   ToolbarSeparator,
   useToast,
-  usableText,
+  usableProse,
   type LinkExpiry,
   type PresenceEntry,
   type ShareEntry,
@@ -43,7 +43,10 @@ const MAX_SNAPSHOT = 20_000;
 
 function snapshotUrl(paragraphs: string[]): string {
   const bytes = new TextEncoder().encode(JSON.stringify({ v: 1, text: paragraphs.join("\n\n") }));
-  const base64 = btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  // Spreading a long array into one call overflows the stack, so build the string in chunks.
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  const base64 = btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   return `${window.location.origin}/editor${SNAPSHOT_KEY}${base64}`;
 }
 
@@ -57,7 +60,7 @@ function readSnapshot(hash: string): string[] | null {
     const text = (data as { text?: unknown }).text;
     if (typeof text !== "string") return null;
     const paragraphs = text.split("\n\n");
-    return paragraphs.every((p) => usableText(p, 5_000) !== null) ? paragraphs : null;
+    return paragraphs.every((p) => usableProse(p, 5_000) !== null) ? paragraphs : null;
   } catch {
     return null;
   }
@@ -69,7 +72,10 @@ function liveParagraphs(root: HTMLElement | null): string[] {
   const copy = root.cloneNode(true) as HTMLElement;
   copy.querySelectorAll(".ad-cursor").forEach((node) => node.remove());
   // A blank paragraph, such as one made by pressing Enter, carries nothing.
-  return [...copy.querySelectorAll("p")].map((p) => p.textContent ?? "").filter((text) => text.trim() !== "");
+  // The editor inserts no-break spaces for edge and double spaces, and a pasted tab is a control. Both become spaces.
+  return [...copy.querySelectorAll("p")]
+    .map((p) => (p.textContent ?? "").replace(/[\u00A0\t]/g, " "))
+    .filter((text) => text.trim() !== "");
 }
 
 function SnapshotView({ hash }: { hash: string }) {
@@ -108,7 +114,10 @@ function Editor() {
   const textRef = useRef<HTMLDivElement>(null);
 
   const last = accepted === "accepted" ? lastAfter : lastBefore;
-  const here = [ada, grace, claude, ...people.map((p) => p.entry).filter((e) => !["ada", "grace", "claude"].includes(e.id))];
+  // Who is here is not who has access. Claude is here only while Claude still has access, and
+  // then its cursor and its suggestion go with it.
+  const claudeHere = people.some((p) => p.entry.id === "claude");
+  const here = claudeHere ? [ada, grace, claude] : [ada, grace];
 
   const copy = async (url: string) => {
     try {
@@ -167,10 +176,12 @@ function Editor() {
             snapshot={{
               url: snapshot,
               onCreate: () => {
-                const url = snapshotUrl(liveParagraphs(textRef.current));
-                // Make only a link that the page can open again. A longer page cannot be a snapshot.
+                const paragraphs = liveParagraphs(textRef.current);
+                // Check the size before encoding, so a very large page never reaches the encoder.
+                const tooLong = paragraphs.join("\n\n").length > MAX_SNAPSHOT;
+                const url = tooLong ? "" : snapshotUrl(paragraphs);
                 const hash = url.slice(url.indexOf("#"));
-                if (hash.length > MAX_SNAPSHOT) {
+                if (tooLong || hash.length > MAX_SNAPSHOT) {
                   toast({ title: "This page is too long for a snapshot link", description: "Shorten the text and try again. Nothing was shared.", tone: "danger" });
                   return;
                 }
@@ -197,13 +208,13 @@ function Editor() {
         <div ref={textRef} className="demo-prose" role="textbox" aria-multiline="true" aria-label="Page text" contentEditable suppressContentEditableWarning spellCheck>
           {intro.map((parts, i) => (
             <p key={i}>
-              {parts.map((part, j) => (typeof part === "string" ? part : <PresenceCursor key={j} entry={part} />))}
+              {parts.map((part, j) => (typeof part === "string" ? part : part.id === "claude" && !claudeHere ? null : <PresenceCursor key={j} entry={part} />))}
             </p>
           ))}
           <p>{last}</p>
         </div>
 
-        {accepted === "pending" && (
+        {accepted === "pending" && claudeHere && (
           <aside className="demo-suggestion" aria-label="Suggestion from Claude">
             <p>
               <PresenceChip entry={claude} /> suggests a change to the last paragraph:
