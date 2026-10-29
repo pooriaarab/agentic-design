@@ -9,6 +9,7 @@ All notable changes to this package are in this file. The format follows
 ### Fixed
 
 - `agentic-design-mcp mcp --help` and `agentic-design-mcp mcp --version` no longer start the MCP server and hang. They print the usage or the version and exit 0, as `agentic-design mcp --help` already did.
+- The bin reads `--help` and `--version` anywhere after an optional leading `mcp` word, as the package CLI does. `mcp -h` and `mcp -V` work too. Other arguments are still ignored, as before, so `agentic-design-mcp mcp --verbose` starts the server. The package CLI rejects that argument instead.
 
 ### Added
 
