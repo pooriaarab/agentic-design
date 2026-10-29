@@ -4,6 +4,18 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.7.0 - 2026-10-29
+
+### Added
+
+- `AppShell` takes a `secondary` prop for less used actions. Below 48rem they fold behind a "More" button under the top bar. The button has `aria-expanded`, and Escape closes it and returns focus to it. On a wide screen they stay in the top bar.
+
+### Fixed
+
+- The top bar no longer makes the page scroll sideways on a 360px to 390px screen. The product name and the title shorten with an ellipsis, and the actions wrap.
+- A remote cursor name tag grows toward the start on a narrow screen, so it stays inside the page.
+- An end-to-end test loads every demo page at 360px and 390px and checks that the page and the top bar are not wider than the screen.
+
 ## 0.6.0 - 2026-10-29
 
 ### Changed

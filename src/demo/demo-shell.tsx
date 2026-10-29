@@ -19,15 +19,13 @@ export function DemoShell({ title, description, actions, panel, children }: { ti
       {...panelProps}
       brand="agentic-design"
       sidebar={<SidebarNav label="Demo pages" items={pages.map(([href, label]) => ({ href, label, current: href === path }))} />}
-      topbar={
-        <>
-          {actions}
-          <Select label="Theme" hideLabel value={preference} onChange={(e) => setPreference(e.target.value as ThemePreference)}>
-            <option value="system">Theme: System</option>
-            <option value="light">Theme: Light</option>
-            <option value="dark">Theme: Dark</option>
-          </Select>
-        </>
+      topbar={actions}
+      secondary={
+        <Select label="Theme" hideLabel value={preference} onChange={(e) => setPreference(e.target.value as ThemePreference)}>
+          <option value="system">Theme: System</option>
+          <option value="light">Theme: Light</option>
+          <option value="dark">Theme: Dark</option>
+        </Select>
       }
     >
       <div className="demo-main">

@@ -272,9 +272,11 @@ test("crossing the breakpoint keeps the top bar and its state, and does not remo
   await page.setViewportSize({ width: 390, height: 800 });
   await expect(page.getByRole("button", { name: "Navigation" })).toBeVisible();
   expect(await handle?.evaluate((el) => el.isConnected)).toBe(true);
-  await expect(theme).toHaveValue("dark");
+  // Narrow folds the picker behind a button, so read it through its handle.
+  expect(await handle?.evaluate((el) => (el as HTMLSelectElement).value)).toBe("dark");
   await page.setViewportSize({ width: 1280, height: 800 });
   expect(await handle?.evaluate((el) => el.isConnected)).toBe(true);
+  await expect(theme).toHaveValue("dark");
 });
 
 test("keyboard focus stays on the top bar when the layout crosses the breakpoint, both ways", async ({ page }) => {
