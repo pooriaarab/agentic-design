@@ -76,7 +76,7 @@ test("the menu works with the keyboard alone", async ({ page }) => {
   const trigger = page.getByRole("button", { name: "More actions" });
   await trigger.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("menuitem", { name: "Rename" })).toBeFocused();
+  await expect(page.getByRole("menuitem", { name: "Rename…" })).toBeFocused();
   await page.keyboard.press("ArrowDown");
   await expect(page.getByRole("menuitem", { name: "Duplicate" })).toBeFocused();
   await page.keyboard.press("Enter");
@@ -211,4 +211,17 @@ test("a dialog opened with no trigger gives focus back to what had it", async ({
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(opener).toBeFocused();
+});
+
+test("a dialog opened from a menu item gives focus back to the menu button", async ({ page }) => {
+  await open(page);
+  const trigger = page.getByRole("button", { name: "More actions" });
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  const dialog = page.getByRole("dialog", { name: "Rename this page" });
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
 });

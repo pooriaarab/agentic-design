@@ -49,7 +49,7 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
   };
 
   const topbarEl = (
-    <header className="ad-shell__topbar">
+    <header key="topbar" className="ad-shell__topbar">
       <IconButton
         ref={toggleRef}
         className="ad-shell__menu"
@@ -66,7 +66,7 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
     </header>
   );
   const sidebarEl = (
-    <div id={sidebarId} ref={sidebarRef} className="ad-shell__sidebar" data-open={open}>
+    <div key="sidebar" id={sidebarId} ref={sidebarRef} className="ad-shell__sidebar" data-open={open}>
       <p className="ad-shell__brand">{brand}</p>
       {sidebar}
     </div>
@@ -75,8 +75,8 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
   return (
     <div className="ad-shell" onKeyDown={onKeyDown}>
       <a className="ad-skip-link" href={`#${mainId}`}>Skip to content</a>
-      {narrow ? topbarEl : sidebarEl}
-      {narrow ? sidebarEl : topbarEl}
+      {/* Keyed, so crossing the breakpoint moves the two parts and does not remount them. */}
+      {narrow ? [topbarEl, sidebarEl] : [sidebarEl, topbarEl]}
       <main id={mainId} className="ad-shell__content" tabIndex={-1}>{children}</main>
     </div>
   );

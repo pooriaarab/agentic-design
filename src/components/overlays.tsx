@@ -26,7 +26,12 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
   // dialog opens, and return it there on close.
   const opener = useRef<Element | null>(null);
   const wasOpen = useRef(false);
-  if (open && !wasOpen.current && typeof document !== "undefined") opener.current = document.activeElement;
+  if (open && !wasOpen.current && typeof document !== "undefined") {
+    // A menu item that opens a dialog is gone by the time the dialog closes. Return to the menu's button.
+    const active = document.activeElement;
+    const menuId = active?.closest('[role="menu"]')?.getAttribute("aria-labelledby");
+    opener.current = (menuId && document.getElementById(menuId)) || active;
+  }
   wasOpen.current = Boolean(open);
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
