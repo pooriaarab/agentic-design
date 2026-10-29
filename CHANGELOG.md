@@ -30,6 +30,8 @@ First release.
 ### Known limits
 
 - `ShareDialog` is a view. It calls your handlers and stores nothing.
-- The snapshot link is not compressed or encrypted, and it holds text only.
+- The demo snapshot link is not compressed or encrypted, and it holds text only.
+- `parseInvitee` accepts printable ASCII only.
+- A toast raised while a modal dialog is open stays out of reach until the dialog closes.
 - Fonts cover Latin and Latin Extended only, and only upright faces ship.
 - `Checkbox` and `Switch` have no error state yet.

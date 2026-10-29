@@ -12,8 +12,8 @@ Accessible design tokens and UI primitives for calm, minimal apps.
 
 ## Install
 
-Version 0.1.0 is published to npm by the release workflow. Until it is on npm, build it from a
-checkout and install the tarball:
+Once 0.1.0 is on npm, run `npm install agentic-design`. Until then, build it from a checkout and
+install the tarball:
 
 ```sh
 npm ci && npm pack
