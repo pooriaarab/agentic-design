@@ -16,8 +16,8 @@ All notable changes to this package are in this file. The format follows
   that reads `ComponentProps<typeof FileList>["children"]` no longer compiles. Code
   that renders `FileList` with `label` and `children` is not affected.
 - `ToolbarButton` is now a `forwardRef` component. It can no longer be called as a
-  plain function, such as `ToolbarButton({ ... })`, and a type that says
-  `typeof ToolbarButton` as a function no longer compiles. Render it as JSX, as before.
+  plain function. A call such as `ToolbarButton({ ... })` throws at run time, and
+  TypeScript does not catch it. Render it as JSX, as before.
 
 ### Added
 
@@ -35,9 +35,9 @@ All notable changes to this package are in this file. The format follows
 - `ToolbarGroup`, a named group of buttons, and `ToolbarOverflow`, a "More tools"
   menu as the last stop of a `Toolbar`. `ToolbarButton` forwards its ref.
 - `FileList` takes `items` and shows a sortable table or grid. The table has
-  column headers with `aria-sort`. The grid has a "Sort by" select. Pass
-  `defaultSort` to sort the list itself, or `sort` with `onSortChange` to control
-  it. `loading` shows placeholders, and `empty` replaces the default empty state.
+  column headers with `aria-sort`. The grid has a "Sort by" select. The list sorts
+  by name, A to Z, unless you pass `defaultSort` to choose the start sort. Pass
+  `sort` with `onSortChange` to control the sort yourself. `loading` shows placeholders, and `empty` replaces the default empty state.
   `FileItem`, `FileSort`, and `FileSortKey` are exported. `FileList` with
   `FileRow` children works as before.
 - The types `DocumentTitleProps`, `AgentBadgeProps`, and `FileListItemsProps` are
