@@ -179,3 +179,14 @@ test("F8 moves focus to the notifications and the focus is visible", async ({ pa
   await page.keyboard.press("Tab");
   expect(await page.evaluate(() => !!document.activeElement?.closest(".ad-toast"))).toBe(true);
 });
+
+test("a toast with an unknown tone is treated as an error and stays until dismissed", async ({ page }) => {
+  await page.clock.install();
+  await open(page);
+  await page.getByRole("button", { name: "Show odd-tone toast" }).click();
+  const toast = page.locator(".ad-toast", { hasText: "Something odd happened" });
+  await expect(toast).toBeVisible();
+  await expect(toast.locator(".ad-sr-only")).toHaveText("Error: ");
+  await page.clock.fastForward(9000);
+  await expect(toast).toBeVisible();
+});

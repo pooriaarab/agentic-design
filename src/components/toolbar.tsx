@@ -3,9 +3,11 @@ import type { ReactNode } from "react";
 import { IconButton, type IconButtonProps } from "./button.js";
 
 /** One tab stop. Arrow keys, Home, and End move inside it. */
-export function Toolbar({ label, children }: { label: string; children: ReactNode }) {
+export function Toolbar({ label, children, dir }: { label: string; children: ReactNode; dir?: "ltr" | "rtl" }) {
+  // Arrow keys follow the page direction. Pass `dir` to override what the page says.
+  const direction = dir ?? (typeof document !== "undefined" && document.documentElement.dir === "rtl" ? "rtl" : "ltr");
   return (
-    <RadixToolbar.Root className="ad-toolbar" aria-label={label}>
+    <RadixToolbar.Root className="ad-toolbar" aria-label={label} dir={direction}>
       {children}
     </RadixToolbar.Root>
   );
