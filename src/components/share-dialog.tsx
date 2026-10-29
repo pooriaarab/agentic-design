@@ -166,14 +166,19 @@ function LinkTab({ link, onChangeLink, onCopy }: Pick<ShareDialogProps, "link" |
       {link.enabled && (
         <>
           <div className="ad-share__row">
-            <Select label="Access" value={link.role} onChange={(e) => onChangeLink({ ...link, role: e.target.value as ShareRole })}>
+            <Select
+              label="Access"
+              value={link.role}
+              hint={link.role === "editor" && !link.signedInOnly ? "Anyone with the link can edit without signing in. That includes agents." : undefined}
+              onChange={(e) => onChangeLink({ ...link, role: e.target.value as ShareRole })}
+            >
               {roles.map((r) => <option key={r} value={r}>{roleLabel[r]}</option>)}
             </Select>
             <Select
               label="Link expires"
               value={link.expiry}
-              hint={link.expiresAt ? (expired ? `This link expired on ${shortDate(link.expiresAt)}. Choose a new expiry.` : `Stops working on ${shortDate(link.expiresAt)}.`) : undefined}
-              error={undefined}
+              hint={link.expiresAt && !expired ? `Stops working on ${shortDate(link.expiresAt)}.` : undefined}
+              error={expired && link.expiresAt ? `This link expired on ${shortDate(link.expiresAt)}. Choose a new expiry.` : undefined}
               onChange={(e) => onChangeLink({ ...link, expiry: e.target.value as LinkExpiry })}
             >
               {(Object.keys(expiryLabel) as LinkExpiry[]).map((x) => <option key={x} value={x}>{expiryLabel[x]}</option>)}
@@ -185,10 +190,13 @@ function LinkTab({ link, onChangeLink, onCopy }: Pick<ShareDialogProps, "link" |
             checked={link.signedInOnly}
             onChange={(e) => onChangeLink({ ...link, signedInOnly: e.target.checked })}
           />
-          <div className="ad-share__copy">
-            <Input label="Link" value={link.url} readOnly onFocus={(e) => e.target.select()} />
-            <Button onClick={() => onCopy(link.url)}>Copy link</Button>
-          </div>
+          {/* An expired link is not offered, so it cannot be copied as if it still worked. */}
+          {!expired && (
+            <div className="ad-share__copy">
+              <Input label="Link" value={link.url} readOnly onFocus={(e) => e.target.select()} />
+              <Button onClick={() => onCopy(link.url)}>Copy link</Button>
+            </div>
+          )}
         </>
       )}
     </div>

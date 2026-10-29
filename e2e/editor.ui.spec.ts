@@ -253,7 +253,7 @@ for (const [why, hash] of [
   ["has the wrong version", `#snapshot=${Buffer.from(JSON.stringify({ v: 2, text: "x" })).toString("base64url")}`],
   ["has no text", `#snapshot=${Buffer.from(JSON.stringify({ v: 1 })).toString("base64url")}`],
   ["holds a hidden direction character", `#snapshot=${Buffer.from(JSON.stringify({ v: 1, text: "Ada\u202Eevil" })).toString("base64url")}`],
-  ["is far too long", `#snapshot=${"A".repeat(30_000)}`],
+  ["is longer than the page will read, though every paragraph is short", `#snapshot=${Buffer.from(JSON.stringify({ v: 1, text: Array(6).fill("a".repeat(4_500)).join("\n\n") })).toString("base64url")}`],
 ]) {
   test(`a snapshot link that ${why} opens nothing`, async ({ page }) => {
     await page.goto("/editor");
@@ -360,7 +360,7 @@ test("accepting a suggestion after the paragraph was edited changes nothing", as
   await expect(page.getByRole("complementary", { name: "Suggestion from Claude" })).toBeVisible();
 });
 
-test("a page too long for a snapshot link makes no link", async ({ page }) => {
+test("a paragraph the reader would refuse makes no snapshot link, and the page says why", async ({ page }) => {
   await page.goto("/editor");
   const text = page.getByRole("textbox", { name: "Page text" });
   await text.locator("p").last().click();
@@ -369,6 +369,54 @@ test("a page too long for a snapshot link makes no link", async ({ page }) => {
   await openShare(page);
   await page.getByRole("tab", { name: "Snapshot" }).click();
   await page.getByRole("button", { name: "Create snapshot link" }).click();
-  await expect(page.locator(".ad-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
+  await expect(page.locator(".ad-toast", { hasText: "text a snapshot link can't carry" })).toBeVisible();
   await expect(page.getByLabel("Snapshot link")).toHaveCount(0);
+});
+
+test("an expired link is not offered, so it cannot be copied", async ({ page }) => {
+  await page.clock.install({ time: new Date("2026-10-28T12:00:00Z") });
+  await page.goto("/editor");
+  await openShare(page);
+  await page.getByRole("tab", { name: "Link" }).click();
+  await page.getByRole("switch", { name: "Anyone with the link" }).check();
+  await page.getByLabel("Link expires").selectOption("1d");
+  await expect(page.getByRole("textbox", { name: "Link", exact: true })).toBeVisible();
+  await page.clock.fastForward("48:00:00");
+  await page.getByLabel("Require sign-in").uncheck();
+  await expect(page.getByRole("alert").filter({ hasText: "This link expired on" })).toBeVisible();
+  await expect(page.getByLabel("Link expires")).toHaveAttribute("aria-invalid", "true");
+  await expect(page.getByRole("textbox", { name: "Link", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Copy link" })).toHaveCount(0);
+});
+
+test("a link that anyone can edit without signing in says that agents can too", async ({ page }) => {
+  await page.goto("/editor");
+  await openShare(page);
+  await page.getByRole("tab", { name: "Link" }).click();
+  await page.getByRole("switch", { name: "Anyone with the link" }).check();
+  await page.getByLabel("Access", { exact: true }).selectOption("editor");
+  await expect(page.getByText("Anyone with the link can edit without signing in.")).toHaveCount(0);
+  await page.getByLabel("Require sign-in").uncheck();
+  await expect(page.getByText("Anyone with the link can edit without signing in. That includes agents.")).toBeVisible();
+});
+
+test("a blank paragraph does not stop a snapshot, and a page over the limit says it is too long", async ({ page }) => {
+  await page.goto("/editor");
+  const text = page.getByRole("textbox", { name: "Page text" });
+  await text.locator("p").last().click();
+  await page.keyboard.press("End");
+  await page.keyboard.press("Enter");
+  await openShare(page);
+  await page.getByRole("tab", { name: "Snapshot" }).click();
+  await page.getByRole("button", { name: "Create snapshot link" }).click();
+  await expect(page.getByLabel("Snapshot link")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await text.evaluate((el) => {
+    for (let i = 0; i < 6; i++) el.insertAdjacentHTML("beforeend", `<p>${"b".repeat(4_500)}</p>`);
+  });
+  await openShare(page);
+  await page.getByRole("tab", { name: "Snapshot" }).click();
+  await page.getByRole("button", { name: /snapshot link/ }).first().click();
+  await expect(page.locator(".ad-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
 });

@@ -68,7 +68,8 @@ function liveParagraphs(root: HTMLElement | null): string[] {
   if (!root) return [];
   const copy = root.cloneNode(true) as HTMLElement;
   copy.querySelectorAll(".ad-cursor").forEach((node) => node.remove());
-  return [...copy.querySelectorAll("p")].map((p) => p.textContent ?? "");
+  // A blank paragraph, such as one made by pressing Enter, carries nothing.
+  return [...copy.querySelectorAll("p")].map((p) => p.textContent ?? "").filter((text) => text.trim() !== "");
 }
 
 function SnapshotView({ hash }: { hash: string }) {
@@ -168,8 +169,13 @@ function Editor() {
               onCreate: () => {
                 const url = snapshotUrl(liveParagraphs(textRef.current));
                 // Make only a link that the page can open again. A longer page cannot be a snapshot.
-                if (readSnapshot(url.slice(url.indexOf("#"))) === null) {
+                const hash = url.slice(url.indexOf("#"));
+                if (hash.length > MAX_SNAPSHOT) {
                   toast({ title: "This page is too long for a snapshot link", description: "Shorten the text and try again. Nothing was shared.", tone: "danger" });
+                  return;
+                }
+                if (readSnapshot(hash) === null) {
+                  toast({ title: "This page has text a snapshot link can't carry", description: "Remove very long paragraphs or hidden characters and try again. Nothing was shared.", tone: "danger" });
                   return;
                 }
                 setSnapshot(url);
