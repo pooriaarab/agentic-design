@@ -327,9 +327,9 @@ export function DataTable<T>({
                       tabIndex={i === active ? 0 : -1}
                       onFocus={(event) => {
                         setActiveId(id);
-                        // Tab or Shift+Tab back into the grid: the browser thinks a row under the bar is in view, so keep it clear of the bar.
+                        // Tab or Shift+Tab back into the grid: the browser thinks a row under the bar is in view, so keep it clear of the bar and the header.
                         const el = scroller.current;
-                        if (barHeight > 0 && el && event.target === event.currentTarget && !el.contains(event.relatedTarget as Node | null)) {
+                        if (el && event.target === event.currentTarget && !el.contains(event.relatedTarget as Node | null)) {
                           const next = scrollToRow(i, el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
                           if (next !== el.scrollTop) el.scrollTop = next;
                         }

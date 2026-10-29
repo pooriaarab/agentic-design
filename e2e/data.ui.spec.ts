@@ -309,3 +309,21 @@ test("Shift+Tab back into the grid does not leave the focused row under the bar"
   await expect(page.locator('[data-index="10"]')).toBeFocused();
   expect(row!.y + row!.height).toBeLessThanOrEqual(barBox!.y + 1);
 });
+
+test("Shift+Tab back into the grid does not leave the focused row under the header", async ({ page }) => {
+  await page.goto("/data");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await page.locator('[data-index="0"]').focus();
+  for (let i = 0; i < 10; i++) await page.keyboard.press("ArrowDown");
+  const head = grid.getByRole("columnheader").first();
+  const headBox = await head.boundingBox();
+  const row = page.locator('[data-index="10"]');
+  const at = await row.boundingBox();
+  // Scroll so that row 10 sits fully under the sticky header.
+  await grid.evaluate((el, by) => { el.scrollTop = el.scrollTop + by; }, at!.y - headBox!.y);
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Shift+Tab");
+  await expect(row).toBeFocused();
+  const after = await row.boundingBox();
+  expect(after!.y).toBeGreaterThanOrEqual(headBox!.y + headBox!.height - 1);
+});
