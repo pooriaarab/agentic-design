@@ -478,7 +478,10 @@
 .ad-filetable th:nth-child(2) { width: 36%; }
 .ad-filetable th:nth-child(3) { width: 16%; }
 .ad-filetable th:nth-child(4) { width: 12%; }
-.ad-filetable td { height: 3rem; overflow: hidden; }
+.ad-filetable td { height: 3rem; }
+.ad-filetable td:first-child { overflow: hidden; }
+/* The owner chip wraps in its cell. Its name, the word Agent, and who it acts for must all stay in view. */
+.ad-filetable .ad-chip { flex-wrap: wrap; row-gap: 0; }
 .ad-filetable tbody tr:hover { background: var(--ad-color-surface-sunken); }
 .ad-filetable__sort {
   display: inline-flex;

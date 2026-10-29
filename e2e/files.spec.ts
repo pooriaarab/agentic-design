@@ -22,7 +22,7 @@ test("loading shows placeholders and a status, and hides them from a screen read
   const out = html({ label: "Files", items: [], loading: true });
   expect(out).toContain('aria-busy="true"');
   expect(out).toContain("Loading files");
-  expect(out).toContain('aria-hidden="true"');
+  expect(out).toMatch(/<tr[^>]*aria-hidden="true"/);
   expect(out).not.toContain("No files");
 });
 

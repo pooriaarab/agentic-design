@@ -111,6 +111,29 @@ test("in forced colors a placeholder is a system color, not the page color", asy
   expect(await fill).not.toBe(await canvas);
 });
 
+for (const dir of ["ltr", "rtl"] as const) {
+  test(`an agent owner keeps its name and who it acts for in view in the table at a medium width, ${dir}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 800 });
+    await page.goto("/chrome");
+    await page.evaluate((d) => document.documentElement.setAttribute("dir", d), dir);
+    const cell = page.locator(".ad-filetable tbody tr", { hasText: "Meeting notes" }).locator("td").nth(1);
+    const [box, name, meta] = await Promise.all([cell.boundingBox(), cell.locator(".ad-chip__name").boundingBox(), cell.locator(".ad-chip__meta").boundingBox()]);
+    expect(name?.width ?? 0).toBeGreaterThan(20);
+    // Measure what is drawn. The text may wrap, and it may not leave the cell.
+    for (const part of [name, meta]) {
+      expect(part?.x ?? 0).toBeGreaterThanOrEqual((box?.x ?? 0) - 1);
+      expect((part?.x ?? 0) + (part?.width ?? 0)).toBeLessThanOrEqual((box?.x ?? 0) + (box?.width ?? 0) + 1);
+    }
+  });
+}
+
+test("when loading ends the status says how many files arrived", async ({ page }) => {
+  await page.goto("/chrome");
+  await page.getByRole("button", { name: "Show loading" }).click();
+  await page.getByRole("button", { name: "Show files" }).click();
+  await expect(page.locator("#demo-files").getByRole("status")).toHaveText("6 files");
+});
+
 test("a very long file name is cut by an ellipsis, and the page does not scroll sideways on a desktop screen", async ({ page }) => {
   await page.goto("/chrome");
   await expect(page.getByRole("table", { name: "Recent files" })).toBeVisible();

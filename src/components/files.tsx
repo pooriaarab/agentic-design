@@ -114,14 +114,19 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
   const rows = useMemo(() => (sortProp ? items : sorted(items, sort, locale)), [items, sort, sortProp, locale]);
   const [said, setSaid] = useState("");
   // Say a sort only after it took effect. A parent that ignores onSortChange changes `sort` never, so nothing is said.
-  const first = useRef(true);
+  // Compare with the last sort, not a first-run flag, so StrictMode's second effect says nothing on mount.
+  const lastSort = useRef(sort);
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
+    if (lastSort.current.key === sort.key && lastSort.current.direction === sort.direction) return;
+    lastSort.current = sort;
     setSaid(`Sorted by ${columns.find((c) => c.key === sort.key)?.label.toLowerCase()}, ${sort.direction}`);
-  }, [sort.key, sort.direction]);
+  }, [sort]);
+  // When loading ends, say how many files arrived, so the status does not just go quiet.
+  const wasLoading = useRef(loading);
+  useEffect(() => {
+    if (wasLoading.current && !loading) setSaid(`${items.length} ${items.length === 1 ? "file" : "files"}`);
+    wasLoading.current = loading;
+  }, [loading, items.length]);
   const choose = (next: FileSort) => {
     setOwn(next);
     onSortChange?.(next);
