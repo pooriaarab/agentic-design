@@ -47,7 +47,7 @@ export function TableSearch({ value, onChange, label = "Search" }: { value: stri
     return <IconButton ref={button} label={label} icon={<SearchIcon />} size="sm" onClick={() => setOpen(true)} />;
   }
   return (
-    <div className="agd-tablesearch" role="search">
+    <div className="agd-tablesearch" role="search" aria-label={label}>
       <SearchIcon className="agd-tablesearch__icon" />
       <input
         ref={input}
