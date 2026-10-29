@@ -6,7 +6,7 @@ export { Tooltip, TooltipProvider } from "./tooltip.js";
 export { Dialog, DialogClose, Menu, Tabs, ToastProvider, useToast } from "./overlays.js";
 export type { DialogProps, MenuItem, TabItem, ToastOptions, ToastTone } from "./overlays.js";
 export { AppShell, SidebarNav } from "./shell.js";
-export type { AppShellProps, SidebarItem } from "./shell.js";
+export type { AppShellProps, SidebarItem, SidebarLinkProps, SidebarNavProps } from "./shell.js";
 export { Toolbar, ToolbarButton, ToolbarGroup, ToolbarOverflow, ToolbarSeparator } from "./toolbar.js";
 export { DocumentTitle } from "./document-title.js";
 export type { DocumentTitleProps } from "./document-title.js";

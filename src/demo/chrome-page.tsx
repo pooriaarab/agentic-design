@@ -8,6 +8,7 @@ import {
   Menu,
   MoreIcon,
   ShareDialog,
+  SidebarNav,
   Toolbar,
   ToolbarButton,
   ToolbarGroup,
@@ -55,6 +56,20 @@ export function ChromePage() {
       description="The parts every editor shares. The shell around this page has a side panel on the right."
       panel={<p id="shell-panel">Notes for this page. A side panel holds comments, an assistant, or details.</p>}
     >
+      <section aria-labelledby="demo-links-h" id="demo-links">
+        <h2 id="demo-links-h">Host links</h2>
+        <SidebarNav
+          label="Host component links"
+          items={[{ href: "/chrome#a", label: "Component link", current: true }]}
+          linkComponent={({ children, ...props }) => <a {...props} data-host-link="component">{children}</a>}
+        />
+        <SidebarNav
+          label="Render prop links"
+          items={[{ href: "/chrome#b", label: "Render prop link" }]}
+          renderLink={(props) => <a {...props} data-host-link="render" />}
+        />
+      </section>
+
       <section aria-labelledby="doc-title" id="demo-title">
         <h2 id="doc-title">Document title</h2>
         <DocumentTitle value={title} onRename={setTitle} />

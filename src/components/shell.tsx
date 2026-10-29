@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type AnchorHTMLAttributes, type ComponentType, type ReactNode } from "react";
 import { MenuIcon } from "../icons.js";
 import { IconButton } from "./button.js";
 
@@ -10,7 +10,7 @@ const onNarrowChange = (callback: () => void) => {
 };
 
 export type AppShellProps = {
-  /** The product name, shown at the top of the sidebar. */
+  /** The product name, shown at the start of the top bar, inside the banner landmark. */
   brand: ReactNode;
   /** Usually a `SidebarNav`. */
   sidebar: ReactNode;
@@ -68,7 +68,7 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
   }, [narrow]);
 
   useEffect(() => {
-    if (open && openedByPerson.current) sidebarRef.current?.querySelector<HTMLElement>("a")?.focus();
+    if (open && openedByPerson.current) sidebarRef.current?.querySelector<HTMLElement>("a, [href]")?.focus();
   }, [open]);
 
   const onKeyDown = (event: React.KeyboardEvent) => {
@@ -82,6 +82,7 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
 
   const topbarEl = (
     <header key="topbar" className="ad-shell__topbar">
+      <p className="ad-shell__brand">{brand}</p>
       <IconButton
         ref={toggleRef}
         className="ad-shell__menu"
@@ -112,7 +113,6 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
       }}
       onFocus={() => { hiddenFocus.current = null; }}
     >
-      <p className="ad-shell__brand">{brand}</p>
       {sidebar}
     </div>
   );
@@ -135,18 +135,36 @@ export interface SidebarItem {
   current?: boolean;
 }
 
-export function SidebarNav({ label, items }: { label: string; items: SidebarItem[] }) {
+/** What a host link gets. Pass these on to the element you render, so the link keeps its look and its current-page mark. */
+export type SidebarLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; className: string; children: ReactNode };
+
+export interface SidebarNavProps {
+  label: string;
+  items: SidebarItem[];
+  /** A host link component, for example a router link. It takes the props of an anchor. The default is a plain `a`. */
+  linkComponent?: ComponentType<SidebarLinkProps>;
+  /** A render prop for a link. It wins over `linkComponent`. Spread `props` on the element you return. */
+  renderLink?: (props: SidebarLinkProps, item: SidebarItem) => ReactNode;
+}
+
+export function SidebarNav({ label, items, linkComponent: Link = "a" as unknown as ComponentType<SidebarLinkProps>, renderLink }: SidebarNavProps) {
   return (
     <nav aria-label={label}>
       <ul className="ad-sidebar-nav">
-        {items.map((item) => (
-          <li key={item.href}>
-            <a className="ad-sidebar-nav__link" href={item.href} aria-current={item.current ? "page" : undefined}>
-              {item.icon}
-              {item.label}
-            </a>
-          </li>
-        ))}
+        {items.map((item) => {
+          const props: SidebarLinkProps = {
+            className: "ad-sidebar-nav__link",
+            href: item.href,
+            "aria-current": item.current ? "page" : undefined,
+            children: (
+              <>
+                {item.icon}
+                {item.label}
+              </>
+            ),
+          };
+          return <li key={item.href}>{renderLink ? renderLink(props, item) : <Link {...props} />}</li>;
+        })}
       </ul>
     </nav>
   );

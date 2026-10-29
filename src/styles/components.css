@@ -360,7 +360,7 @@
   border-inline-end: 1px solid var(--ad-color-border);
   background: var(--ad-color-surface-sunken);
 }
-.ad-shell__brand { padding: 0 var(--ad-space-3); font-weight: var(--ad-font-weight-semibold); }
+.ad-shell__brand { margin: 0; font-weight: var(--ad-font-weight-semibold); }
 .ad-shell__topbar {
   grid-area: topbar;
   display: flex;
