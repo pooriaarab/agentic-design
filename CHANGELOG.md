@@ -8,8 +8,8 @@ All notable changes to this package are in this file. The format follows
 
 ### Added
 
-- `DataTableToolbar`, `TableSearch`, `FilterChips`, `DisplayPopover`, `filterMenuItems`, `applyDataView`, `emptyDataView`, `fieldText`, `sameDisplay`, and the icons `SearchIcon` and `SlidersIcon`. They add search, filters, grouping, ordering, and hidden columns to a `DataTable`. `DataTable` takes the new `groupBy` and `hiddenColumns` props.
-- `AppSidebar`, a left sidebar with a toggle button. It saves its state on the device, shares it between tabs, and starts collapsed on a narrow screen. It also adds `SIDEBAR_STORAGE_KEY`, `PanelLeftIcon`, and the size token `sidebar-rail`.
+- `DataTableToolbar`, `TableSearch`, `FilterChips`, `DisplayPopover`, `filterMenuItems`, `applyDataView`, `emptyDataView`, `fieldText`, `sameDisplay`, and the icons `SearchIcon` and `SlidersIcon`. The types `DataField`, `DataFilter`, `DataView`, `DisplayPopoverProps`, and `FilterChip` are exported too. They add search, filters, grouping, ordering, and hidden columns to a `DataTable`. `DataTable` takes the new `groupBy` and `hiddenColumns` props.
+- `AppSidebar`, a left sidebar with a toggle button. It saves its state on the device, shares it between tabs, and starts collapsed on a narrow screen. It also adds `SIDEBAR_STORAGE_KEY`, `PanelLeftIcon`, and the size token `sidebar-rail`. The type `AppSidebarProps` is exported too.
 
 ## 0.8.0 - 2026-10-29
 
