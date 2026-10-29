@@ -6,7 +6,7 @@
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
-> Status: 0.5.0. The design tokens, the contrast check, and the fonts work.
+> Status: 0.6.0. The design tokens, the contrast check, and the fonts work.
 > The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the share dialog, and the editor demo work.
 > See [CHANGELOG.md](CHANGELOG.md) for what is in this release, its breaking changes, and its limits.
 
