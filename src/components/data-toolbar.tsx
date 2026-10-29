@@ -79,25 +79,28 @@ export interface FilterChip {
   label: string;
 }
 
+const REMOVE_WINDOW = 5000;
+
 /** The filters in use, each one removable, and an optional menu to add another. */
 export function FilterChips({ chips, onRemove, addItems, addLabel = "Add filter" }: { chips: readonly FilterChip[]; onRemove: (id: string) => void; addItems?: MenuItem[]; addLabel?: string }) {
   const root = useRef<HTMLDivElement>(null);
   const chipKey = chips.map((c) => c.id).join("\n");
-  const removed = useRef<{ index: number; id: string } | null>(null);
+  // A parent can remove the chip later, for example after a server call. A request older than this is forgotten.
+  const removed = useRef<{ index: number; id: string; at: number } | null>(null);
   // The remove button leaves with its chip. Give focus to the next chip, the one before it, or the add button.
   useLayoutEffect(() => {
     if (removed.current === null) return;
-    const { index: at, id } = removed.current;
-    removed.current = null;
+    const { index: at, id, at: when } = removed.current;
+    if (Date.now() - when > REMOVE_WINDOW) {
+      removed.current = null;
+      return;
+    }
     // A parent can refuse a removal. Then the chip is still here, and focus stays where it is.
     if (chips.some((c) => c.id === id)) return;
+    removed.current = null;
     const buttons = root.current?.querySelectorAll<HTMLElement>(".agd-filterchip__remove");
     (buttons && buttons.length > 0 ? buttons[Math.min(at, buttons.length - 1)] : root.current?.querySelector<HTMLElement>(".agd-filterchips__add") ?? root.current)?.focus();
   }, [chipKey]);
-  // A removal the parent refused leaves nothing to act on. Forget it after the next commit.
-  useEffect(() => {
-    removed.current = null;
-  });
   return (
     <div className="agd-filterchips" ref={root} tabIndex={-1}>
       {chips.length > 0 && (
@@ -105,7 +108,7 @@ export function FilterChips({ chips, onRemove, addItems, addLabel = "Add filter"
           {chips.map((chip, index) => (
             <li key={chip.id} className="agd-filterchip">
               <span className="agd-filterchip__label">{chip.label}</span>
-              <IconButton label={`Remove filter ${chip.label}`} icon={<CloseIcon />} size="sm" tooltip={false} className="agd-filterchip__remove" onClick={() => { removed.current = { index, id: chip.id }; onRemove(chip.id); }} />
+              <IconButton label={`Remove filter ${chip.label}`} icon={<CloseIcon />} size="sm" tooltip={false} className="agd-filterchip__remove" onClick={() => { removed.current = { index, id: chip.id, at: Date.now() }; onRemove(chip.id); }} />
             </li>
           ))}
         </ul>

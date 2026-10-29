@@ -118,11 +118,11 @@ themes.dark.accent; // "#8EA4FF"
 ```
 
 - Table controls for React, to put in the `toolbar` of a `DataTable`. `TableSearch` is a button that opens a
-  search field and moves focus into it. Escape clears the text, and Escape again closes the field.
+  search field and moves focus into it. Escape clears the text, and Escape again closes the field. Inside a Radix `Dialog`, Escape also closes the dialog, because the dialog listens first.
   `FilterChips` lists the filters in use, each with a remove button, and a menu to add one
   (`filterMenuItems` builds the menu from your rows). `DisplayPopover` opens a panel with "Group by", "Order by",
   a direction, a checkbox for each column, and "Reset to defaults". `applyDataView(rows, view, fields)` does the
-  searching, filtering, ordering, and grouping for you. Pass `groupBy` and `hiddenColumns` to `DataTable`. Keep `groupBy` stable with `useMemo`, because each new function builds the layout again. Keep `hiddenColumns` stable too, so the column list is not made again on every render. `TableSearch` is a search landmark named by its `label` (default "Search"). With two tables on a page, give each its own `label`. The table says the new row count after a pause when a search or filter changes it.
+  searching, filtering, ordering, and grouping for you. Pass `groupBy` and `hiddenColumns` to `DataTable`. Keep `groupBy` stable with `useMemo`, because each new function builds the layout again. Keep `hiddenColumns` stable too, so the column list is not made again on every render. `TableSearch` is a search landmark named by its `label` (default "Search"). With two tables on a page, give each its own `label`. The table says the new row count after a pause when a search or filter changes the count. It does not speak when the count stays the same.
 
 ```tsx
 const [view, setView] = useState<DataView>(emptyDataView);
@@ -133,6 +133,7 @@ const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all
   rows={rows}
   columns={columns}
   getRowId={(t) => t.id}
+  groupBy={groupBy} // a stable function from useMemo, or undefined
   hiddenColumns={hidden} // useMemo(() => new Set(view.hiddenColumns), [view.hiddenColumns])
   toolbar={
     <DataTableToolbar end={<DisplayPopover fields={fields} columns={columnList} view={view} onViewChange={setView} defaults={emptyDataView} />}>

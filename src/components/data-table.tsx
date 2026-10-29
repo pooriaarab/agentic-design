@@ -257,13 +257,24 @@ export function DataTable<T>({
     if (target.isContentEditable || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return;
     if (target instanceof HTMLInputElement && target.type !== "checkbox") return;
     const index = Number(row.dataset.index);
-    const page = Math.max(1, Math.floor((viewport - rowHeight) / rowHeight) - 1);
+    // A page is a height, not a row count: a group label takes a row of height too.
+    const pageHeight = Math.max(rowHeight, viewport - rowHeight * 2);
+    const pageDown = () => {
+      let to = index;
+      while (to + 1 < count && (layout.tops[to + 1] as number) - (layout.tops[index] as number) <= pageHeight) to++;
+      return Math.max(to, Math.min(index + 1, count - 1));
+    };
+    const pageUp = () => {
+      let to = index;
+      while (to > 0 && (layout.tops[index] as number) - (layout.tops[to - 1] as number) <= pageHeight) to--;
+      return Math.min(to, Math.max(index - 1, 0));
+    };
     const onRow = target === row;
     switch (event.key) {
       case "ArrowDown": move(index + 1); break;
       case "ArrowUp": move(index - 1); break;
-      case "PageDown": move(index + page); break;
-      case "PageUp": move(index - page); break;
+      case "PageDown": move(pageDown()); break;
+      case "PageUp": move(pageUp()); break;
       case "Home": move(0); break;
       case "End": move(count - 1); break;
       case " ":
