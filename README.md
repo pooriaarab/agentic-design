@@ -6,18 +6,18 @@
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
-> Status: 0.1.0, the first release. The design tokens, the contrast check, and the fonts work.
-> The tokens, the controls, the overlays, the app patterns, the share dialog, and the editor demo work.
-> See [CHANGELOG.md](CHANGELOG.md) for what is in this release and its limits.
+> Status: 0.2.0. The design tokens, the contrast check, and the fonts work.
+> The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the share dialog, and the editor demo work.
+> See [CHANGELOG.md](CHANGELOG.md) for what is in this release, its breaking changes, and its limits.
 
 ## Install
 
-Once 0.1.0 is on npm, run `npm install agentic-design`. Until then, build it from a checkout and
+Once 0.2.0 is on npm, run `npm install agentic-design`. Until then, build it from a checkout and
 install the tarball:
 
 ```sh
 npm ci && npm pack
-npm install ./agentic-design-0.1.0.tgz
+npm install ./agentic-design-0.2.0.tgz
 ```
 
 `npm pack` runs the build first (`prepack`), so the tarball holds `dist/`.
@@ -81,12 +81,20 @@ themes.dark.accent; // "#8EA4FF"
   needs a joiner, so show an account handle where two people must be told apart. Display names pass a
   closed allow-list (`usableName`): a name with a hidden text-direction character or a
   zero-width space shows as unnamed.
+- App chrome for React: `AppShell` takes a `title` slot in the top bar and a side `panel` with a
+  `panelLabel` (below 48rem the panel sits under the content). `DocumentTitle` renames in place: Enter,
+  Space, or F2 opens the field, and Escape cancels. `AgentBadge` marks anything an agent made, with the
+  word Agent, a square avatar, and who the agent acts for. A `Toolbar` takes `ToolbarGroup` for named
+  groups of buttons and `ToolbarOverflow` for a "More tools" menu.
+- File lists for React: `FileList` with `items` shows a table with sortable column headers (name, owner,
+  modified), or a grid with a "Sort by" select. `loading` shows placeholders, and `empty` replaces the
+  default empty state. Pass `FileRow` children for a plain list.
 - `ShareDialog`: people and agents with roles, an invite field (an email invites a person, an
   `@handle` invites an agent, and anything else is refused), a link with role, expiry, and a
   sign-in rule, and a snapshot link that holds the page in the URL fragment. `PresenceCursor`
   shows a remote cursor, and an agent's tag says Agent.
 - `ThemeProvider` and `useTheme` for React, from `agentic-design/react`. They set `data-theme`, keep the pick on the device, and sync it across tabs. `themeInitScript()` returns a script for the page head, so a saved dark pick never flashes light. React is an optional peer: the root entry and the CLI do not need it.
-- A demo site from the Worker: tokens, primitives, patterns, and an editor-like page with
+- A demo site from the Worker: tokens, primitives, patterns, app chrome, and an editor-like page with
   presence, an agent suggestion, and the share dialog. Run `npm run build` first, then
   `npx wrangler dev`.
 - A CLI and an MCP server so an agent can read the tokens:
@@ -97,6 +105,8 @@ themes.dark.accent; // "#8EA4FF"
 ## Limits
 
 - `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.
+- `FileList` sorts only the `items` you pass, and only when it is not controlled. If you pass `sort`,
+  your code must sort `items` itself. It does not paginate.
 - The demo snapshot link is not compressed or encrypted, and it holds text only. The demo page
   opens it as a read-only copy after it checks the size, the shape, and every paragraph. It is
   a demonstration of the idea, not a finished link format.
