@@ -1,5 +1,7 @@
-import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 
 const cli = (...args: string[]) => spawnSync("node", ["dist/cli.js", ...args], { encoding: "utf8" });
@@ -31,6 +33,8 @@ test("contrast command passes for the shipped tokens", () => {
 
 test("bad input exits with a usage code", () => {
   expect(cli("tokens", "--format", "xml").status).toBe(2);
+  expect(cli("tokens", "--format", "json", "extra").status).toBe(2);
+  expect(cli("contrast", "extra").status).toBe(2);
   expect(cli("nope").status).toBe(2);
 });
 
@@ -42,12 +46,36 @@ test("the stylesheet only loads fonts that ship in the package", () => {
   for (const url of urls) expect(existsSync(`dist/${url}`), url).toBe(true);
 });
 
-test("the check script goes red when a pair fails", () => {
-  const run = () =>
-    execFileSync("node", ["-e", `
-      import("./dist/tokens.js").then(({ themes, checkContrast }) => {
-        themes.light.text = themes.light.bg;
-        process.exit(checkContrast().some((r) => !r.pass) ? 1 : 0);
-      });`], { stdio: "pipe" });
-  expect(run).toThrow();
+test("the check script exits 1 and names the pair when a pair fails", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ad-contrast-"));
+  const { themes } = JSON.parse(cli("tokens", "--format", "json").stdout);
+  const run = (file: string) => spawnSync("node", ["scripts/check-contrast.mjs", file], { encoding: "utf8" });
+
+  const good = join(dir, "good.json");
+  writeFileSync(good, JSON.stringify({ themes }));
+  expect(run(good).status).toBe(0);
+
+  themes.light.text = themes.light.bg;
+  const bad = join(dir, "bad.json");
+  writeFileSync(bad, JSON.stringify({ themes }));
+  const result = run(bad);
+  expect(result.status).toBe(1);
+  expect(result.stderr).toContain("FAIL light: text on bg is 1.00, needs 4.5");
+});
+
+test("the shipped tokens cannot be changed at run time", () => {
+  const { status } = spawnSync(
+    "node",
+    ["--input-type=module", "-e", 'import { themes } from "./dist/tokens.js"; "use strict"; try { themes.light.text = "#000"; } catch { process.exit(0); } process.exit(1);'],
+    { encoding: "utf8" },
+  );
+  expect(status).toBe(0);
+});
+
+test("scales sit on :root alone, so reduced motion reaches every themed region", () => {
+  const css = cli("tokens").stdout;
+  const light = css.slice(css.indexOf(':root,\n[data-theme="light"]'), css.indexOf("\n}\n", css.indexOf(':root,\n[data-theme="light"]')));
+  expect(light).toContain("--ad-color-bg");
+  expect(light).not.toContain("--ad-duration");
+  expect(css).toMatch(/prefers-reduced-motion: reduce\) \{\n  :root \{\n    --ad-duration-fast: 0.01ms;\n    --ad-duration-base: 0.01ms;\n    --ad-duration-slow: 0.01ms/);
 });

@@ -1,4 +1,4 @@
-import { contrastPairs, themes, type ContrastPair, type ThemeName } from "./tokens.js";
+import { contrastPairs, themes as shippedThemes, type ContrastPair, type Theme, type ThemeName } from "./tokens.js";
 
 function channel(value: number): number {
   const c = value / 255;
@@ -23,7 +23,8 @@ export interface ContrastResult extends ContrastPair {
   pass: boolean;
 }
 
-export function checkContrast(): ContrastResult[] {
+/** Check every pair in each theme. Pass your own themes to check them instead of the shipped ones. */
+export function checkContrast(themes: Record<ThemeName, Theme> = shippedThemes): ContrastResult[] {
   return (Object.keys(themes) as ThemeName[]).flatMap((theme) =>
     contrastPairs.map((pair) => {
       const ratio = contrastRatio(themes[theme][pair.fg], themes[theme][pair.bg]);

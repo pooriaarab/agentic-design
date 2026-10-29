@@ -1,11 +1,11 @@
 ---
 name: agentic-design
-description: Accessible design tokens and React primitives for calm, minimal apps. Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,dark-mode.
+description: Accessible design tokens and UI primitives for calm, minimal apps. Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,dark-mode.
 ---
 
 # agentic-design
 
-Accessible design tokens and React primitives for calm, minimal apps.
+Accessible design tokens and UI primitives for calm, minimal apps.
 
 ## Use the CSS
 

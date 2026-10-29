@@ -38,6 +38,14 @@ function readPreference(storageKey: string, fallback: ThemePreference): ThemePre
   }
 }
 
+/**
+ * A script for the head of the page. It applies a saved pick before first paint, so a person
+ * who chose dark never sees a light flash. Put it in a `<script>` tag before the app loads.
+ */
+export function themeInitScript(storageKey = "agentic-design-theme"): string {
+  return `try{var t=localStorage.getItem(${JSON.stringify(storageKey)});if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}`;
+}
+
 export interface ThemeProviderProps {
   children: ReactNode;
   defaultPreference?: ThemePreference;
@@ -62,7 +70,17 @@ export function ThemeProvider({
     const root = document.documentElement;
     if (preference === "system") root.removeAttribute("data-theme");
     else root.setAttribute("data-theme", preference);
+    return () => root.removeAttribute("data-theme");
   }, [preference]);
+
+  // Another tab of the same app changed the pick.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === storageKey) setPreferenceState(readPreference(storageKey, defaultPreference));
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [storageKey, defaultPreference]);
 
   const setPreference = useCallback(
     (next: ThemePreference) => {

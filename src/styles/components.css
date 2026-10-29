@@ -210,3 +210,14 @@
 .ad-switch:disabled { background: var(--ad-color-surface-sunken); border-color: var(--ad-color-border); cursor: not-allowed; }
 .ad-checkbox:disabled::before { background: var(--ad-color-text-muted); }
 .ad-switch:disabled::before { background: var(--ad-color-border); }
+
+/* Windows High Contrast. Backgrounds become system colors there, so state needs system colors. */
+@media (forced-colors: active) {
+  .ad-checkbox:checked,
+  .ad-switch:checked { background: Highlight; border-color: Highlight; }
+  .ad-checkbox::before { background: HighlightText; }
+  .ad-switch { background: Canvas; border-color: ButtonText; }
+  .ad-switch::before { background: ButtonText; }
+  .ad-switch:checked::before { background: HighlightText; }
+  .ad-button[aria-busy="true"] { border-style: dashed; }
+}

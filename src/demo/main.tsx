@@ -8,7 +8,7 @@ const pages: Record<string, () => ReactElement> = {
   "/": TokensPage,
   "/primitives": PrimitivesPage,
 };
-const Page = pages[window.location.pathname.replace(/\/$/, "") || "/"] ?? TokensPage;
+const Page = pages[window.location.pathname.replace(/\/$/, "") || "/"] ?? (() => <p>Page not found.</p>);
 
 createRoot(document.getElementById("root") as HTMLElement).render(
   <ThemeProvider>

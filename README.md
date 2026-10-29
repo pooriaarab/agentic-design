@@ -5,7 +5,7 @@
 
 [Package](https://www.npmjs.com/package/agentic-design) · [Source](https://github.com/pooriaarab/agentic-design) · [Support](https://github.com/pooriaarab/agentic-design/issues)
 
-Accessible design tokens and React primitives for calm, minimal apps.
+Accessible design tokens and UI primitives for calm, minimal apps.
 
 > Status: early. The design tokens, the contrast check, and the fonts work.
 > The form controls work. The overlays, the app patterns, and the demo are not built yet.
@@ -60,10 +60,12 @@ themes.dark.accent; // "#8EA4FF"
 - Self-hosted Inter and JetBrains Mono (SIL OFL). The package makes no remote
   request.
 - Form controls for React: `Button`, `IconButton` (needs a `label`), `Input`, `Textarea`,
-  `Select`, `Checkbox`, `Switch`. Each has a visible label, a focus ring, and
-  every state. An error names the problem, shows an icon, and is announced.
-- `ThemeProvider` and `useTheme` for React. They set `data-theme` and keep the pick on the device.
-- A token page at `/` from the Worker (`npm run build`, then `npx wrangler dev`).
+  `Select`, `Checkbox`, `Switch`. Each field has a visible label and a focus ring.
+  `Input`, `Textarea`, and `Select` take `hint` and `error`. An error shows an icon and
+  text, sets `aria-invalid`, and is announced. `Button` has loading and disabled states.
+  Checked and pressed states stay visible in Windows High Contrast.
+- `ThemeProvider` and `useTheme` for React, from `agentic-design/react`. They set `data-theme`, keep the pick on the device, and sync it across tabs. `themeInitScript()` returns a script for the page head, so a saved dark pick never flashes light. React is an optional peer: the root entry and the CLI do not need it.
+- A token page at `/` from the Worker. Run `npm run build` first, then `npx wrangler dev`.
 - A CLI and an MCP server so an agent can read the tokens:
   `npx agentic-design tokens --format json`, `npx agentic-design contrast`,
   `npx agentic-design mcp`.

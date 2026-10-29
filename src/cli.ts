@@ -29,7 +29,7 @@ export async function runCli(argv: string[], out = console.log, err = console.er
     return 0;
   }
   if (command === "tokens") {
-    const flag = rest[0] === "--format" ? rest[1] : rest.length === 0 ? "css" : undefined;
+    const flag = rest.length === 0 ? "css" : rest.length === 2 && rest[0] === "--format" ? rest[1] : undefined;
     if (flag !== "css" && flag !== "json") {
       err('tokens takes "--format css" or "--format json".');
       return 2;
