@@ -1,7 +1,7 @@
 {
   "name": "agentic-design",
   "version": "0.0.0",
-  "description": "Accessible design tokens and React primitives for calm, minimal apps.",
+  "description": "Accessible design tokens and UI primitives for calm, minimal apps.",
   "keywords": [
     "design-system",
     "tokens",

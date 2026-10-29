@@ -24,6 +24,16 @@ export const palette = {
   },
 } as const;
 
+/** Tokens are shared by the CLI, the MCP server, and the Worker. No caller may change them. */
+function deepFreeze<T>(value: T): T {
+  if (typeof value === "object" && value !== null) {
+    for (const inner of Object.values(value)) deepFreeze(inner);
+    Object.freeze(value);
+  }
+  return value;
+}
+deepFreeze(palette);
+
 const { neutral: n, blue: b, plum: p, red: r, amber: a, green: g } = palette;
 
 export const colorNames = [
@@ -42,7 +52,7 @@ export type ThemeName = "light" | "dark";
 export type Theme = Record<ColorName, string>;
 
 // Tier 2: semantic colors. Apps read only these.
-export const themes: Record<ThemeName, Theme> = {
+export const themes: Record<ThemeName, Theme> = deepFreeze({
   light: {
     bg: n[50], surface: n[0], "surface-raised": n[0], "surface-sunken": n[100], "surface-hover": n[200],
     text: n[800], "text-muted": n[600], "text-on-accent": n[0],
@@ -65,9 +75,9 @@ export const themes: Record<ThemeName, Theme> = {
     success: g[400], "success-subtle": g[900], "success-text": g[300],
     focus: b[300], scrim: "rgb(0 0 0 / 0.6)",
   },
-};
+});
 
-export const shadows: Record<ThemeName, Record<"raised" | "floating", string>> = {
+export const shadows: Record<ThemeName, Record<"raised" | "floating", string>> = deepFreeze({
   light: {
     raised: "0 1px 2px rgb(29 28 26 / 0.06), 0 2px 16px rgb(29 28 26 / 0.08)",
     floating: "0 2px 6px rgb(29 28 26 / 0.08), 0 8px 40px rgb(29 28 26 / 0.16)",
@@ -76,10 +86,10 @@ export const shadows: Record<ThemeName, Record<"raised" | "floating", string>> =
     raised: "0 1px 2px rgb(0 0 0 / 0.3), 0 2px 16px rgb(0 0 0 / 0.3)",
     floating: "0 2px 6px rgb(0 0 0 / 0.3), 0 8px 40px rgb(0 0 0 / 0.5)",
   },
-};
+});
 
 // Scales do not change with the theme.
-export const scale = {
+export const scale = deepFreeze({
   space: { 1: "0.25rem", 2: "0.5rem", 3: "0.75rem", 4: "1rem", 6: "1.5rem", 8: "2rem", 12: "3rem", 16: "4rem", 24: "6rem" },
   radius: { sm: "0.25rem", md: "0.5rem", lg: "0.75rem", full: "9999px" },
   "font-family": {
@@ -92,38 +102,41 @@ export const scale = {
   duration: { fast: "100ms", base: "160ms", slow: "240ms" },
   easing: { out: "cubic-bezier(0.16, 1, 0.3, 1)" },
   size: { control: "2rem", "control-touch": "2.75rem", sidebar: "16rem", topbar: "3rem", content: "46rem" },
-} as const;
+} as const);
+
+/** Colors a pair may use. The scrim is translucent, so it has no fixed ratio. */
+export type PairColor = Exclude<ColorName, "scrim">;
 
 export interface ContrastPair {
-  fg: ColorName;
-  bg: ColorName;
+  fg: PairColor;
+  bg: PairColor;
   min: 3 | 4.5;
   use: string;
 }
 
-const text = (fg: ColorName, bgs: ColorName[], use: string): ContrastPair[] =>
+const text = (fg: PairColor, bgs: PairColor[], use: string): ContrastPair[] =>
   bgs.map((bg) => ({ fg, bg, min: 4.5, use }));
-const ui = (fg: ColorName, bgs: ColorName[], use: string): ContrastPair[] =>
+const ui = (fg: PairColor, bgs: PairColor[], use: string): ContrastPair[] =>
   bgs.map((bg) => ({ fg, bg, min: 3, use }));
 
-const surfaces: ColorName[] = ["bg", "surface", "surface-raised", "surface-sunken", "surface-hover"];
+const surfaces: PairColor[] = ["bg", "surface", "surface-raised", "surface-sunken", "surface-hover"];
 const status = (name: "danger" | "warning" | "success"): ContrastPair[] => [
-  ...text(`${name}-text`, [`${name}-subtle`, "surface", "surface-raised", "bg"], `${name} text`),
-  ...ui(name, ["surface", "surface-raised", "bg"], `${name} icon and border`),
+  ...text(`${name}-text`, [`${name}-subtle`, ...surfaces], `${name} text`),
+  ...ui(name, [`${name}-subtle`, ...surfaces], `${name} icon and border`),
 ];
 
 // Every pair the components use. Disabled controls are exempt by WCAG 1.4.3.
-export const contrastPairs: ContrastPair[] = [
+export const contrastPairs: readonly ContrastPair[] = deepFreeze([
   ...text("text", surfaces, "body text"),
   ...text("text-muted", surfaces, "secondary text and placeholders"),
   ...text("text-on-accent", ["accent", "accent-hover"], "text on a filled accent control"),
-  ...text("accent-text", ["accent-subtle", "surface", "surface-raised", "bg"], "accent text and links"),
-  ...text("agent-text", ["agent-subtle", "surface", "surface-raised", "bg"], "agent badge and agent text"),
+  ...text("accent-text", ["accent-subtle", ...surfaces], "accent text and links"),
+  ...text("agent-text", ["agent-subtle", ...surfaces], "agent badge and agent text"),
   ...status("danger"),
   ...status("warning"),
   ...status("success"),
   ...ui("border-strong", surfaces, "control borders (WCAG 1.4.11)"),
   ...ui("focus", surfaces, "focus ring (WCAG 2.4.13)"),
-  ...ui("accent", ["surface", "surface-raised", "bg", "accent-subtle"], "accent marks and checked controls"),
-  ...ui("agent", ["surface", "surface-raised", "bg", "agent-subtle"], "agent avatar outline"),
-];
+  ...ui("accent", ["accent-subtle", ...surfaces], "accent marks and checked controls"),
+  ...ui("agent", ["agent-subtle", ...surfaces], "agent avatar outline"),
+]);

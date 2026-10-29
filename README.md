@@ -5,7 +5,7 @@
 
 [Package](https://www.npmjs.com/package/agentic-design) · [Source](https://github.com/pooriaarab/agentic-design) · [Support](https://github.com/pooriaarab/agentic-design/issues)
 
-Accessible design tokens and React primitives for calm, minimal apps.
+Accessible design tokens and UI primitives for calm, minimal apps.
 
 > Status: early. The design tokens, the contrast check, and the fonts work.
 > The React primitives, the app patterns, and the demo are not built yet.
