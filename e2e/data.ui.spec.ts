@@ -203,6 +203,7 @@ test("a double click on a checkbox does not open the row", async ({ page }) => {
 test("focus returns to the row after the rows reload", async ({ page }) => {
   await page.goto("/data");
   await page.locator('[data-index="0"]').focus();
+  // A refetch comes from code, not a click, so the button must not take focus. Click it from the page.
   await page.evaluate(() => {
     const press = (name: string) => [...document.querySelectorAll("button")].find((b) => b.textContent === name)?.click();
     press("Show loading");

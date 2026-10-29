@@ -93,8 +93,10 @@ export function DataTable<T>({
   }, [ids, stored]);
   const allSelected = count > 0 && selected.size === count;
   const someSelected = selected.size > 0 && !allSelected;
-  const [activeRaw, setActive] = useState(0);
-  const active = Math.min(activeRaw, Math.max(0, count - 1));
+  // The active row is an id, so rows added above it do not move the tab stop to another row.
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const found = activeId === null ? -1 : ids.indexOf(activeId);
+  const active = found >= 0 ? found : 0;
   const wantFocus = useRef(false);
   // Did focus sit in the grid before this render? A refetch or a filter can remove the row that has it.
   const focusWasInside = useRef(false);
@@ -135,6 +137,8 @@ export function DataTable<T>({
 
   // The bar covers the last rows while it shows. Keep the active row clear of it, and give focus back to the grid when the bar and its focused button go.
   const barWas = useRef(false);
+  const barHadFocus = useRef(false);
+  if (typeof document !== "undefined") barHadFocus.current = !!bar.current?.contains(document.activeElement);
   useLayoutEffect(() => {
     const el = scroller.current;
     // Move only when focus is on a row. A click on select-all must not pull the grid back to the top.
@@ -143,7 +147,7 @@ export function DataTable<T>({
       const next = scrollToRow(Number(focusedRow.dataset.index), el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
       if (next !== el.scrollTop) el.scrollTop = next;
     }
-    if (barWas.current && !barVisible && count > 0 && (!document.activeElement || document.activeElement === document.body)) {
+    if (barWas.current && !barVisible && barHadFocus.current && count > 0 && (!document.activeElement || document.activeElement === document.body)) {
       if (el) {
         const next = scrollToRow(active, el.scrollTop, el.clientHeight, rowHeight, rowHeight, 0);
         if (next !== el.scrollTop) el.scrollTop = next;
@@ -188,7 +192,7 @@ export function DataTable<T>({
 
   const move = (to: number) => {
     wantFocus.current = true;
-    setActive(Math.max(0, Math.min(count - 1, to)));
+    setActiveId(ids[Math.max(0, Math.min(count - 1, to))] as string);
   };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
@@ -208,8 +212,9 @@ export function DataTable<T>({
       case "Home": move(0); break;
       case "End": move(count - 1); break;
       case " ":
-        if (!onRow || !selectable) return;
-        toggle(index, event.shiftKey);
+        if (!onRow) return;
+        // Space on a row must not scroll the grid, with or without selection.
+        if (selectable) toggle(index, event.shiftKey);
         break;
       case "Enter":
         if (!onRow || !onRowActivate) return;
@@ -294,7 +299,7 @@ export function DataTable<T>({
                       aria-rowindex={i + 2}
                       aria-selected={selectable ? isSelected : undefined}
                       tabIndex={i === active ? 0 : -1}
-                      onFocus={() => setActive(i)}
+                      onFocus={() => setActiveId(id)}
                       onDoubleClick={onRowActivate ? (event) => { if (!(event.target as HTMLElement).closest(".agd-datatable__cell--check")) onRowActivate(row); } : undefined}
                     >
                       {selectable && (
