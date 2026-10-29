@@ -121,7 +121,7 @@ themes.dark.accent; // "#8EA4FF"
   search field and moves focus into it. Escape clears the text, and Escape again closes the field. Inside a Radix `Dialog`, Escape also closes the dialog, because the dialog listens first.
   `FilterChips` lists the filters in use, each with a remove button, and a menu to add one
   (`filterMenuItems` builds the menu from your rows). `DisplayPopover` opens a panel with "Group by", "Order by",
-  a direction, a checkbox for each column, and "Reset to defaults". `DataTableToolbar` is the bar that holds these controls. Its `end` prop takes a control at the right edge, such as `DisplayPopover`. `SearchIcon` and `SlidersIcon` draw the icons for a search and a filter. `DataField`, `DataFilter`, and `DataView` are the types for the view. `fieldText(field, row)` returns the text that a field searches and groups by. `sameDisplay(a, b)` says whether two views differ only in how they show rows (grouping, order, direction, hidden columns). `applyDataView(rows, view, fields)` does the
+  a direction, a checkbox for each column, and "Reset to defaults". `DataTableToolbar` is the bar that holds these controls. Its `end` prop takes a control at the right edge, such as `DisplayPopover`. `SearchIcon` draws the icon for search, and `SlidersIcon` draws the icon for display options. `DataField`, `DataFilter`, and `DataView` are the types for the view. `fieldText(field, row)` returns the text that a field searches and groups by. `sameDisplay(a, b)` says whether two views show rows the same way (grouping, order, direction, hidden columns). It ignores the search and the filters. `applyDataView(rows, view, fields)` does the
   searching, filtering, ordering, and grouping for you. Pass `groupBy` and `hiddenColumns` to `DataTable`. Keep `groupBy` stable with `useMemo`, because each new function builds the layout again. Keep `hiddenColumns` stable too, so the column list is not made again on every render. `TableSearch` is a search landmark named by its `label` (default "Search"). With two tables on a page, give each its own `label`. The table says the new row count after a pause when a search or filter changes the count. It does not speak when the count stays the same.
 
 ```tsx
@@ -147,7 +147,7 @@ const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all
 - `AppSidebar` for React: a left sidebar with a toggle button. The button says what it does ("Collapse sidebar"
   or "Expand sidebar") and has `aria-expanded`. The choice is saved in `localStorage` (set `storageKey` per sidebar)
   and follows across tabs. Collapsed, it is a narrow rail with the button, and its content leaves the page and
-  the tab order. Its props are `label`, `children`, `defaultCollapsed`, `collapsed`, `onCollapsedChange`, and `storageKey` (type `AppSidebarProps`). `SIDEBAR_STORAGE_KEY` is the default key. `PanelLeftIcon` draws a panel icon for your own toggle. Pass a function as the child to keep the content and draw icons only. Pass `collapsed` and
+  the tab order. Its props are `label`, `children`, `defaultCollapsed`, `collapsed`, `onCollapsedChange`, and `storageKey` (type `AppSidebarProps`). `SIDEBAR_STORAGE_KEY` is the default key. Collapsed, the rail is as wide as the size token `sidebar-rail` (`var(--agd-size-sidebar-rail)`). `PanelLeftIcon` draws a panel icon for your own toggle. Pass a function as the child to keep the content and draw icons only. Pass `collapsed` and
   `onCollapsedChange` to control it, and nothing is saved then.
 
 ```tsx
