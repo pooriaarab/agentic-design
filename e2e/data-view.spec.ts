@@ -8,10 +8,10 @@ interface Row {
   when: Date | null;
 }
 const rows: Row[] = [
-  { name: "Écrire le plan", status: "Open", n: 10, when: new Date("2026-03-01") },
-  { name: "Task 2", status: "Done", n: 2, when: new Date("2026-01-01") },
+  { name: "Écrire le plan", status: "Open", n: 10, when: new Date(2026, 2, 1) },
+  { name: "Task 2", status: "Done", n: 2, when: new Date(2026, 0, 1) },
   { name: "Task 10", status: "Open", n: null, when: null },
-  { name: "task 1", status: "Done", n: 7, when: new Date("2026-02-01") },
+  { name: "task 1", status: "Done", n: 7, when: new Date(2026, 1, 1) },
 ];
 const fields: DataField<Row>[] = [
   { id: "name", label: "Name", value: (r) => r.name },
@@ -77,4 +77,20 @@ test("groups that differ only by case or accents stay whole, and direction flips
   expect(labels).toHaveLength(2);
   const flip = applyDataView(rows, { ...emptyDataView, groupBy: "status", direction: "descending" }, fields).map((r) => r.status);
   expect(flip).toEqual(["Open", "Open", "Done", "Done"]);
+});
+
+test("NaN and an invalid date count as missing and sort last", () => {
+  const odd = [
+    { name: "nan", status: "x", n: Number.NaN, when: new Date("nope") },
+    { name: "one", status: "x", n: 1, when: new Date(2026, 0, 1) },
+    { name: "two", status: "x", n: 2, when: new Date(2026, 0, 2) },
+  ];
+  for (const direction of ["ascending", "descending"] as const) {
+    expect(applyDataView(odd, { ...emptyDataView, orderBy: "n", direction }, fields).at(-1)?.name).toBe("nan");
+    expect(applyDataView(odd, { ...emptyDataView, orderBy: "when", direction }, fields).at(-1)?.name).toBe("nan");
+  }
+});
+
+test("a date is searched as its local day", () => {
+  expect(names({ query: "2026-03-01" })).toEqual(["Écrire le plan"]);
 });

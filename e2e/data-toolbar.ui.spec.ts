@@ -162,3 +162,23 @@ test("row indexes count the group labels", async ({ page }) => {
   // Header is 1, the first label is 2, the first row is 3.
   await expect(page.locator('[data-index="0"]')).toHaveAttribute("aria-rowindex", "3");
 });
+
+test("a search that starts with text keeps focus on the controls when it is cleared by keyboard", async ({ page }) => {
+  await page.goto("/data?q=Task%2099");
+  const box = page.getByRole("searchbox", { name: "Search" });
+  await expect(box).toHaveValue("Task 99");
+  await box.focus();
+  await page.keyboard.press("Escape");
+  await expect(box).toHaveValue("");
+  await expect(box).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Search" })).toBeFocused();
+});
+
+test("the search closes by itself when the text is cleared from outside", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("searchbox", { name: "Search" }).fill("zzzz");
+  await page.getByRole("button", { name: "Clear search and filters" }).click();
+  await expect(page.getByRole("searchbox")).toHaveCount(0);
+});

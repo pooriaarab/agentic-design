@@ -26,7 +26,11 @@ export interface DataView {
 
 export const emptyDataView: DataView = Object.freeze({ query: "", filters: [], groupBy: null, orderBy: null, direction: "ascending", hiddenColumns: [] });
 
-const text = (value: ReturnType<DataField<never>["value"]>): string => (value instanceof Date ? (Number.isNaN(value.getTime()) ? "" : value.toISOString().slice(0, 10)) : value == null ? "" : String(value));
+const missing = (value: unknown): boolean => value == null || value === "" || (typeof value === "number" && !Number.isFinite(value)) || (value instanceof Date && Number.isNaN(value.getTime()));
+const pad = (n: number) => String(n).padStart(2, "0");
+// A date reads as the day on the person's clock, the same as a cell that shows it.
+const text = (value: ReturnType<DataField<never>["value"]>): string =>
+  missing(value) ? "" : value instanceof Date ? `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}` : String(value);
 
 /** The display parts of a view (not the search or the filters) match those of another view. */
 export function sameDisplay(a: DataView, b: DataView): boolean {
@@ -64,7 +68,7 @@ export function applyDataView<T>(rows: readonly T[], view: DataView, fields: rea
   const compare = (field: DataField<T>, a: T, b: T): number => {
     const [x, y] = [field.value(a), field.value(b)];
     // A missing value sorts last in both directions.
-    const [xe, ye] = [x == null || x === "", y == null || y === ""];
+    const [xe, ye] = [missing(x), missing(y)];
     if (xe || ye) return xe === ye ? 0 : xe ? 1 : -1;
     if (typeof x === "number" && typeof y === "number") return sign * (x - y);
     if (x instanceof Date && y instanceof Date) return sign * (x.getTime() - y.getTime());

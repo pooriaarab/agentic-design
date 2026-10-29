@@ -356,7 +356,7 @@ export function DataTable<T>({
                     {group && (
                       <div role="row" className="agd-datatable__group" style={{ top: (layout.tops[i] as number) - rowHeight }} aria-rowindex={(layout.pos[i] as number) + 1}>
                         <div role="gridcell" aria-colspan={columns.length + (selectable ? 1 : 0)} className="agd-datatable__group-cell">
-                          {group.label} <span className="agd-datatable__group-count">{group.size}<span className="agd-sr-only"> {group.size === 1 ? "row" : "rows"}</span></span>
+                          {group.label.trim() === "" ? "No value" : group.label} <span className="agd-datatable__group-count">{group.size}<span className="agd-sr-only"> {group.size === 1 ? "row" : "rows"}</span></span>
                         </div>
                       </div>
                     )}

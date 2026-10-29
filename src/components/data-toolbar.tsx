@@ -39,6 +39,10 @@ export function TableSearch({ value, onChange, label = "Search" }: { value: stri
       button.current?.focus();
     }
   }, [expanded]);
+  // The text can be cleared from outside while the field has no focus. Then close it.
+  useEffect(() => {
+    if (value === "" && open && document.activeElement !== input.current) setOpen(false);
+  }, [value, open]);
   if (!expanded) {
     return <IconButton ref={button} label={label} icon={<SearchIcon />} size="sm" onClick={() => setOpen(true)} />;
   }
@@ -53,6 +57,7 @@ export function TableSearch({ value, onChange, label = "Search" }: { value: stri
         autoComplete="off"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onFocus={() => setOpen(true)}
         onBlur={() => {
           if (value === "") setOpen(false);
         }}
@@ -77,6 +82,7 @@ export interface FilterChip {
 /** The filters in use, each one removable, and an optional menu to add another. */
 export function FilterChips({ chips, onRemove, addItems, addLabel = "Add filter" }: { chips: readonly FilterChip[]; onRemove: (id: string) => void; addItems?: MenuItem[]; addLabel?: string }) {
   const root = useRef<HTMLDivElement>(null);
+  const chipKey = chips.map((c) => c.id).join("\n");
   const removed = useRef<number | null>(null);
   // The remove button leaves with its chip. Give focus to the next chip, the one before it, or the add button.
   useLayoutEffect(() => {
@@ -85,7 +91,7 @@ export function FilterChips({ chips, onRemove, addItems, addLabel = "Add filter"
     removed.current = null;
     const buttons = root.current?.querySelectorAll<HTMLElement>(".agd-filterchip__remove");
     (buttons && buttons.length > 0 ? buttons[Math.min(at, buttons.length - 1)] : root.current?.querySelector<HTMLElement>(".agd-filterchips__add"))?.focus();
-  }, [chips.length]);
+  }, [chipKey]);
   return (
     <div className="agd-filterchips" ref={root}>
       {chips.length > 0 && (

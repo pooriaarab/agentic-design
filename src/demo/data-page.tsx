@@ -44,7 +44,7 @@ export function DataPage() {
   const [size, setSize] = useState(10000);
   const [state, setState] = useState<"ready" | "loading">("ready");
   const all = useMemo(() => makeTasks(size), [size]);
-  const [view, setView] = useState<DataView>(emptyDataView);
+  const [view, setView] = useState<DataView>(() => ({ ...emptyDataView, query: new URLSearchParams(window.location.search).get("q") ?? "" }));
   const rows = useMemo(() => applyDataView(all, view, fields), [all, view]);
   const hidden = useMemo(() => new Set(view.hiddenColumns), [view.hiddenColumns]);
   const groupField = fields.find((f) => f.id === view.groupBy);
