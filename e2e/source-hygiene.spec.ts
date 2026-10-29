@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 
 // Invisible characters hide text from a reviewer: a bidi override reorders it, a zero-width space
 // splits it. Write them as escapes, such as \u202E, never as raw characters.
-const HIDDEN = /[\p{Cf}\p{Zl}\p{Zp}\p{Co}\p{Cn}\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/gu;
+const HIDDEN = /[\p{Cf}\p{Zl}\p{Zp}\p{Co}\p{Cn}\p{Default_Ignorable_Code_Point}\u2800\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/gu;
 const TEXT = new Set([".ts", ".tsx", ".mjs", ".js", ".json", ".jsonc", ".md", ".css", ".html", ".yml", ".txt"]);
 const SKIP = new Set(["node_modules", "dist", "site", ".git", "test-results", "e2e-artifacts", "fonts"]);
 
@@ -22,6 +22,8 @@ const hidden = (text: string) => [...text.matchAll(HIDDEN)].map((m) => `U+${m[0]
 test("the scan sees a hidden character when one is there", () => {
   expect(hidden("Ada\u202Eevil")).toEqual(["U+202E"]);
   expect(hidden("a\u200Bb")).toEqual(["U+200B"]);
+  expect(hidden("a\u3164b")).toEqual(["U+3164"]);
+  expect(hidden("a\u2800b")).toEqual(["U+2800"]);
   expect(hidden("plain text, with accents: Zoë")).toEqual([]);
 });
 

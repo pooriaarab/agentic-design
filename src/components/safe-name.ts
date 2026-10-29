@@ -9,7 +9,7 @@ const ORDINARY_TEXT = /^[\p{L}\p{M}\p{N}\p{P}\p{S}\p{Zs}\u200C-\u200F]*$/u;
 
 // A character that draws something. Hangul fillers and the braille blank are letters or
 // symbols that draw nothing, so a name made only of them would read as blank.
-const VISIBLE = /(?![\p{Default_Ignorable_Code_Point}⠀])[\p{L}\p{N}\p{P}\p{S}]/u;
+const VISIBLE = /(?![\p{Default_Ignorable_Code_Point}\u2800])[\p{L}\p{N}\p{P}\p{S}]/u;
 
 // A letter with many combining marks draws far above and below its row and covers its neighbors.
 const STACKED_MARKS = /\p{M}{5,}/u;

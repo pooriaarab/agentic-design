@@ -12,8 +12,6 @@ import { AlertIcon } from "../icons.js";
 interface FieldProps {
   /** Always visible. A placeholder is never a label. */
   label: Exclude<ReactNode, null | undefined | boolean>;
-  /** Hide the label from sight. It stays in the accessible name. Use it only where context labels the control. */
-  hideLabel?: boolean;
   hint?: ReactNode;
   /** Say what is wrong and how to fix it. The control gets aria-invalid. */
   error?: ReactNode;
@@ -46,7 +44,7 @@ function mergeDescribedBy(generated: string | undefined, own: string | undefined
   return [generated, own].filter(Boolean).join(" ") || undefined;
 }
 
-function Messages({ hintId, errorId, hint, error }: { hintId?: string; errorId?: string } & Omit<FieldProps, "label" | "hideLabel">) {
+function Messages({ hintId, errorId, hint, error }: { hintId?: string; errorId?: string } & Omit<FieldProps, "label">) {
   return (
     <>
       {hint && <p id={hintId} className="ad-field__hint">{hint}</p>}
@@ -62,6 +60,7 @@ function Messages({ hintId, errorId, hint, error }: { hintId?: string; errorId?:
 
 function Shell({ id, label, hideLabel, required, children, ...messages }: FieldProps & {
   id: string;
+  hideLabel?: boolean;
   required?: boolean;
   hintId?: string;
   errorId?: string;
@@ -82,12 +81,12 @@ function Shell({ id, label, hideLabel, required, children, ...messages }: FieldP
 export type InputProps = InputHTMLAttributes<HTMLInputElement> & FieldProps;
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, hideLabel, hint, error, className, id: idProp, ...rest },
+  { label, hint, error, className, id: idProp, ...rest },
   ref,
 ) {
   const field = useField(idProp, { label, hint, error });
   return (
-    <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
+    <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
       <input ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]} />
     </Shell>
   );
@@ -96,18 +95,26 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & FieldProps;
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-  { label, hideLabel, hint, error, className, id: idProp, ...rest },
+  { label, hint, error, className, id: idProp, ...rest },
   ref,
 ) {
   const field = useField(idProp, { label, hint, error });
   return (
-    <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
+    <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
       <textarea ref={ref} className={cx("ad-input ad-textarea", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]} />
     </Shell>
   );
 });
 
-export type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & FieldProps;
+export type SelectProps = SelectHTMLAttributes<HTMLSelectElement> &
+  FieldProps & {
+    /**
+     * Hide the label from sight. It stays in the accessible name. Only a select has this, for a
+     * place where nearby text already names it, such as a role in a list row or a theme in a top bar.
+     * Repeat the label in the option text or on a nearby element. Every other field shows its label.
+     */
+    hideLabel?: boolean;
+  };
 
 /** A native select. It works with every screen reader and every keyboard. */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(

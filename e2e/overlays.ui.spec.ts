@@ -190,3 +190,25 @@ test("a toast with an unknown tone is treated as an error and stays until dismis
   await page.clock.fastForward(9000);
   await expect(toast).toBeVisible();
 });
+
+test("a toast whose tone is an inherited object key is treated as an error", async ({ page }) => {
+  await page.clock.install();
+  await open(page);
+  await page.getByRole("button", { name: "Show inherited-tone toast" }).click();
+  const toast = page.locator(".ad-toast", { hasText: "Another odd thing" });
+  await expect(toast.locator(".ad-sr-only")).toHaveText("Error: ");
+  await page.clock.fastForward(9000);
+  await expect(toast).toBeVisible();
+});
+
+test("a dialog opened with no trigger gives focus back to what had it", async ({ page }) => {
+  await open(page);
+  const opener = page.getByRole("button", { name: "Rename…" });
+  await opener.focus();
+  await page.keyboard.press("Enter");
+  const dialog = page.getByRole("dialog", { name: "Rename this page" });
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
+});
