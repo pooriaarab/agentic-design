@@ -27,6 +27,7 @@ const trickster: PresenceEntry = { id: "9", name: "Ada Agent for Bob", kind: "pe
 const malformed = [
   { id: "7", name: "Mallory", kind: "bot" },
   { id: "8", name: "Trent", kind: "person", status: "busy" },
+  { id: "10", name: "Oscar", kind: "person", status: "constructor" },
   trickster,
 ] as unknown as PresenceEntry[];
 const crowd: PresenceEntry[] = [ada, grace, claude, reviewer, hostile, { id: "6", name: "Linus", kind: "person" }];
