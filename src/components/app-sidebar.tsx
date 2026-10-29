@@ -1,4 +1,4 @@
-import { useCallback, useId, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useState, useSyncExternalStore, type ReactNode } from "react";
 import { PanelLeftIcon } from "../icons.js";
 import { IconButton } from "./button.js";
 
@@ -15,7 +15,14 @@ function read(key: string): boolean | null {
     return null;
   }
 }
+// A choice that could not be saved. It lives here for the page, and it wins over storage.
 const memory = new Map<string, boolean>();
+const NARROW = "(max-width: 47.99rem)";
+const onNarrowChange = (callback: () => void) => {
+  const query = window.matchMedia(NARROW);
+  query.addEventListener("change", callback);
+  return () => query.removeEventListener("change", callback);
+};
 
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
@@ -31,7 +38,7 @@ export interface AppSidebarProps {
   label: string;
   /** What the sidebar holds, usually a `SidebarNav`. A function gets the state, so it can show icons only when collapsed. A plain node is hidden when collapsed. */
   children: ReactNode | ((state: { collapsed: boolean }) => ReactNode);
-  /** The state when nothing is saved. */
+  /** The state when nothing is saved. The default is open, and collapsed below 48rem, so a small screen keeps its room. */
   defaultCollapsed?: boolean;
   /** Control the state yourself. Then nothing is saved, and `onCollapsedChange` is how you hear about a change. */
   collapsed?: boolean;
@@ -46,31 +53,36 @@ export interface AppSidebarProps {
  * Collapsed, the sidebar is a narrow rail with the button, and a plain node child is hidden from
  * sight and from the tab order.
  */
-export function AppSidebar({ label, children, defaultCollapsed = false, collapsed: controlled, onCollapsedChange, storageKey = SIDEBAR_STORAGE_KEY }: AppSidebarProps) {
+export function AppSidebar({ label, children, defaultCollapsed, collapsed: controlled, onCollapsedChange, storageKey = SIDEBAR_STORAGE_KEY }: AppSidebarProps) {
   if (label.trim() === "") throw new Error("A sidebar needs a non-empty label.");
   const id = useId();
   // The server and the first client render use the default. A saved choice applies after hydration.
   const saved = useSyncExternalStore(
     subscribe,
-    () => (read(storageKey) ?? memory.get(storageKey) ?? null),
+    () => memory.get(storageKey) ?? read(storageKey),
     () => null,
   );
-  const collapsed = controlled ?? saved ?? defaultCollapsed;
+  const narrow = useSyncExternalStore(onNarrowChange, () => window.matchMedia(NARROW).matches, () => false);
+  const collapsed = controlled ?? saved ?? defaultCollapsed ?? narrow;
+  // No animation for the first paint, so a saved choice does not slide in on every load.
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
   const toggle = useCallback(() => {
     const next = !collapsed;
     onCollapsedChange?.(next);
     if (controlled !== undefined) return;
-    memory.set(storageKey, next);
     try {
       window.localStorage.setItem(storageKey, next ? "collapsed" : "open");
+      memory.delete(storageKey);
     } catch {
-      // The choice stays in memory for this page.
+      // Storage is full or blocked. The choice stays in memory for this page.
+      memory.set(storageKey, next);
     }
     window.dispatchEvent(new Event(CHANGE));
   }, [collapsed, controlled, onCollapsedChange, storageKey]);
   const content = typeof children === "function" ? children({ collapsed }) : children;
   return (
-    <aside className="agd-appsidebar" aria-label={label} data-collapsed={collapsed}>
+    <aside className="agd-appsidebar" aria-label={label} data-collapsed={collapsed} data-ready={ready || undefined}>
       <IconButton
         className="agd-appsidebar__toggle"
         label={collapsed ? "Expand sidebar" : "Collapse sidebar"}

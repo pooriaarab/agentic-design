@@ -101,7 +101,7 @@ export const scale = deepFreeze({
   "font-weight": { regular: "400", medium: "500", semibold: "600" },
   duration: { fast: "100ms", base: "160ms", slow: "240ms" },
   easing: { out: "cubic-bezier(0.16, 1, 0.3, 1)" },
-  size: { control: "2.25rem", "control-touch": "2.75rem", sidebar: "16rem", panel: "20rem", topbar: "3rem", content: "46rem" },
+  size: { control: "2.25rem", "control-touch": "2.75rem", sidebar: "16rem", "sidebar-rail": "3.5rem", panel: "20rem", topbar: "3rem", content: "46rem" },
 } as const);
 
 /** Colors a pair may use. The scrim is translucent, so it has no fixed ratio. */

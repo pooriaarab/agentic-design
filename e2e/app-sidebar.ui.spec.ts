@@ -80,3 +80,21 @@ test("a change in another tab reaches this one", async ({ page, context }) => {
   await sidebar(other).getByRole("button", { name: "Collapse sidebar" }).click();
   await expect(sidebar(page).getByRole("button", { name: "Expand sidebar" })).toBeVisible();
 });
+
+test("when saving fails but reading works, the toggle still works", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("demo-sidebar", "open");
+    Storage.prototype.setItem = () => { throw new DOMException("full", "QuotaExceededError"); };
+  });
+  await page.goto("/chrome");
+  await sidebar(page).getByRole("button", { name: "Collapse sidebar" }).click();
+  await expect(sidebar(page).getByRole("button", { name: "Expand sidebar" })).toBeVisible();
+  await sidebar(page).getByRole("button", { name: "Expand sidebar" }).click();
+  await expect(sidebar(page).getByRole("button", { name: "Collapse sidebar" })).toBeVisible();
+});
+
+test("on a small screen with nothing saved, the sidebar starts collapsed", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/chrome");
+  await expect(sidebar(page).getByRole("button", { name: "Expand sidebar" })).toBeVisible();
+});
