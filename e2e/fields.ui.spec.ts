@@ -239,36 +239,43 @@ test("an error alone describes the control, and the caller's aria-invalid is kep
 });
 
 const controlled = [
-  { kind: "Input", role: "textbox", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", parent: ["from parent", ""] },
-  { kind: "Textarea", role: "textbox", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", parent: ["from parent", ""] },
-  { kind: "Select", role: "combobox", change: (p: Page) => p.getByLabel("Name").selectOption("b"), typed: "b", parent: ["b", "a"] },
-  { kind: "Checkbox", role: "checkbox", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", parent: ["true", "false"] },
-  { kind: "Switch", role: "switch", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", parent: ["true", "false"] },
+  { kind: "Input", role: "textbox", start: "start", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", undo: (p: Page) => p.getByLabel("Name").fill(""), untyped: "", parent: ["from parent", ""] },
+  { kind: "Textarea", role: "textbox", start: "start", change: (p: Page) => p.getByLabel("Name").fill("Ada"), typed: "Ada", undo: (p: Page) => p.getByLabel("Name").fill(""), untyped: "", parent: ["from parent", ""] },
+  { kind: "Select", role: "combobox", start: "a", change: (p: Page) => p.getByLabel("Name").selectOption("b"), typed: "b", undo: (p: Page) => p.getByLabel("Name").selectOption("a"), untyped: "a", parent: ["b", "a"] },
+  { kind: "Checkbox", role: "checkbox", start: "false", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", undo: (p: Page) => p.getByLabel("Name").uncheck(), untyped: "false", parent: ["true", "false"] },
+  { kind: "Switch", role: "switch", start: "false", change: (p: Page) => p.getByLabel("Name").check(), typed: "true", undo: (p: Page) => p.getByLabel("Name").uncheck(), untyped: "false", parent: ["true", "false"] },
 ] as const;
+
+// The control shows the value in the state: its value, or on or off for a box.
+async function expectShown(page: Page, c: (typeof controlled)[number], value: string) {
+  await expect(page.locator("#state")).toHaveText(value);
+  if (c.role === "checkbox" || c.role === "switch") {
+    await expect(page.getByRole(c.role, { name: "Name" })).toBeChecked({ checked: value === "true" });
+  } else {
+    await expect(page.getByLabel("Name")).toHaveValue(value);
+  }
+}
 
 for (const c of controlled) {
   test.describe(`${c.kind} as a controlled component`, () => {
-    test("a user change reaches the parent state and the control shows it", async ({ page }) => {
+    test("it starts with the value it is given", async ({ page }) => {
+      await mountControlled(page, c.kind);
+      await expectShown(page, c, c.start);
+    });
+
+    test("a user change reaches the parent state, and a change back does too", async ({ page }) => {
       await mountControlled(page, c.kind);
       await c.change(page);
-      await expect(page.locator("#state")).toHaveText(c.typed);
-      if (c.role === "checkbox" || c.role === "switch") {
-        await expect(page.getByRole(c.role, { name: "Name" })).toBeChecked();
-      } else {
-        await expect(page.getByLabel("Name")).toHaveValue(c.typed);
-      }
+      await expectShown(page, c, c.typed);
+      await c.undo(page);
+      await expectShown(page, c, c.untyped);
     });
 
     test("a change made by the parent reaches the control, both ways", async ({ page }) => {
       await mountControlled(page, c.kind);
       for (const expected of c.parent) {
         await page.getByRole("button", { name: "Set from parent" }).click();
-        await expect(page.locator("#state")).toHaveText(expected);
-        if (c.role === "checkbox" || c.role === "switch") {
-          await expect(page.getByRole(c.role, { name: "Name" })).toBeChecked({ checked: expected === "true" });
-        } else {
-          await expect(page.getByLabel("Name")).toHaveValue(expected);
-        }
+        await expectShown(page, c, expected);
       }
     });
   });
