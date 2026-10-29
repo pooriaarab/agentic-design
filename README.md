@@ -7,7 +7,7 @@
 Accessible design tokens and UI primitives for calm, minimal apps.
 
 > Status: early. The design tokens, the contrast check, and the fonts work.
-> The React primitives, the app patterns, and the demo are not built yet.
+> The form controls work. The overlays, the app patterns, and the demo are not built yet.
 > The package is not on npm yet.
 
 ## Install
@@ -61,6 +61,11 @@ themes.dark.accent; // "#8EA4FF"
   pair in both themes against WCAG 2.2 AA and fails when one is too low.
 - Self-hosted Inter and JetBrains Mono (SIL OFL). The package makes no remote
   request.
+- Form controls for React: `Button`, `IconButton` (needs a `label`), `Input`, `Textarea`,
+  `Select`, `Checkbox`, `Switch`. Each field has a visible label and a focus ring.
+  `Input`, `Textarea`, and `Select` take `hint` and `error`. An error shows an icon and
+  text, sets `aria-invalid`, and is announced. `Button` has loading and disabled states.
+  Checked states stay visible in Windows High Contrast.
 - `ThemeProvider` and `useTheme` for React, from `agentic-design/react`. They set `data-theme`, keep the pick on the device, and sync it across tabs. `themeInitScript()` returns a script for the page head, so a saved dark pick never flashes light. React is an optional peer: the root entry and the CLI do not need it.
 - A token page at `/` from the Worker. Run `npm run build` first, then `npx wrangler dev`.
 - A CLI and an MCP server so an agent can read the tokens:
@@ -70,9 +75,11 @@ themes.dark.accent; // "#8EA4FF"
 
 ## Limits
 
-- No React components yet, apart from the theme provider.
+- Dialog, menu, tooltip, tabs, toast, and the app patterns are not built yet.
 - Fonts cover Latin and Latin Extended only, and only upright faces ship. Italic text is
   synthesized by the browser.
+- `Checkbox` and `Switch` have no error state yet, so a required checkbox cannot show an
+  accessible error with these controls.
 - The contrast check covers the pairs listed in `src/tokens/tokens.ts`. Add a
   pair there when you add a new use of color.
 

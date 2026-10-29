@@ -63,18 +63,21 @@ test("the skip link moves focus into the main content", async ({ page }) => {
   expect(await page.evaluate(() => !!document.activeElement?.closest("main"))).toBe(true);
 });
 
-test("the theme select works with the keyboard alone", async ({ page }) => {
+test("the theme select works with the keyboard alone, and the tab order is skip link, pages, theme", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
-  await page.keyboard.press("Tab");
+  const pages = await page.getByRole("navigation", { name: "Demo pages" }).getByRole("link").allInnerTexts();
+  const stops: string[] = [];
+  for (let i = 0; i < pages.length + 2; i++) {
+    await page.keyboard.press("Tab");
+    stops.push(await page.evaluate(() => (document.activeElement as HTMLElement).innerText || document.activeElement?.getAttribute("aria-label") || document.activeElement?.tagName || ""));
+  }
+  expect(stops.slice(0, -1)).toEqual(["Skip to content", ...pages]);
   await expect(page.getByLabel("Theme")).toBeFocused();
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowDown");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
-
 
 for (const scheme of ["light", "dark"] as const) {
   test(`the focus ring is a 2px solid line in the focus color in ${scheme}`, async ({ page, request }) => {
