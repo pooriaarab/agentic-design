@@ -18,10 +18,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={cx("ad-button", `ad-button--${variant}`, `ad-button--${size}`, className)}
-      aria-busy={loading || undefined}
-      aria-disabled={loading || undefined}
       onClick={(event) => (loading ? event.preventDefault() : onClick?.(event))}
       {...rest}
+      aria-busy={loading || undefined}
+      aria-disabled={loading || rest["aria-disabled"]}
     >
       {loading && <span className="ad-spinner" aria-hidden="true" />}
       {children}
@@ -41,9 +41,10 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   { label, icon, tooltip = true, variant = "ghost", className, ...rest },
   ref,
 ) {
+  if (label.trim() === "") throw new Error("IconButton needs a non-empty label.");
   const button = (
-    <Button ref={ref} variant={variant} className={cx("ad-icon-button", className)} aria-label={label} {...rest}>
-      {icon}
+    <Button ref={ref} variant={variant} className={cx("ad-icon-button", className)} {...rest} aria-label={label}>
+      {rest.loading ? null : icon}
     </Button>
   );
   return tooltip ? <Tooltip content={label}>{button}</Tooltip> : button;

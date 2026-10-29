@@ -217,12 +217,14 @@
 
 .ad-overlay {
   position: fixed;
+  z-index: 50;
   inset: 0;
   background: var(--ad-color-scrim);
   animation: ad-fade-in var(--ad-duration-base) var(--ad-easing-out);
 }
 .ad-dialog {
   position: fixed;
+  z-index: 50;
   inset: 0;
   margin: auto;
   width: min(32rem, calc(100vw - 2rem));
@@ -309,7 +311,6 @@
   box-shadow: var(--ad-shadow-floating);
 }
 .ad-toast[data-state="open"] { animation: ad-pop-in var(--ad-duration-base) var(--ad-easing-out); }
-.ad-toast[data-state="closed"] { animation: ad-fade-in var(--ad-duration-fast) var(--ad-easing-out) reverse forwards; }
 .ad-toast__icon { margin-top: var(--ad-space-1); }
 .ad-toast--info .ad-toast__icon { color: var(--ad-color-accent); }
 .ad-toast--success .ad-toast__icon { color: var(--ad-color-success); }
@@ -340,3 +341,14 @@
   background: var(--ad-color-accent);
 }
 .ad-tabs__panel { padding-top: var(--ad-space-4); }
+
+/* Windows High Contrast. Backgrounds become system colors there, so state needs system colors. */
+@media (forced-colors: active) {
+  .ad-checkbox:checked,
+  .ad-switch:checked { background: Highlight; border-color: Highlight; }
+  .ad-checkbox::before { background: HighlightText; }
+  .ad-switch { background: Canvas; border-color: ButtonText; }
+  .ad-switch::before { background: ButtonText; }
+  .ad-switch:checked::before { background: HighlightText; }
+  .ad-button[aria-busy="true"] { border-style: dashed; }
+}

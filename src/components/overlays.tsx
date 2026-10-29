@@ -3,7 +3,7 @@ import * as RadixMenu from "@radix-ui/react-dropdown-menu";
 import * as RadixTabs from "@radix-ui/react-tabs";
 import * as RadixToast from "@radix-ui/react-toast";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactElement, type ReactNode } from "react";
-import { AlertIcon, CheckIcon, CloseIcon, InfoIcon } from "../icons.js";
+import { AlertIcon, CheckIcon, CloseIcon, ErrorIcon, InfoIcon } from "../icons.js";
 import { IconButton } from "./button.js";
 
 /* Dialog ---------------------------------------------------------------- */
@@ -21,6 +21,7 @@ export interface DialogProps {
 }
 
 export function Dialog({ open, onOpenChange, trigger, title, description, children, footer }: DialogProps) {
+  if (title.trim() === "") throw new Error("A dialog needs a non-empty title.");
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       {trigger && <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>}
@@ -28,12 +29,12 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
         <RadixDialog.Overlay className="ad-overlay" />
         <RadixDialog.Content className="ad-dialog" {...(description ? {} : { "aria-describedby": undefined })}>
           <RadixDialog.Title className="ad-dialog__title">{title}</RadixDialog.Title>
-          {description && <RadixDialog.Description className="ad-dialog__description">{description}</RadixDialog.Description>}
-          {children && <div className="ad-dialog__body">{children}</div>}
-          {footer && <div className="ad-dialog__footer">{footer}</div>}
           <RadixDialog.Close asChild>
             <IconButton label="Close" icon={<CloseIcon />} size="sm" className="ad-dialog__close" tooltip={false} />
           </RadixDialog.Close>
+          {description && <RadixDialog.Description className="ad-dialog__description">{description}</RadixDialog.Description>}
+          {children && <div className="ad-dialog__body">{children}</div>}
+          {footer && <div className="ad-dialog__footer">{footer}</div>}
         </RadixDialog.Content>
       </RadixDialog.Portal>
     </RadixDialog.Root>
@@ -60,7 +61,7 @@ export function Menu({ trigger, items, align = "end" }: { trigger: ReactElement;
               <RadixMenu.Separator key={`sep-${index}`} className="ad-menu__separator" />
             ) : (
               <RadixMenu.Item
-                key={item.label}
+                key={`${index}-${item.label}`}
                 className={item.danger ? "ad-menu__item ad-menu__item--danger" : "ad-menu__item"}
                 disabled={item.disabled}
                 onSelect={item.onSelect}
@@ -122,7 +123,9 @@ interface ToastEntry extends ToastOptions {
 }
 
 const ToastContext = createContext<((options: ToastOptions) => void) | null>(null);
-const toneIcon = { info: InfoIcon, success: CheckIcon, warning: AlertIcon, danger: AlertIcon } as const;
+// Each tone has its own icon shape and a hidden word, so no tone rests on color.
+const toneIcon = { info: InfoIcon, success: CheckIcon, warning: AlertIcon, danger: ErrorIcon } as const;
+const toneWord = { info: "Notice", success: "Success", warning: "Warning", danger: "Error" } as const;
 
 /** Mount once near the root. A danger toast stays until it is dismissed. Others close after 8 seconds. */
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -147,7 +150,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             >
               <Icon className="ad-toast__icon" />
               <div>
-                <RadixToast.Title className="ad-toast__title">{title}</RadixToast.Title>
+                <RadixToast.Title className="ad-toast__title">
+                  <span className="ad-sr-only">{toneWord[tone]}: </span>
+                  {title}
+                </RadixToast.Title>
                 {description && <RadixToast.Description className="ad-toast__description">{description}</RadixToast.Description>}
               </div>
               <RadixToast.Close asChild>

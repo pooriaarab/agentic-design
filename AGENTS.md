@@ -1,6 +1,6 @@
 # agentic-design agent guide
 
-Accessible design tokens and React primitives for calm, minimal apps.
+Accessible design tokens and UI primitives for calm, minimal apps.
 
 ## Mental model
 

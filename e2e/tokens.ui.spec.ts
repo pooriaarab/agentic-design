@@ -48,20 +48,61 @@ test("the theme select works with the keyboard alone", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
-  await page.getByLabel("Theme").focus();
+  const themeId = await page.getByLabel("Theme").evaluate((el) => el.id);
+  for (let i = 0; i < 10 && !(await page.evaluate((id) => document.activeElement?.id === id, themeId)); i++) {
+    await page.keyboard.press("Tab");
+  }
+  await expect(page.getByLabel("Theme")).toBeFocused();
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowDown");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
 
-test("the focus ring is visible", async ({ page }) => {
-  await page.goto("/");
-  await page.keyboard.press("Tab");
-  const ring = await page.getByRole("link", { name: "Skip to content" }).evaluate((el) => {
-    const s = getComputedStyle(el);
-    return { width: s.outlineWidth, style: s.outlineStyle };
+const hexToRgb = (hex: string) => {
+  const v = parseInt(hex.slice(1), 16);
+  return `rgb(${v >> 16}, ${(v >> 8) & 255}, ${v & 255})`;
+};
+
+for (const scheme of ["light", "dark"] as const) {
+  test(`the focus ring is a 2px solid line in the focus color in ${scheme}`, async ({ page, request }) => {
+    const { themes } = await (await request.get("/api/v1/tokens")).json();
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto("/");
+    await page.keyboard.press("Tab");
+    const ring = await page.getByRole("link", { name: "Skip to content" }).evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { width: s.outlineWidth, style: s.outlineStyle, color: s.outlineColor };
+    });
+    expect(ring).toEqual({ width: "2px", style: "solid", color: hexToRgb(themes[scheme].focus) });
   });
-  expect(ring).toEqual({ width: "2px", style: "solid" });
+}
+
+test("a dark pick on a light system shows the dark theme with no axe violations", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await page.getByLabel("Theme").selectOption("dark");
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(20, 19, 17)");
+  await page.locator("summary").click();
+  expect(await violations(page)).toEqual([]);
+});
+
+test("a saved dark pick is applied before the app loads, so there is no light flash", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.addInitScript(() => localStorage.setItem("agentic-design-theme", "dark"));
+  await page.route("**/main.js", (route) => route.abort());
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(20, 19, 17)");
+});
+
+test("a pick in one tab reaches another tab of the same app", async ({ context }) => {
+  const first = await context.newPage();
+  const second = await context.newPage();
+  await first.goto("/");
+  await second.goto("/");
+  await first.getByLabel("Theme").selectOption("dark");
+  await expect(second.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(second.getByLabel("Theme")).toHaveValue("dark");
 });
 
 test("every request stays on this origin and the fonts load", async ({ page }) => {
@@ -77,11 +118,18 @@ test("every request stays on this origin and the fonts load", async ({ page }) =
   expect(fonts.every((f) => /Inter Variable|JetBrains Mono Variable/.test(f))).toBe(true);
 });
 
-test("reduced motion zeroes the motion tokens", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+test("reduced motion zeroes the motion tokens, everywhere, and only when asked", async ({ page }) => {
+  const duration = () =>
+    page.evaluate(() => {
+      document.body.insertAdjacentHTML("beforeend", '<div id="region" data-theme="light"></div>');
+      const read = (el: Element) => getComputedStyle(el).getPropertyValue("--ad-duration-base").trim();
+      return { root: read(document.documentElement), region: read(document.getElementById("region") as Element) };
+    });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  const base = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--ad-duration-base").trim());
-  expect(base).toBe("0.01ms");
+  expect(await duration()).toEqual({ root: "160ms", region: "160ms" });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(await duration()).toEqual({ root: "0.01ms", region: "0.01ms" });
 });
 
 test("the Worker serves the tokens over HTTP", async ({ request }) => {

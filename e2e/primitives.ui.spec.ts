@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const violations = async (page: Page) =>
@@ -51,33 +51,66 @@ test("an error names the field, is announced, and clears when fixed", async ({ p
   await name.fill("Ada");
   await expect(name).not.toHaveAttribute("aria-invalid", "true");
   await save.click();
-  await expect(page.getByText("Saved.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "Saved." })).toHaveText("Saved.");
 });
 
-test("a loading button ignores clicks and stays focusable", async ({ page }) => {
+test("a loading button ignores clicks and stays focusable, while a normal one counts them", async ({ page }) => {
   await page.goto("/primitives");
   const saving = page.getByRole("button", { name: "Saving" });
   await expect(saving).toHaveAttribute("aria-busy", "true");
+  await saving.click({ force: true });
   await saving.focus();
   await expect(saving).toBeFocused();
+  await page.getByRole("button", { name: "Count a click" }).click();
+  await expect(page.getByText("Clicks while loading: 0. Clicks on the normal button: 1.")).toBeVisible();
 });
 
-test("a disabled button is not reachable and every control has a focus ring", async ({ page }) => {
+test("Tab skips a disabled button and reaches the rest", async ({ page }) => {
   await page.goto("/primitives");
-  await expect(page.getByRole("button", { name: "Disabled" })).toBeDisabled();
+  const stops: string[] = [];
+  for (let i = 0; i < 40; i++) {
+    await page.keyboard.press("Tab");
+    stops.push(await page.evaluate(() => document.activeElement?.getAttribute("aria-label") ?? document.activeElement?.textContent ?? ""));
+  }
+  expect(stops).toContain("Saving");
+  expect(stops).toContain("Add item");
+  expect(stops).not.toContain("Disabled");
+});
+
+test("every control has a focus ring", async ({ page }) => {
+  await page.goto("/primitives");
   for (const target of [page.getByLabel(/^Name/), page.getByRole("button", { name: "Cancel" }), page.getByRole("checkbox"), page.getByRole("switch")]) {
     await target.focus();
     await page.keyboard.press("Shift+Tab");
     await page.keyboard.press("Tab");
-    const ring = await target.evaluate((el) => getComputedStyle(el).outlineStyle);
-    expect(ring).toBe("solid");
+    expect(await target.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe("solid");
   }
+});
+
+test("a caller's aria-describedby joins the generated one and does not replace it", async ({ page }) => {
+  await page.goto("/primitives");
+  await page.locator("form").getByRole("button", { name: "Save" }).click();
+  await expect(page.getByLabel(/^Name/)).toHaveAccessibleDescription(/Shown to people you share with\..*Enter a name/);
+});
+
+test("checked and busy states stay visible in forced colors", async ({ page }) => {
+  await page.emulateMedia({ forcedColors: "active" });
+  await page.goto("/primitives");
+  const fill = (loc: Locator) => loc.evaluate((el) => getComputedStyle(el).backgroundColor);
+  const checked = page.getByRole("checkbox", { name: "Notify me about replies" });
+  const sw = page.getByRole("switch", { name: "Allow agents to suggest edits" });
+  const checkedFill = await fill(checked);
+  await checked.uncheck();
+  await expect.poll(() => fill(checked)).not.toBe(checkedFill);
+  const offFill = await fill(sw);
+  await sw.check();
+  await expect.poll(() => fill(sw)).not.toBe(offFill);
 });
 
 test("targets are at least 24 by 24 CSS pixels", async ({ page }) => {
   await page.goto("/primitives");
   const small: string[] = [];
-  for (const el of await page.locator("button, input:not([type=checkbox]):not([role=switch]), select, textarea, summary, a").all()) {
+  for (const el of await page.locator("button, input:not([type=checkbox]):not([role=switch]), select, textarea, summary, a, .ad-toggle__row").all()) {
     const box = await el.boundingBox();
     if (box && (box.width < 24 || box.height < 24)) small.push(await el.evaluate((n) => n.outerHTML.slice(0, 60)));
   }

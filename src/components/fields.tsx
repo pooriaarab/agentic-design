@@ -17,7 +17,8 @@ interface FieldProps {
   error?: ReactNode;
 }
 
-function useField(idProp: string | undefined, { hint, error }: FieldProps) {
+function useField(idProp: string | undefined, { label, hint, error }: FieldProps) {
+  if (typeof label === "string" && label.trim() === "") throw new Error("A field needs a non-empty label.");
   const auto = useId();
   const id = idProp ?? auto;
   const hintId = hint ? `${id}-hint` : undefined;
@@ -32,6 +33,11 @@ function useField(idProp: string | undefined, { hint, error }: FieldProps) {
       "aria-invalid": error ? true : undefined,
     },
   };
+}
+
+/** The generated description joins the caller's own aria-describedby. It never replaces it. */
+function mergeDescribedBy(generated: string | undefined, own: string | undefined): string | undefined {
+  return [generated, own].filter(Boolean).join(" ") || undefined;
 }
 
 function Messages({ hintId, errorId, hint, error }: { hintId?: string; errorId?: string } & Omit<FieldProps, "label">) {
@@ -76,7 +82,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const field = useField(idProp, { label, hint, error });
   return (
     <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
-      <input ref={ref} className={cx("ad-input", className)} {...field.control} {...rest} />
+      <input ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} />
     </Shell>
   );
 });
@@ -90,7 +96,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   const field = useField(idProp, { label, hint, error });
   return (
     <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
-      <textarea ref={ref} className={cx("ad-input ad-textarea", className)} {...field.control} {...rest} />
+      <textarea ref={ref} className={cx("ad-input ad-textarea", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} />
     </Shell>
   );
 });
@@ -106,7 +112,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   return (
     <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
       <span className="ad-select">
-        <select ref={ref} className={cx("ad-input", className)} {...field.control} {...rest}>
+        <select ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])}>
           {children}
         </select>
       </span>
@@ -116,8 +122,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
 type ToggleProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "role"> & Pick<FieldProps, "label" | "hint">;
 
-function useToggle(idProp: string | undefined, hint: ReactNode) {
-  const { id, hintId, control } = useField(idProp, { label: "", hint });
+export type CheckboxProps = ToggleProps;
+export type SwitchProps = ToggleProps;
+
+function useToggle(idProp: string | undefined, label: ReactNode, hint: ReactNode) {
+  const { id, hintId, control } = useField(idProp, { label, hint });
   return { id, hintId, describedBy: control["aria-describedby"] };
 }
 
@@ -125,11 +134,11 @@ export const Checkbox = forwardRef<HTMLInputElement, ToggleProps>(function Check
   { label, hint, className, id: idProp, ...rest },
   ref,
 ) {
-  const { id, hintId, describedBy } = useToggle(idProp, hint);
+  const { id, hintId, describedBy } = useToggle(idProp, label, hint);
   return (
     <div className="ad-toggle">
       <label className="ad-toggle__row" htmlFor={id}>
-        <input ref={ref} id={id} type="checkbox" className={cx("ad-checkbox", className)} aria-describedby={describedBy} {...rest} />
+        <input ref={ref} id={id} type="checkbox" className={cx("ad-checkbox", className)} {...rest} aria-describedby={mergeDescribedBy(describedBy, rest["aria-describedby"])} />
         <span>{label}</span>
       </label>
       {hint && <p id={hintId} className="ad-field__hint">{hint}</p>}
@@ -141,11 +150,11 @@ export const Switch = forwardRef<HTMLInputElement, ToggleProps>(function Switch(
   { label, hint, className, id: idProp, ...rest },
   ref,
 ) {
-  const { id, hintId, describedBy } = useToggle(idProp, hint);
+  const { id, hintId, describedBy } = useToggle(idProp, label, hint);
   return (
     <div className="ad-toggle">
       <label className="ad-toggle__row" htmlFor={id}>
-        <input ref={ref} id={id} type="checkbox" role="switch" className={cx("ad-switch", className)} aria-describedby={describedBy} {...rest} />
+        <input ref={ref} id={id} type="checkbox" role="switch" className={cx("ad-switch", className)} {...rest} aria-describedby={mergeDescribedBy(describedBy, rest["aria-describedby"])} />
         <span>{label}</span>
       </label>
       {hint && <p id={hintId} className="ad-field__hint">{hint}</p>}

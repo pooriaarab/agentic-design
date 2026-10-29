@@ -41,6 +41,7 @@ test("the dialog has a name and a description, traps focus, and returns focus on
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: "Delete this page?" });
   await expect(dialog).toHaveAccessibleDescription(/People and agents lose access/);
+  await expect(dialog.getByRole("button", { name: "Close" })).toBeFocused();
   await expect(dialog.locator(":focus")).toHaveCount(1);
   for (let i = 0; i < 8; i++) {
     await page.keyboard.press("Tab");
@@ -69,6 +70,7 @@ test("the menu works with the keyboard alone", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(page.getByText("Last menu action: duplicate")).toBeVisible();
   await expect(trigger).toBeFocused();
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
 });
 
 test("tabs move with the arrow keys and the panel follows", async ({ page }) => {
@@ -82,7 +84,7 @@ test("tabs move with the arrow keys and the panel follows", async ({ page }) => 
 
 test("an icon button shows its label as a tooltip on keyboard focus", async ({ page }) => {
   await open(page);
-  await page.getByRole("button", { name: "Saving" }).focus();
+  await page.getByRole("button", { name: "Count a click" }).focus();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: "Add item" })).toBeFocused();
   await expect(page.getByRole("tooltip")).toHaveText("Add item");
@@ -90,13 +92,24 @@ test("an icon button shows its label as a tooltip on keyboard focus", async ({ p
   await expect(page.getByRole("tooltip")).toBeHidden();
 });
 
-test("a toast is announced, and an error toast stays until it is dismissed", async ({ page }) => {
+test("toasts are announced, tell their tone in words, and close on time or stay until dismissed", async ({ page }) => {
+  await page.clock.install();
   await open(page);
+  await page.getByRole("button", { name: "Show toast", exact: true }).click();
   await page.getByRole("button", { name: "Show error toast" }).click();
-  const toast = page.locator(".ad-toast", { hasText: "We couldn't save your changes" });
-  await expect(toast).toBeVisible();
-  await page.waitForTimeout(9000);
-  await expect(toast).toBeVisible();
-  await toast.getByRole("button", { name: "Dismiss" }).click();
-  await expect(toast).toBeHidden();
+  const info = page.locator(".ad-toast", { hasText: "Link copied" });
+  const error = page.locator(".ad-toast", { hasText: "We couldn't save your changes" });
+  await expect(info).toBeVisible();
+  await expect(error).toBeVisible();
+
+  // An error is announced at once. Other tones wait their turn.
+  await expect(page.locator('[role="status"][aria-live="assertive"]')).toContainText("Error: We couldn't save your changes");
+  await expect(page.locator('[role="status"][aria-live="polite"]')).toContainText("Notice: Link copied");
+  await expect(error.locator(".ad-sr-only")).toHaveText("Error: ");
+
+  await page.clock.fastForward(9000);
+  await expect(info).toBeHidden();
+  await expect(error).toBeVisible();
+  await error.getByRole("button", { name: "Dismiss" }).click();
+  await expect(error).toBeHidden();
 });

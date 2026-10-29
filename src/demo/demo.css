@@ -72,3 +72,5 @@ summary { cursor: pointer; padding: var(--ad-space-2) 0; }
   border-bottom: 1px solid var(--ad-color-border);
   text-align: start;
 }
+
+.demo-note { margin-top: var(--ad-space-3); font-size: var(--ad-font-size-xs); }

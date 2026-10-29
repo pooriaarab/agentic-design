@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
-import { ToastProvider } from "../index.js";
+import { ToastProvider } from "../react.js";
 import { ThemeProvider } from "../theme.js";
 import { PrimitivesPage } from "./primitives-page.js";
 import { TokensPage } from "./tokens-page.js";
@@ -9,7 +9,7 @@ const pages: Record<string, () => ReactElement> = {
   "/": TokensPage,
   "/primitives": PrimitivesPage,
 };
-const Page = pages[window.location.pathname.replace(/\/$/, "") || "/"] ?? TokensPage;
+const Page = pages[window.location.pathname.replace(/\/$/, "") || "/"] ?? (() => <p>Page not found.</p>);
 
 createRoot(document.getElementById("root") as HTMLElement).render(
   <ThemeProvider>
