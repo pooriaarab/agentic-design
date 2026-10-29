@@ -4,6 +4,12 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.6.0 - 2026-10-29
+
+### Changed
+
+- `Tabs` uses a roving tab index. The active tab is the only tab stop, and the arrow keys move between tabs. The tab list is no longer a tab stop, so one Tab press no longer lands on a focus ring that does nothing (WCAG 2.2 focus order).
+
 ## 0.5.0 - 2026-10-29
 
 ### Changed
