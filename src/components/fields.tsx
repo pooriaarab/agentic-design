@@ -12,6 +12,8 @@ import { AlertIcon } from "../icons.js";
 interface FieldProps {
   /** Always visible. A placeholder is never a label. */
   label: ReactNode;
+  /** Hide the label from sight. It stays in the accessible name. Use it only where context labels the control. */
+  hideLabel?: boolean;
   hint?: ReactNode;
   /** Say what is wrong and how to fix it. The control gets aria-invalid. */
   error?: ReactNode;
@@ -40,7 +42,7 @@ function mergeDescribedBy(generated: string | undefined, own: string | undefined
   return [generated, own].filter(Boolean).join(" ") || undefined;
 }
 
-function Messages({ hintId, errorId, hint, error }: { hintId?: string; errorId?: string } & Omit<FieldProps, "label">) {
+function Messages({ hintId, errorId, hint, error }: { hintId?: string; errorId?: string } & Omit<FieldProps, "label" | "hideLabel">) {
   return (
     <>
       {hint && <p id={hintId} className="ad-field__hint">{hint}</p>}
@@ -54,7 +56,7 @@ function Messages({ hintId, errorId, hint, error }: { hintId?: string; errorId?:
   );
 }
 
-function Shell({ id, label, required, children, ...messages }: FieldProps & {
+function Shell({ id, label, hideLabel, required, children, ...messages }: FieldProps & {
   id: string;
   required?: boolean;
   hintId?: string;
@@ -63,7 +65,7 @@ function Shell({ id, label, required, children, ...messages }: FieldProps & {
 }) {
   return (
     <div className="ad-field">
-      <label className="ad-field__label" htmlFor={id}>
+      <label className={cx("ad-field__label", hideLabel && "ad-sr-only")} htmlFor={id}>
         {label}
         {required && <span aria-hidden="true"> *</span>}
       </label>
@@ -76,12 +78,12 @@ function Shell({ id, label, required, children, ...messages }: FieldProps & {
 export type InputProps = InputHTMLAttributes<HTMLInputElement> & FieldProps;
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, hint, error, className, id: idProp, ...rest },
+  { label, hideLabel, hint, error, className, id: idProp, ...rest },
   ref,
 ) {
   const field = useField(idProp, { label, hint, error });
   return (
-    <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
+    <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
       <input ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} />
     </Shell>
   );
@@ -90,12 +92,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & FieldProps;
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-  { label, hint, error, className, id: idProp, ...rest },
+  { label, hideLabel, hint, error, className, id: idProp, ...rest },
   ref,
 ) {
   const field = useField(idProp, { label, hint, error });
   return (
-    <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
+    <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
       <textarea ref={ref} className={cx("ad-input ad-textarea", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} />
     </Shell>
   );
@@ -105,12 +107,12 @@ export type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & FieldProps;
 
 /** A native select. It works with every screen reader and every keyboard. */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { label, hint, error, className, id: idProp, children, ...rest },
+  { label, hideLabel, hint, error, className, id: idProp, children, ...rest },
   ref,
 ) {
   const field = useField(idProp, { label, hint, error });
   return (
-    <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
+    <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
       <span className="ad-select">
         <select ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])}>
           {children}

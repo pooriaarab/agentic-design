@@ -342,6 +342,154 @@
 }
 .ad-tabs__panel { padding-top: var(--ad-space-4); }
 
+/* App shell ---------------------------------------------------------- */
+.ad-shell {
+  display: grid;
+  grid-template-columns: var(--ad-size-sidebar) minmax(0, 1fr);
+  min-height: 100vh;
+}
+.ad-shell__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ad-space-4);
+  padding: var(--ad-space-4) var(--ad-space-3);
+  border-inline-end: 1px solid var(--ad-color-border);
+  background: var(--ad-color-surface-sunken);
+}
+.ad-shell__brand { padding: 0 var(--ad-space-3); font-weight: var(--ad-font-weight-semibold); }
+.ad-shell__body { display: flex; flex-direction: column; min-width: 0; }
+.ad-shell__topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ad-space-3);
+  min-height: var(--ad-size-topbar);
+  padding: 0 var(--ad-space-6);
+  border-bottom: 1px solid var(--ad-color-border);
+  background: var(--ad-color-bg);
+}
+.ad-shell__actions { display: flex; align-items: center; gap: var(--ad-space-4); margin-inline-start: auto; }
+.ad-shell__content { flex: 1; padding: var(--ad-space-8) var(--ad-space-6) var(--ad-space-24); outline: none; }
+.ad-shell__menu { display: none; }
+@media (max-width: 47.99rem) {
+  .ad-shell { grid-template-columns: minmax(0, 1fr); }
+  .ad-shell__menu { display: inline-flex; }
+  .ad-shell__sidebar[data-open="false"] { display: none; }
+  .ad-shell__sidebar { border-inline-end: 0; border-bottom: 1px solid var(--ad-color-border); }
+  .ad-shell__topbar, .ad-shell__content { padding-inline: var(--ad-space-4); }
+}
+.ad-sidebar-nav { display: grid; gap: var(--ad-space-1); margin: 0; padding: 0; list-style: none; }
+.ad-sidebar-nav__link {
+  display: flex;
+  align-items: center;
+  gap: var(--ad-space-2);
+  min-height: var(--ad-control-h);
+  padding: 0 var(--ad-space-3);
+  border-radius: var(--ad-radius-md);
+  color: var(--ad-color-text);
+  text-decoration: none;
+}
+.ad-sidebar-nav__link:hover { background: var(--ad-color-surface-hover); }
+.ad-sidebar-nav__link[aria-current="page"] {
+  background: var(--ad-color-accent-subtle);
+  color: var(--ad-color-accent-text);
+  font-weight: var(--ad-font-weight-semibold);
+}
+
+/* Toolbar ------------------------------------------------------------ */
+.ad-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ad-space-1);
+  padding: var(--ad-space-1);
+  border: 1px solid var(--ad-color-border);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-color-surface);
+}
+.ad-toolbar__separator { align-self: stretch; width: 1px; margin: var(--ad-space-1); background: var(--ad-color-border); }
+.ad-button[aria-pressed="true"] {
+  --button-bg: var(--ad-color-accent-subtle);
+  --button-bg-hover: var(--ad-color-accent-subtle);
+  --button-fg: var(--ad-color-accent-text);
+  --button-border: var(--ad-color-accent);
+}
+
+/* Empty state and file list ------------------------------------------ */
+.ad-empty { display: grid; justify-items: center; gap: var(--ad-space-3); padding: var(--ad-space-12) var(--ad-space-6); text-align: center; }
+.ad-empty__title { font-size: var(--ad-font-size-lg); }
+.ad-empty__description { max-width: 28rem; color: var(--ad-color-text-muted); }
+.ad-files { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--ad-color-border); }
+.ad-file-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: var(--ad-space-4);
+  min-height: 3rem;
+  padding: var(--ad-space-1) var(--ad-space-2);
+  border-bottom: 1px solid var(--ad-color-border);
+}
+.ad-file-row:hover { background: var(--ad-color-surface-sunken); }
+.ad-file-row__icon { display: inline-flex; color: var(--ad-color-text-muted); }
+.ad-file-row__name {
+  min-height: 1.5rem;
+  overflow: hidden;
+  color: var(--ad-color-text);
+  font-weight: var(--ad-font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ad-file-row__meta, .ad-file-row__time { display: inline-flex; align-items: center; gap: var(--ad-space-2); color: var(--ad-color-text-muted); font-size: var(--ad-font-size-xs); }
+@media (max-width: 47.99rem) {
+  .ad-file-row { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .ad-file-row__meta { grid-column: 2 / -1; }
+  .ad-file-row__time { display: none; }
+}
+
+/* Presence ----------------------------------------------------------- */
+.ad-avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--ad-color-border-strong);
+  background: var(--ad-color-surface-sunken);
+  color: var(--ad-color-text);
+  font-size: var(--ad-font-size-xs);
+  font-weight: var(--ad-font-weight-medium);
+  line-height: 1;
+}
+.ad-avatar svg { width: 0.9rem; height: 0.9rem; }
+.ad-avatar--person { border-radius: var(--ad-radius-full); }
+.ad-avatar--agent {
+  border-color: var(--ad-color-agent);
+  border-radius: var(--ad-radius-sm);
+  background: var(--ad-color-agent-subtle);
+  color: var(--ad-color-agent-text);
+}
+.ad-avatar--more { border-radius: var(--ad-radius-full); background: var(--ad-color-surface); color: var(--ad-color-text-muted); }
+.ad-chip { display: inline-flex; align-items: center; gap: var(--ad-space-2); max-width: 100%; min-width: 0; }
+.ad-chip__name { overflow: hidden; color: var(--ad-color-text); font-weight: var(--ad-font-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.ad-chip__meta { color: var(--ad-color-text-muted); font-size: var(--ad-font-size-xs); white-space: nowrap; }
+/* The word, in a hairline pill. The word carries the meaning, not the color. */
+.ad-pill {
+  flex: none;
+  padding: 0.125rem var(--ad-space-2);
+  border: 1px solid var(--ad-color-agent);
+  border-radius: var(--ad-radius-full);
+  color: var(--ad-color-agent-text);
+  font-size: 0.6875rem;
+  font-weight: var(--ad-font-weight-semibold);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+.ad-stack { display: inline-flex; align-items: center; gap: var(--ad-space-3); }
+.ad-stack__list { display: flex; margin: 0; padding: 0; list-style: none; }
+.ad-stack__list li + li { margin-inline-start: -0.25rem; }
+.ad-stack__list .ad-avatar { width: 1.75rem; height: 1.75rem; }
+.ad-stack__list .ad-avatar { box-shadow: 0 0 0 2px var(--ad-color-bg); }
+.ad-stack__summary { color: var(--ad-color-text-muted); font-size: var(--ad-font-size-xs); white-space: nowrap; }
+
 /* Windows High Contrast. Backgrounds become system colors there, so state needs system colors. */
 @media (forced-colors: active) {
   .ad-checkbox:checked,

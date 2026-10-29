@@ -1,19 +1,8 @@
 /* Layout for the demo pages only. Not part of the package stylesheet. */
-.demo-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--ad-space-6);
-  max-width: 64rem;
-  margin: 0 auto;
-  padding: var(--ad-space-12) var(--ad-space-6) var(--ad-space-6);
-}
 .demo-main {
   display: grid;
   gap: var(--ad-space-12);
   max-width: 64rem;
-  margin: 0 auto;
-  padding: var(--ad-space-6) var(--ad-space-6) var(--ad-space-24);
 }
 .demo-main h2 { margin-bottom: var(--ad-space-4); }
 .demo-main h3 {
@@ -21,13 +10,8 @@
   font-size: var(--ad-font-size-sm);
   color: var(--ad-color-text-muted);
 }
-.demo-header p { margin-top: var(--ad-space-1); }
 .demo-muted { color: var(--ad-color-text-muted); }
 .demo-group { margin-bottom: var(--ad-space-6); }
-.demo-nav { display: flex; gap: var(--ad-space-4); margin: var(--ad-space-3) 0 0; padding: 0; list-style: none; }
-.demo-nav a[aria-current="page"] { color: var(--ad-color-text); font-weight: var(--ad-font-weight-semibold); text-decoration: none; }
-.demo-nav a { display: inline-flex; align-items: center; min-height: 1.5rem; }
-.demo-header .ad-field { min-width: 10rem; }
 .demo-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ad-space-3); }
 .demo-form { display: grid; gap: var(--ad-space-4); max-width: 24rem; }
 
@@ -74,3 +58,4 @@ summary { cursor: pointer; padding: var(--ad-space-2) 0; }
 }
 
 .demo-note { margin-top: var(--ad-space-3); font-size: var(--ad-font-size-xs); }
+.demo-plain { display: grid; gap: var(--ad-space-3); margin: var(--ad-space-4) 0 0; padding: 0; list-style: none; }

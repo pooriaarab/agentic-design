@@ -5,3 +5,11 @@ export type { InputProps, TextareaProps, SelectProps, CheckboxProps, SwitchProps
 export { Tooltip } from "./tooltip.js";
 export { Dialog, DialogClose, Menu, Tabs, ToastProvider, useToast } from "./overlays.js";
 export type { DialogProps, MenuItem, TabItem, ToastOptions, ToastTone } from "./overlays.js";
+export { AppShell, SidebarNav } from "./shell.js";
+export type { AppShellProps, SidebarItem } from "./shell.js";
+export { Toolbar, ToolbarButton, ToolbarSeparator } from "./toolbar.js";
+export { EmptyState, FileList, FileRow } from "./files.js";
+export type { FileRowProps } from "./files.js";
+export { Avatar, PresenceChip, PresenceStack } from "./presence.js";
+export type { PresenceEntry, PresenceKind, PresenceStatus } from "./presence.js";
+export { usableName, MAX_NAME_LENGTH } from "./safe-name.js";
