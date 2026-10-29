@@ -754,4 +754,4 @@
 .agd-display__order { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--agd-space-2); }
 .agd-display__columns { display: grid; gap: var(--agd-space-1); margin: 0; padding: 0; border: 0; }
 .agd-display__columns legend { padding: 0; margin-block-end: var(--agd-space-1); font-weight: var(--agd-font-weight-medium); }
-.agd-button[aria-disabled="true"]:not([aria-busy="true"]) { color: var(--agd-color-text-muted); cursor: not-allowed; }
+.agd-display .agd-button[aria-disabled="true"], .agd-filterchips .agd-button[aria-disabled="true"] { color: var(--agd-color-text-muted); cursor: not-allowed; }

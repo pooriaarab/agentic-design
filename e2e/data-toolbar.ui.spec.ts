@@ -114,3 +114,51 @@ test("with groups, a long scroll still draws few rows and keys skip the labels",
   const frame = await grid.boundingBox();
   expect(box && frame && box.y + box.height <= frame.y + frame.height + 1).toBe(true);
 });
+
+test("removing a chip with the keyboard keeps focus on the controls", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Add filter" }).click();
+  await page.getByRole("menuitem", { name: "Status: Done" }).click();
+  await page.getByRole("button", { name: "Add filter" }).click();
+  await page.getByRole("menuitem", { name: "Owner: Grace Hopper" }).click();
+  const remove = page.getByRole("button", { name: "Remove filter Status: Done" });
+  await remove.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Remove filter Owner: Grace Hopper" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Add filter" })).toBeFocused();
+});
+
+test("clearing from the empty state keeps focus in the table", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("searchbox", { name: "Search" }).fill("zzzz");
+  const clear = page.getByRole("button", { name: "Clear search and filters" });
+  await clear.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator('[data-index="0"]')).toBeFocused();
+});
+
+test("group order flips with Direction when only grouping is set", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Display" }).click();
+  await page.getByLabel("Group by").selectOption("status");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await expect(grid.getByRole("gridcell", { name: "Done 3334 rows" })).toBeVisible();
+  await page.getByLabel("Direction").selectOption("descending");
+  await expect(grid.getByRole("gridcell", { name: "Open 6666 rows" })).toBeVisible();
+});
+
+test("row indexes count the group labels", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Display" }).click();
+  await page.getByLabel("Group by").selectOption("status");
+  await page.keyboard.press("Escape");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await expect(grid).toHaveAttribute("aria-rowcount", "10003");
+  const indexes = await page.locator('[role="row"][aria-rowindex]').evaluateAll((els) => els.map((e) => Number(e.getAttribute("aria-rowindex"))));
+  expect(indexes).toEqual([...indexes].sort((a, b) => a - b));
+  expect(new Set(indexes).size).toBe(indexes.length);
+  // Header is 1, the first label is 2, the first row is 3.
+  await expect(page.locator('[data-index="0"]')).toHaveAttribute("aria-rowindex", "3");
+});

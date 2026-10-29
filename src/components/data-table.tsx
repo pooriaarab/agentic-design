@@ -74,6 +74,7 @@ export function DataTable<T>({
   const items = loading ? noRows : rows;
   const count = items.length;
   const scroller = useRef<HTMLDivElement>(null);
+  const frame = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewport, setViewport] = useState(480);
   useLayoutEffect(() => {
@@ -107,10 +108,10 @@ export function DataTable<T>({
   // A loading phase has no rows, so it must not reset the position.
   if (!loading) lastActive.current = active;
   const wantFocus = useRef(false);
-  // Did focus sit in the grid before this render? A refetch or a filter can remove the row that has it.
+  // Did focus sit in the table (grid, empty state, or bar) before this render? A refetch or a filter can remove the row that has it.
   const focusWasInside = useRef(false);
   const restoreFocus = useRef(false);
-  if (typeof document !== "undefined") focusWasInside.current = !!scroller.current?.contains(document.activeElement);
+  if (typeof document !== "undefined") focusWasInside.current = !!frame.current?.contains(document.activeElement);
   const anchor = useRef<string | null>(null);
   const barVisible = selectable && selected.size > 0 && !loading;
   const [barSize, setBarSize] = useState(0);
@@ -300,7 +301,7 @@ export function DataTable<T>({
     <div className="agd-datatable" style={style}>
       {toolbar}
       <p className="agd-sr-only" role="status">{status}</p>
-      <div className="agd-datatable__frame">
+      <div ref={frame} className="agd-datatable__frame">
         <div
           ref={scroller}
           className="agd-datatable__scroller"
@@ -355,7 +356,7 @@ export function DataTable<T>({
                     {group && (
                       <div role="row" className="agd-datatable__group" style={{ top: (layout.tops[i] as number) - rowHeight }} aria-rowindex={(layout.pos[i] as number) + 1}>
                         <div role="gridcell" aria-colspan={columns.length + (selectable ? 1 : 0)} className="agd-datatable__group-cell">
-                          {group.label} <span className="agd-datatable__group-count">{group.size}</span>
+                          {group.label} <span className="agd-datatable__group-count">{group.size}<span className="agd-sr-only"> {group.size === 1 ? "row" : "rows"}</span></span>
                         </div>
                       </div>
                     )}

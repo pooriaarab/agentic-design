@@ -76,21 +76,31 @@ export interface FilterChip {
 
 /** The filters in use, each one removable, and an optional menu to add another. */
 export function FilterChips({ chips, onRemove, addItems, addLabel = "Add filter" }: { chips: readonly FilterChip[]; onRemove: (id: string) => void; addItems?: MenuItem[]; addLabel?: string }) {
+  const root = useRef<HTMLDivElement>(null);
+  const removed = useRef<number | null>(null);
+  // The remove button leaves with its chip. Give focus to the next chip, the one before it, or the add button.
+  useLayoutEffect(() => {
+    if (removed.current === null) return;
+    const at = removed.current;
+    removed.current = null;
+    const buttons = root.current?.querySelectorAll<HTMLElement>(".agd-filterchip__remove");
+    (buttons && buttons.length > 0 ? buttons[Math.min(at, buttons.length - 1)] : root.current?.querySelector<HTMLElement>(".agd-filterchips__add"))?.focus();
+  }, [chips.length]);
   return (
-    <div className="agd-filterchips">
+    <div className="agd-filterchips" ref={root}>
       {chips.length > 0 && (
         <ul className="agd-filterchips__list" aria-label="Active filters">
-          {chips.map((chip) => (
+          {chips.map((chip, index) => (
             <li key={chip.id} className="agd-filterchip">
               <span className="agd-filterchip__label">{chip.label}</span>
-              <IconButton label={`Remove filter ${chip.label}`} icon={<CloseIcon />} size="sm" tooltip={false} className="agd-filterchip__remove" onClick={() => onRemove(chip.id)} />
+              <IconButton label={`Remove filter ${chip.label}`} icon={<CloseIcon />} size="sm" tooltip={false} className="agd-filterchip__remove" onClick={() => { removed.current = index; onRemove(chip.id); }} />
             </li>
           ))}
         </ul>
       )}
-      {addItems && addItems.length > 0 && (
-        <Menu align="start" trigger={<Button size="sm" variant="ghost"><PlusIcon />{addLabel}</Button>} items={addItems} />
-      )}
+      {addItems && (addItems.length > 0
+        ? <Menu align="start" trigger={<Button size="sm" variant="ghost" className="agd-filterchips__add"><PlusIcon />{addLabel}</Button>} items={addItems} />
+        : <Button size="sm" variant="ghost" className="agd-filterchips__add" aria-disabled="true"><PlusIcon />{addLabel}</Button>)}
     </div>
   );
 }
@@ -103,11 +113,11 @@ export function filterMenuItems<T>(rows: readonly T[], fields: readonly DataFiel
     const seen = new Set<string>();
     for (const row of rows) {
       const value = fieldText(field, row);
-      if (value === "" || seen.has(value)) continue;
+      if (value === "" || seen.has(value) || view.filters.some((f) => f.field === field.id && f.value === value)) continue;
       seen.add(value);
       if (seen.size >= limit) break;
     }
-    const values = [...seen].filter((value) => !view.filters.some((f) => f.field === field.id && f.value === value)).sort();
+    const values = [...seen].sort(new Intl.Collator("en", { numeric: true }).compare);
     if (values.length === 0) continue;
     if (items.length > 0) items.push("separator");
     for (const value of values) {

@@ -63,3 +63,18 @@ test("sameDisplay ignores the search and the filters", () => {
   expect(sameDisplay({ ...emptyDataView, hiddenColumns: ["a"] }, emptyDataView)).toBe(false);
   expect(sameDisplay({ ...emptyDataView, hiddenColumns: ["a", "b"] }, { ...emptyDataView, hiddenColumns: ["b", "a"] })).toBe(true);
 });
+
+test("groups that differ only by case or accents stay whole, and direction flips groups when nothing orders them", () => {
+  const items = [
+    { name: "a", status: "Open", n: 1, when: null },
+    { name: "b", status: "open", n: 2, when: null },
+    { name: "c", status: "Open", n: 3, when: null },
+  ];
+  const run = (view: object) => applyDataView(items, { ...emptyDataView, ...view }, fields).map((r) => `${r.status}${r.n}`);
+  // Exact text splits the groups, but each group is contiguous, so a table draws one label per text.
+  const out = run({ groupBy: "status", orderBy: "n", direction: "descending" });
+  const labels = out.filter((v, i) => i === 0 || v.slice(0, -1) !== out[i - 1]?.slice(0, -1));
+  expect(labels).toHaveLength(2);
+  const flip = applyDataView(rows, { ...emptyDataView, groupBy: "status", direction: "descending" }, fields).map((r) => r.status);
+  expect(flip).toEqual(["Open", "Open", "Done", "Done"]);
+});

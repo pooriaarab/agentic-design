@@ -38,8 +38,9 @@ export const fieldText = <T,>(field: DataField<T>, row: T): string => text(field
 
 /**
  * Search, filter, order, and group rows. It returns a new array, in group order when `groupBy` is set,
- * so it can go straight into a `DataTable` with a `groupBy` that reads the same field. A field id that
- * is not in `fields` is ignored.
+ * so it can go straight into a `DataTable` with a `groupBy` that reads the same field. Groups run in text
+ * order. `direction` flips the groups when there is no `orderBy`, and the rows inside them when there is.
+ * A field id that is not in `fields` is ignored.
  */
 export function applyDataView<T>(rows: readonly T[], view: DataView, fields: readonly DataField<T>[], locale = "en"): T[] {
   const byId = new Map(fields.map((f) => [f.id, f]));
@@ -69,8 +70,15 @@ export function applyDataView<T>(rows: readonly T[], view: DataView, fields: rea
     if (x instanceof Date && y instanceof Date) return sign * (x.getTime() - y.getTime());
     return sign * collator.compare(text(x), text(y));
   };
+  // Groups are told apart by exact text. The collator ignores case and accents, and equal groups must never split.
+  const groupSign = order ? 1 : sign;
+  const compareGroup = (a: T, b: T): number => {
+    if (!group) return 0;
+    const [x, y] = [fieldText(group, a), fieldText(group, b)];
+    return groupSign * (collator.compare(x, y) || (x < y ? -1 : x > y ? 1 : 0));
+  };
   return kept
     .map((row, index) => ({ row, index }))
-    .sort((a, b) => (group ? collator.compare(fieldText(group, a.row), fieldText(group, b.row)) : 0) || (order ? compare(order, a.row, b.row) : 0) || a.index - b.index)
+    .sort((a, b) => compareGroup(a.row, b.row) || (order ? compare(order, a.row, b.row) : 0) || a.index - b.index)
     .map((entry) => entry.row);
 }

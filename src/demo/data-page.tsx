@@ -7,6 +7,7 @@ import {
   DisplayPopover,
   EmptyState,
   emptyDataView,
+  fieldText,
   FilterChips,
   filterMenuItems,
   TableSearch,
@@ -47,7 +48,7 @@ export function DataPage() {
   const rows = useMemo(() => applyDataView(all, view, fields), [all, view]);
   const hidden = useMemo(() => new Set(view.hiddenColumns), [view.hiddenColumns]);
   const groupField = fields.find((f) => f.id === view.groupBy);
-  const groupBy = useMemo(() => (groupField ? (t: Task) => String(groupField.value(t)) : undefined), [groupField]);
+  const groupBy = useMemo(() => (groupField ? (t: Task) => fieldText(groupField, t) || "No value" : undefined), [groupField]);
   const chips = view.filters.map((f) => ({ id: `${f.field}:${f.value}`, label: `${fields.find((x) => x.id === f.field)?.label}: ${f.value}` }));
   const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all, view]);
   const [removed, setRemoved] = useState(0);

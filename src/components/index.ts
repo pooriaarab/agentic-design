@@ -23,5 +23,5 @@ export { DataTable } from "./data-table.js";
 export type { DataTableColumn, DataTableProps } from "./data-table.js";
 export { DataTableToolbar, TableSearch, FilterChips, DisplayPopover, filterMenuItems } from "./data-toolbar.js";
 export type { DisplayPopoverProps, FilterChip } from "./data-toolbar.js";
-export { applyDataView, emptyDataView, sameDisplay } from "./data-view.js";
+export { applyDataView, emptyDataView, fieldText, sameDisplay } from "./data-view.js";
 export type { DataField, DataFilter, DataView } from "./data-view.js";

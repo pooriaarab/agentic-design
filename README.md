@@ -132,7 +132,7 @@ const rows = useMemo(() => applyDataView(all, view, fields), [all, view]);
   rows={rows}
   columns={columns}
   getRowId={(t) => t.id}
-  hiddenColumns={new Set(view.hiddenColumns)}
+  hiddenColumns={hidden} // useMemo(() => new Set(view.hiddenColumns), [view.hiddenColumns])
   toolbar={
     <DataTableToolbar end={<DisplayPopover fields={fields} columns={columnList} view={view} onViewChange={setView} defaults={emptyDataView} />}>
       <TableSearch value={view.query} onChange={(query) => setView({ ...view, query })} />
