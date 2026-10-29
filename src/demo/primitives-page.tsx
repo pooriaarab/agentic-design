@@ -49,6 +49,7 @@ export function PrimitivesPage() {
           />
           <p id="name-extra" className="demo-muted demo-note">Use the name on your badge.</p>
           <Input label="Phone" hint="Checked by the page, not by the field." aria-invalid="true" autoComplete="tel" />
+          <Input label="Nickname" id="" />
           <Input label="Email" type="email" autoComplete="email" placeholder="you@example.org" />
           <Textarea label="Notes" hint="Optional." />
           <Select label="Role" defaultValue="viewer">

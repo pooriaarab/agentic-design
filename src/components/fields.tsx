@@ -23,7 +23,8 @@ function useField(idProp: string | undefined, { label, hint, error }: FieldProps
     throw new Error("A field needs a non-empty label.");
   }
   const auto = useId();
-  const id = idProp ?? auto;
+  // An empty id would point the label at nothing, so it counts as no id.
+  const id = idProp || auto;
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   return {

@@ -24,6 +24,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     >
       {loading && <span className="ad-spinner" aria-hidden="true" />}
       {children}
+      {/* aria-busy is not announced on a button, so the loading state is also in the name. */}
+      {loading && <span className="ad-sr-only">, loading</span>}
     </button>
   );
 });
@@ -40,7 +42,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
 ) {
   if (label.trim() === "") throw new Error("IconButton needs a non-empty label.");
   return (
-    <Button ref={ref} variant={variant} className={cx("ad-icon-button", className)} {...rest} aria-label={label}>
+    <Button ref={ref} variant={variant} className={cx("ad-icon-button", className)} {...rest} aria-label={rest.loading ? `${label}, loading` : label}>
       {rest.loading ? null : icon}
     </Button>
   );
