@@ -9,6 +9,7 @@ All notable changes to this package are in this file. The format follows
 ### Added
 
 - `DataTable`, a virtualized table for large row sets. It keeps one tab stop, moves focus with the arrow keys, and announces its status and position.
+- `DataTableToolbar`, `TableSearch`, `FilterChips`, `DisplayPopover`, `filterMenuItems`, `applyDataView`, `emptyDataView`, `fieldText`, `sameDisplay`, and the icons `SearchIcon` and `SlidersIcon`. They add search, filters, grouping, ordering, and hidden columns to a `DataTable`. `DataTable` takes the new `groupBy` and `hiddenColumns` props.
 
 ## 0.7.1 - 2026-10-29
 

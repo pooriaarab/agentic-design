@@ -117,6 +117,33 @@ themes.dark.accent; // "#8EA4FF"
 />
 ```
 
+- Table controls for React, to put in the `toolbar` of a `DataTable`. `TableSearch` is a button that opens a
+  search field and moves focus into it. Escape clears the text, and Escape again closes the field. Inside a Radix `Dialog`, Escape also closes the dialog, because the dialog listens first.
+  `FilterChips` lists the filters in use, each with a remove button, and a menu to add one
+  (`filterMenuItems` builds the menu from your rows). `DisplayPopover` opens a panel with "Group by", "Order by",
+  a direction, a checkbox for each column, and "Reset to defaults". `applyDataView(rows, view, fields)` does the
+  searching, filtering, ordering, and grouping for you. Pass `groupBy` and `hiddenColumns` to `DataTable`. Keep `groupBy` stable with `useMemo`, because each new function builds the layout again. Keep `hiddenColumns` stable too, so the column list is not made again on every render. `TableSearch` is a search landmark named by its `label` (default "Search"). With two tables on a page, give each its own `label`. The table says the new row count after a pause when a search or filter changes the count. It does not speak when the count stays the same.
+
+```tsx
+const [view, setView] = useState<DataView>(emptyDataView);
+const rows = useMemo(() => applyDataView(all, view, fields), [all, view]);
+const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all, view]);
+<DataTable
+  label="Tasks"
+  rows={rows}
+  columns={columns}
+  getRowId={(t) => t.id}
+  groupBy={groupBy} // a stable function from useMemo, or undefined
+  hiddenColumns={hidden} // useMemo(() => new Set(view.hiddenColumns), [view.hiddenColumns])
+  toolbar={
+    <DataTableToolbar end={<DisplayPopover fields={fields} columns={columnList} view={view} onViewChange={setView} defaults={emptyDataView} />}>
+      <TableSearch value={view.query} onChange={(query) => setView({ ...view, query })} />
+      <FilterChips chips={chips} onRemove={removeFilter} addItems={addItems} />
+    </DataTableToolbar>
+  }
+/>
+```
+
 - `ShareDialog`: people and agents with roles, an invite field (an email invites a person, an
   `@handle` invites an agent, and anything else is refused), a link with role, expiry, and a
   sign-in rule, and a snapshot link that holds the page in the URL fragment. `PresenceCursor`
@@ -137,6 +164,8 @@ themes.dark.accent; // "#8EA4FF"
   Long text in a cell is cut with an ellipsis, and nothing on screen shows the rest. Use wider columns, or show the full value somewhere else, for example where `onRowActivate` leads.
   The height is in pixels, but the text scales with the root font size. If people enlarge text only, raise `rowHeight` so cells do not clip.
   Focus moves by row, not by cell: Left and Right do nothing. A screen reader user reads a cell with the reader's own table commands.
+- Group labels are not focusable. Arrow keys move from row to row, and the first row of a group is described by its label, so a screen reader says the group when focus reaches that first row. A group with no text shows as "No value" and runs last.
+- `applyDataView` runs in the browser over all the rows you pass. For data that lives on a server, filter there and pass the result as `rows`. Search matches every word anywhere in the field text.
 - `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.
 - `FileList` sorts only the `items` you pass, and only when it is not controlled. If you pass `sort`,
   your code must sort `items` itself. It does not paginate.

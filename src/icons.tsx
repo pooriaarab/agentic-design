@@ -33,3 +33,5 @@ export const FileIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M5 2.5h6l4 4v11
 export const FolderIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M2.5 5.5h5l1.5 2h8.5v8h-15z" {...p} />;
 export const BotIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M4 7.5h12v8a1 1 0 01-1 1H5a1 1 0 01-1-1zM10 7.5v-3M7.5 11.5h.01M12.5 11.5h.01" {...p} />;
 export const ErrorIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M7.5 7.5l5 5M12.5 7.5l-5 5M10 2.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z" {...p} />;
+export const SearchIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM13 13l3.5 3.5" {...p} />;
+export const SlidersIcon = (p: SVGProps<SVGSVGElement>) => <Icon d="M3.5 6h8M15 6h1.5M3.5 14h1.5M8.5 14h8M13 4v4M7 12v4" {...p} />;
