@@ -4,6 +4,26 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.3.0 - 2026-10-29
+
+### Added
+
+- `SidebarNav` takes `linkComponent`, a host link component such as a router link.
+  It gets the props of an anchor, including `href`, `className` and `aria-current`.
+  `renderLink` is a render prop for the same job, and it wins over `linkComponent`.
+  Both types, `SidebarLinkProps` and `SidebarNavProps`, are exported.
+
+### Changed
+
+- The brand of `AppShell` is in the top bar, inside the banner landmark, not at the
+  top of the sidebar. The brand has no padding now. A host that styled
+  `.ad-shell__brand` may need to adjust it.
+
+### Fixed
+
+- When a person opens the sidebar, focus goes to the first link, including a host
+  link that is not an `a` element but has an `href`.
+
 ## 0.2.0 - 2026-10-29
 
 ### Breaking
