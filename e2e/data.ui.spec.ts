@@ -225,3 +225,30 @@ test("the active row survives a list that shrinks and returns", async ({ page })
   await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent === "10,000 rows")?.click());
   await expect(page.locator('[data-index="60"]')).toHaveAttribute("tabindex", "0");
 });
+
+test("a key that cannot move leaves no focus request for the next render", async ({ page }) => {
+  await page.goto("/data");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await page.locator('[data-index="0"]').focus();
+  await page.keyboard.press("ArrowUp");
+  await grid.evaluate((el) => { el.scrollTop = 4000; });
+  await expect(page.getByRole("row", { name: /Task 101\b/ })).toBeVisible();
+  expect(await grid.evaluate((el) => el.scrollTop)).toBe(4000);
+});
+
+test("Home on the first row, then select-all, keeps focus on the checkbox", async ({ page }) => {
+  await page.goto("/data");
+  await page.locator('[data-index="0"]').focus();
+  await page.keyboard.press("Home");
+  const all = page.getByRole("checkbox", { name: "Select all 10000 rows" });
+  await all.focus();
+  await page.keyboard.press("Space");
+  await expect(all).toBeFocused();
+});
+
+test("the status says how many rows arrived when loading ends", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("button", { name: "Show loading" }).click();
+  await page.getByRole("button", { name: "Show rows" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "10000 rows" })).toBeAttached();
+});

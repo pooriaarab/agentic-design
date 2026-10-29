@@ -194,8 +194,14 @@ export function DataTable<T>({
   };
 
   const move = (to: number) => {
+    const target = Math.max(0, Math.min(count - 1, to));
+    if (target === active) {
+      // Nothing moves, so no render follows. Focus the row now, and leave no request behind.
+      scroller.current?.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
+      return;
+    }
     wantFocus.current = true;
-    setActiveId(ids[Math.max(0, Math.min(count - 1, to))] as string);
+    setActiveId(ids[target] as string);
   };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
@@ -237,7 +243,14 @@ export function DataTable<T>({
   const minWidth = `calc(${[selectable ? CHECK_WIDTH : null, ...columns.map((c) => (c.width && !/fr|minmax/.test(c.width) ? c.width : FLEX_MIN))].filter(Boolean).join(" + ")})`;
   const style = { "--agd-dt-cols": tracks, "--agd-dt-min": minWidth, "--agd-dt-row": `${rowHeight}px`, "--agd-dt-height": typeof height === "number" ? `${height}px` : height } as CSSProperties;
   const nameOf = (row: T) => rowLabel?.(row) ?? getRowId(row);
-  const status = loading ? "Loading rows" : selectable && selected.size > 0 ? `${selected.size} of ${count} selected` : "";
+  // Say how many rows arrived when loading ends, so the status does not just go quiet.
+  const [arrived, setArrived] = useState("");
+  const wasLoading = useRef(loading);
+  useEffect(() => {
+    if (wasLoading.current && !loading) setArrived(`${count} ${count === 1 ? "row" : "rows"}`);
+    wasLoading.current = loading;
+  }, [loading, count]);
+  const status = loading ? "Loading rows" : selectable && selected.size > 0 ? `${selected.size} of ${count} selected` : arrived;
 
   return (
     <div className="agd-datatable" style={style}>
