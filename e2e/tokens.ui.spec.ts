@@ -55,6 +55,7 @@ test("the page follows the OS until a person picks a theme", async ({ page, requ
 
 test("the skip link moves focus into the main content", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.keyboard.press("Tab");
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#main$/);
@@ -64,6 +65,7 @@ test("the skip link moves focus into the main content", async ({ page }) => {
 
 test("the theme select works with the keyboard alone, and the tab order is skip link, pages, theme", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   const pages = await page.getByRole("navigation", { name: "Demo pages" }).getByRole("link").allInnerTexts();
   const stops: string[] = [];
   for (let i = 0; i < pages.length + 2; i++) {
