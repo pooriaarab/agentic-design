@@ -71,9 +71,9 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
   const chosen = allowed.includes(role) ? role : "viewer";
 
   return (
-    <div className="ad-share">
+    <div className="agd-share">
       <form
-        className="ad-share__invite"
+        className="agd-share__invite"
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
@@ -111,17 +111,17 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
         <Button type="submit" variant="primary">Invite</Button>
       </form>
       {/* The status line is always in the page, so a screen reader announces the first message too. */}
-      <p role="status" className="ad-share__sent">{sent}</p>
-      <ul className="ad-share__people" aria-label="People and agents with access">
+      <p role="status" className="agd-share__sent">{sent}</p>
+      <ul className="agd-share__people" aria-label="People and agents with access">
         {people.map((item) => {
           const { entry, role: current } = item;
           return (
           <li key={entry.id}>
             <PresenceChip entry={entry} />
             {current === "owner" ? (
-              <span className="ad-share__owner">Owner</span>
+              <span className="agd-share__owner">Owner</span>
             ) : (
-              <span className="ad-share__controls">
+              <span className="agd-share__controls">
                 <Select
                   label={`Access for ${labelName(item)}`}
                   hideLabel
@@ -163,7 +163,7 @@ function LinkTab({ link, onChangeLink, onCopy }: Pick<ShareDialogProps, "link" |
   // A date in the past is an expired link. It is never shown as live.
   const expired = link.expiresAt != null && link.expiresAt.getTime() < Date.now();
   return (
-    <div className="ad-share">
+    <div className="agd-share">
       <Switch
         label="Anyone with the link"
         hint={link.enabled ? undefined : "Only people you invite can open this page."}
@@ -172,7 +172,7 @@ function LinkTab({ link, onChangeLink, onCopy }: Pick<ShareDialogProps, "link" |
       />
       {link.enabled && (
         <>
-          <div className="ad-share__row">
+          <div className="agd-share__row">
             <Select
               label="Access"
               value={link.role}
@@ -205,7 +205,7 @@ function LinkTab({ link, onChangeLink, onCopy }: Pick<ShareDialogProps, "link" |
           />
           {/* An expired link is not offered, so it cannot be copied as if it still worked. */}
           {!expired && (
-            <div className="ad-share__copy">
+            <div className="agd-share__copy">
               <Input label="Link" value={link.url} readOnly onFocus={(e) => e.target.select()} />
               <Button onClick={() => onCopy(link.url)}>Copy link</Button>
             </div>
@@ -218,7 +218,7 @@ function LinkTab({ link, onChangeLink, onCopy }: Pick<ShareDialogProps, "link" |
 
 function SnapshotTab({ snapshot, onCopy }: Pick<ShareDialogProps, "snapshot" | "onCopy">) {
   return (
-    <div className="ad-share">
+    <div className="agd-share">
       <p>
         A snapshot puts a read-only copy of this page inside the link. It needs no account and no server read. Later edits
         are not in it.
@@ -228,11 +228,11 @@ function SnapshotTab({ snapshot, onCopy }: Pick<ShareDialogProps, "snapshot" | "
       </div>
       {snapshot.url && (
         <>
-          <div className="ad-share__copy">
+          <div className="agd-share__copy">
             <Input label="Snapshot link" value={snapshot.url} readOnly onFocus={(e) => e.target.select()} />
             <Button onClick={() => onCopy(snapshot.url as string)}>Copy link</Button>
           </div>
-          <p className="ad-field__hint">Anyone who has this link can read this copy. Share it like a password.</p>
+          <p className="agd-field__hint">Anyone who has this link can read this copy. Share it like a password.</p>
         </>
       )}
     </div>

@@ -81,11 +81,11 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
   };
 
   const topbarEl = (
-    <header key="topbar" className="ad-shell__topbar">
-      <p className="ad-shell__brand">{brand}</p>
+    <header key="topbar" className="agd-shell__topbar">
+      <p className="agd-shell__brand">{brand}</p>
       <IconButton
         ref={toggleRef}
-        className="ad-shell__menu"
+        className="agd-shell__menu"
         label="Navigation"
         icon={<MenuIcon />}
         aria-expanded={open}
@@ -95,8 +95,8 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
           setOpen((v) => !v);
         }}
       />
-      {title !== undefined && title !== null && title !== false && <div className="ad-shell__title">{title}</div>}
-      <div className="ad-shell__actions">{topbar}</div>
+      {title !== undefined && title !== null && title !== false && <div className="agd-shell__title">{title}</div>}
+      <div className="agd-shell__actions">{topbar}</div>
     </header>
   );
   const sidebarEl = (
@@ -104,7 +104,7 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
       key="sidebar"
       id={sidebarId}
       ref={sidebarRef}
-      className="ad-shell__sidebar"
+      className="agd-shell__sidebar"
       data-open={open}
       onBlur={(event) => {
         // Only a blur from the breakpoint counts: the layout is still wide here. A blur in a closed
@@ -118,12 +118,12 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
   );
 
   return (
-    <div className="ad-shell" data-panel={hasPanel ? "" : undefined} onKeyDown={onKeyDown}>
-      <a className="ad-skip-link" href={`#${mainId}`}>Skip to content</a>
+    <div className="agd-shell" data-panel={hasPanel ? "" : undefined} onKeyDown={onKeyDown}>
+      <a className="agd-skip-link" href={`#${mainId}`}>Skip to content</a>
       {/* Keyed, so crossing the breakpoint moves the two parts and does not remount them. */}
       {narrow ? [topbarEl, sidebarEl] : [sidebarEl, topbarEl]}
-      <main id={mainId} className="ad-shell__content" tabIndex={-1}>{children}</main>
-      {hasPanel && <aside className="ad-shell__panel" aria-label={panelLabel}>{panel}</aside>}
+      <main id={mainId} className="agd-shell__content" tabIndex={-1}>{children}</main>
+      {hasPanel && <aside className="agd-shell__panel" aria-label={panelLabel}>{panel}</aside>}
     </div>
   );
 }
@@ -150,10 +150,10 @@ export interface SidebarNavProps {
 export function SidebarNav({ label, items, linkComponent: Link = "a" as unknown as ComponentType<SidebarLinkProps>, renderLink }: SidebarNavProps) {
   return (
     <nav aria-label={label}>
-      <ul className="ad-sidebar-nav">
+      <ul className="agd-sidebar-nav">
         {items.map((item) => {
           const props: SidebarLinkProps = {
-            className: "ad-sidebar-nav__link",
+            className: "agd-sidebar-nav__link",
             href: item.href,
             "aria-current": item.current ? "page" : undefined,
             children: (

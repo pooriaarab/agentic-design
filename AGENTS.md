@@ -11,7 +11,7 @@ the same object, so each returns the same shape.
 ## The faces
 
 - Library: `import { themes, scale } from "agentic-design/tokens"`. React parts come from `agentic-design/react`.
-- CSS: `import "agentic-design/styles.css"`, then use `var(--ad-color-*)`.
+- CSS: `import "agentic-design/styles.css"`, then use `var(--agd-color-*)`.
 - CLI: `npx agentic-design tokens --format json`.
 - MCP: `npx agentic-design mcp`, then call a tool below.
 - HTTP: `GET /api/v1/tokens`.

@@ -47,9 +47,9 @@ function mergeDescribedBy(generated: string | undefined, own: string | undefined
 function Messages({ hintId, errorId, hint, error }: { hintId?: string; errorId?: string } & Omit<FieldProps, "label">) {
   return (
     <>
-      {hint && <p id={hintId} className="ad-field__hint">{hint}</p>}
+      {hint && <p id={hintId} className="agd-field__hint">{hint}</p>}
       {error && (
-        <p id={errorId} className="ad-field__error" role="alert">
+        <p id={errorId} className="agd-field__error" role="alert">
           <AlertIcon />
           {error}
         </p>
@@ -67,8 +67,8 @@ function Shell({ id, label, hideLabel, required, children, ...messages }: FieldP
   children: ReactNode;
 }) {
   return (
-    <div className="ad-field">
-      <label className={cx("ad-field__label", hideLabel && "ad-sr-only")} htmlFor={id}>
+    <div className="agd-field">
+      <label className={cx("agd-field__label", hideLabel && "agd-sr-only")} htmlFor={id}>
         {label}
         {required && <span aria-hidden="true"> *</span>}
       </label>
@@ -87,7 +87,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const field = useField(idProp, { label, hint, error });
   return (
     <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
-      <input ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]} />
+      <input ref={ref} className={cx("agd-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]} />
     </Shell>
   );
 });
@@ -101,7 +101,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   const field = useField(idProp, { label, hint, error });
   return (
     <Shell {...field} label={label} hint={hint} error={error} required={rest.required}>
-      <textarea ref={ref} className={cx("ad-input ad-textarea", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]} />
+      <textarea ref={ref} className={cx("agd-input agd-textarea", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]} />
     </Shell>
   );
 });
@@ -124,8 +124,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   const field = useField(idProp, { label, hint, error });
   return (
     <Shell {...field} label={label} hideLabel={hideLabel} hint={hint} error={error} required={rest.required}>
-      <span className="ad-select">
-        <select ref={ref} className={cx("ad-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]}>
+      <span className="agd-select">
+        <select ref={ref} className={cx("agd-input", className)} {...rest} {...field.control} aria-describedby={mergeDescribedBy(field.control["aria-describedby"], rest["aria-describedby"])} aria-invalid={field.control["aria-invalid"] ?? rest["aria-invalid"]}>
           {children}
         </select>
       </span>
@@ -149,15 +149,15 @@ export const Checkbox = forwardRef<HTMLInputElement, ToggleProps>(function Check
 ) {
   const { id, hintId, describedBy } = useToggle(idProp, label, hint);
   return (
-    <div className="ad-toggle">
-      <label className="ad-toggle__row" htmlFor={id}>
-        <input ref={ref} id={id} type="checkbox" className={cx("ad-checkbox", className)} {...rest} aria-describedby={mergeDescribedBy(describedBy, rest["aria-describedby"])} />
+    <div className="agd-toggle">
+      <label className="agd-toggle__row" htmlFor={id}>
+        <input ref={ref} id={id} type="checkbox" className={cx("agd-checkbox", className)} {...rest} aria-describedby={mergeDescribedBy(describedBy, rest["aria-describedby"])} />
         <span>
           {label}
           {rest.required && <span aria-hidden="true"> *</span>}
         </span>
       </label>
-      {hint && <p id={hintId} className="ad-field__hint">{hint}</p>}
+      {hint && <p id={hintId} className="agd-field__hint">{hint}</p>}
     </div>
   );
 });
@@ -168,15 +168,15 @@ export const Switch = forwardRef<HTMLInputElement, ToggleProps>(function Switch(
 ) {
   const { id, hintId, describedBy } = useToggle(idProp, label, hint);
   return (
-    <div className="ad-toggle">
-      <label className="ad-toggle__row" htmlFor={id}>
-        <input ref={ref} id={id} type="checkbox" role="switch" className={cx("ad-switch", className)} {...rest} aria-describedby={mergeDescribedBy(describedBy, rest["aria-describedby"])} />
+    <div className="agd-toggle">
+      <label className="agd-toggle__row" htmlFor={id}>
+        <input ref={ref} id={id} type="checkbox" role="switch" className={cx("agd-switch", className)} {...rest} aria-describedby={mergeDescribedBy(describedBy, rest["aria-describedby"])} />
         <span>
           {label}
           {rest.required && <span aria-hidden="true"> *</span>}
         </span>
       </label>
-      {hint && <p id={hintId} className="ad-field__hint">{hint}</p>}
+      {hint && <p id={hintId} className="agd-field__hint">{hint}</p>}
     </div>
   );
 });

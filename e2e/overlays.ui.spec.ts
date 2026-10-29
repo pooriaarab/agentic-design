@@ -38,7 +38,7 @@ for (const scheme of ["light", "dark"] as const) {
 
     await page.getByRole("button", { name: "Show error toast" }).click();
     await page.getByRole("button", { name: "Show toast", exact: true }).click();
-    await expect(page.locator(".ad-toast", { hasText: "Link copied" })).toBeVisible();
+    await expect(page.locator(".agd-toast", { hasText: "Link copied" })).toBeVisible();
     await settle(page);
     await page.screenshot({ path: testInfo.outputPath(`toast-${scheme}.png`) });
     expect(await violations(page)).toEqual([]);
@@ -68,7 +68,7 @@ test("the dialog confirms through a toast", async ({ page }) => {
   await open(page);
   await page.getByRole("button", { name: "Delete page…" }).click();
   await page.getByRole("button", { name: "Move to trash" }).click();
-  await expect(page.locator(".ad-toast", { hasText: "Page moved to the trash" })).toBeVisible();
+  await expect(page.locator(".agd-toast", { hasText: "Page moved to the trash" })).toBeVisible();
 });
 
 test("the menu works with the keyboard alone", async ({ page }) => {
@@ -151,15 +151,15 @@ test("toasts are announced, tell their tone in words, and close on time or stay 
   await open(page);
   await page.getByRole("button", { name: "Show toast", exact: true }).click();
   await page.getByRole("button", { name: "Show error toast" }).click();
-  const info = page.locator(".ad-toast", { hasText: "Link copied" });
-  const error = page.locator(".ad-toast", { hasText: "We couldn't save your changes" });
+  const info = page.locator(".agd-toast", { hasText: "Link copied" });
+  const error = page.locator(".agd-toast", { hasText: "We couldn't save your changes" });
   await expect(info).toBeVisible();
   await expect(error).toBeVisible();
 
   // An error is announced at once. Other tones wait their turn.
   await expect(page.locator('[role="status"][aria-live="assertive"]')).toContainText("Error: We couldn't save your changes");
   await expect(page.locator('[role="status"][aria-live="polite"]')).toContainText("Notice: Link copied");
-  await expect(error.locator(".ad-sr-only")).toHaveText("Error: ");
+  await expect(error.locator(".agd-sr-only")).toHaveText("Error: ");
 
   await page.clock.fastForward(9000);
   await expect(info).toBeHidden();
@@ -171,22 +171,22 @@ test("toasts are announced, tell their tone in words, and close on time or stay 
 test("F8 moves focus to the notifications and the focus is visible", async ({ page }) => {
   await open(page);
   await page.getByRole("button", { name: "Show toast", exact: true }).click();
-  await expect(page.locator(".ad-toast", { hasText: "Link copied" })).toBeVisible();
+  await expect(page.locator(".agd-toast", { hasText: "Link copied" })).toBeVisible();
   await page.keyboard.press("F8");
-  const viewport = page.locator(".ad-toast-viewport");
+  const viewport = page.locator(".agd-toast-viewport");
   await expect(viewport).toBeFocused();
   expect(await viewport.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe("solid");
   await page.keyboard.press("Tab");
-  expect(await page.evaluate(() => !!document.activeElement?.closest(".ad-toast"))).toBe(true);
+  expect(await page.evaluate(() => !!document.activeElement?.closest(".agd-toast"))).toBe(true);
 });
 
 test("a toast with an unknown tone is treated as an error and stays until dismissed", async ({ page }) => {
   await page.clock.install();
   await open(page);
   await page.getByRole("button", { name: "Show odd-tone toast" }).click();
-  const toast = page.locator(".ad-toast", { hasText: "Something odd happened" });
+  const toast = page.locator(".agd-toast", { hasText: "Something odd happened" });
   await expect(toast).toBeVisible();
-  await expect(toast.locator(".ad-sr-only")).toHaveText("Error: ");
+  await expect(toast.locator(".agd-sr-only")).toHaveText("Error: ");
   await page.clock.fastForward(9000);
   await expect(toast).toBeVisible();
 });
@@ -195,8 +195,8 @@ test("a toast whose tone is an inherited object key is treated as an error", asy
   await page.clock.install();
   await open(page);
   await page.getByRole("button", { name: "Show inherited-tone toast" }).click();
-  const toast = page.locator(".ad-toast", { hasText: "Another odd thing" });
-  await expect(toast.locator(".ad-sr-only")).toHaveText("Error: ");
+  const toast = page.locator(".agd-toast", { hasText: "Another odd thing" });
+  await expect(toast.locator(".agd-sr-only")).toHaveText("Error: ");
   await page.clock.fastForward(9000);
   await expect(toast).toBeVisible();
 });

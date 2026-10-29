@@ -6,7 +6,7 @@
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
-> Status: 0.3.3. The design tokens, the contrast check, and the fonts work.
+> Status: 0.4.0. The design tokens, the contrast check, and the fonts work.
 > The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the share dialog, and the editor demo work.
 > See [CHANGELOG.md](CHANGELOG.md) for what is in this release, its breaking changes, and its limits.
 
@@ -24,7 +24,7 @@ import "agentic-design/styles.css";
 
 To use the tokens alone, import `agentic-design/tokens.css` instead. It sets the custom properties
 and the `color-scheme` for each theme. It loads no fonts, no base rules, and sets no font on any
-element. Apply a font token in your own CSS, for example `font-family: var(--ad-font-family-sans)`.
+element. Apply a font token in your own CSS, for example `font-family: var(--agd-font-family-sans)`.
 The font tokens use the family names `Inter Variable` and `JetBrains Mono Variable`. Register your
 font files under those names, or set the two tokens yourself.
 
@@ -36,10 +36,10 @@ Use a token in your own CSS:
 
 ```css
 .card {
-  background: var(--ad-color-surface);
-  border: 1px solid var(--ad-color-border);
-  border-radius: var(--ad-radius-md);
-  padding: var(--ad-space-4);
+  background: var(--agd-color-surface);
+  border: 1px solid var(--agd-color-border);
+  border-radius: var(--agd-radius-md);
+  padding: var(--agd-space-4);
 }
 ```
 

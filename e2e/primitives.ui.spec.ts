@@ -143,7 +143,7 @@ test("targets are at least 24 by 24 CSS pixels", async ({ page }) => {
   await page.goto("/primitives");
   const small: string[] = [];
   // Checkbox and switch boxes are under 24px. Their label row is the target, so the row is measured.
-  for (const el of await page.locator("button, input:not([type=checkbox]):not([role=switch]), select, textarea, summary, a, .ad-toggle__row").all()) {
+  for (const el of await page.locator("button, input:not([type=checkbox]):not([role=switch]), select, textarea, summary, a, .agd-toggle__row").all()) {
     const box = await el.boundingBox();
     if (box && (box.width < 24 || box.height < 24)) small.push(await el.evaluate((n) => n.outerHTML.slice(0, 60)));
   }

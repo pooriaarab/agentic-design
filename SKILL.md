@@ -14,7 +14,7 @@ import "agentic-design/styles.css";
 ```
 
 ```css
-.panel { background: var(--ad-color-surface); color: var(--ad-color-text); }
+.panel { background: var(--agd-color-surface); color: var(--agd-color-text); }
 ```
 
 Set `data-theme="dark"` on `<html>` for dark. Leave it off to follow the system.

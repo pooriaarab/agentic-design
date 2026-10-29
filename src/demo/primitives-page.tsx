@@ -67,7 +67,7 @@ export function PrimitivesPage() {
           />
           <p id="name-extra" className="demo-muted demo-note">Use the name on your badge.</p>
           <Input label="Phone" aria-invalid="true" aria-describedby="phone-note" autoComplete="tel" />
-          <p id="phone-note" className="ad-field__error">Enter a phone number with its country code.</p>
+          <p id="phone-note" className="agd-field__error">Enter a phone number with its country code.</p>
           <Input label="Nickname" id="" />
           <Input label="Email" type="email" autoComplete="email" placeholder="you@example.org" />
           <Textarea label="Notes" hint="Optional." />

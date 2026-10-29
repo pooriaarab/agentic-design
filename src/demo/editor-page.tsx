@@ -76,7 +76,7 @@ function readSnapshot(hash: string): string[] | null {
 function liveParagraphs(root: HTMLElement | null): string[] {
   if (!root) return [];
   const copy = root.cloneNode(true) as HTMLElement;
-  copy.querySelectorAll(".ad-cursor").forEach((node) => node.remove());
+  copy.querySelectorAll(".agd-cursor").forEach((node) => node.remove());
   // A blank paragraph, such as one made by pressing Enter, carries nothing.
   // The editor inserts no-break spaces for edge and double spaces, and a pasted tab is a control. Both become spaces.
   return [...copy.querySelectorAll("p")]
@@ -256,7 +256,7 @@ function Editor() {
                 <CloseIcon /> Reject
               </Button>
             </div>
-            <p className="ad-field__hint">Agents suggest. Only people accept or reject.</p>
+            <p className="agd-field__hint">Agents suggest. Only people accept or reject.</p>
           </aside>
         )}
       </article>

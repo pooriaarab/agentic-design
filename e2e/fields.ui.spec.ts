@@ -149,7 +149,7 @@ test("Input types and Textarea keep what the user types", async ({ page }) => {
 test("a Select hides its label from sight but keeps it in the name", async ({ page }) => {
   await mount(page, h(Select, { label: "Role", hideLabel: true }, opts));
   await expect(page.getByRole("combobox", { name: "Role" })).toBeVisible();
-  await expect(page.locator("label")).toHaveClass(/ad-sr-only/);
+  await expect(page.locator("label")).toHaveClass(/agd-sr-only/);
   const box = await page.locator("label").boundingBox();
   expect(box === null || (box.width <= 1 && box.height <= 1)).toBe(true);
 });

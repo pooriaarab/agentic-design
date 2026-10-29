@@ -25,7 +25,7 @@ export function TokensPage() {
             <ul className="demo-swatches">
               {names.map((name) => (
                 <li key={name}>
-                  <span className="demo-swatch" style={{ background: `var(--ad-color-${name})` }} aria-hidden="true" />
+                  <span className="demo-swatch" style={{ background: `var(--agd-color-${name})` }} aria-hidden="true" />
                   <code>{name}</code>
                   <span className="demo-muted">{colors[name]}</span>
                 </li>
@@ -36,7 +36,7 @@ export function TokensPage() {
         <details className="demo-group">
           <summary>All {contrastPairs.length} text and background pairs in this theme</summary>
           <table className="demo-table">
-            <caption className="ad-sr-only">Contrast ratio of each color pair</caption>
+            <caption className="agd-sr-only">Contrast ratio of each color pair</caption>
             <thead>
               <tr>
                 <th scope="col">Foreground</th>
@@ -63,7 +63,7 @@ export function TokensPage() {
         <h2 id="type">Type</h2>
         <ul className="demo-list">
           {Object.entries(scale["font-size"]).map(([step, size]) => (
-            <li key={step} style={{ fontSize: `var(--ad-font-size-${step})` }}>
+            <li key={step} style={{ fontSize: `var(--agd-font-size-${step})` }}>
               Calm tools for people and agents <code className="demo-muted">{step} · {size}</code>
             </li>
           ))}
@@ -76,7 +76,7 @@ export function TokensPage() {
         <ul className="demo-row">
           {Object.entries(scale.space).map(([step, size]) => (
             <li key={step}>
-              <span className="demo-bar" style={{ width: `var(--ad-space-${step})` }} aria-hidden="true" />
+              <span className="demo-bar" style={{ width: `var(--agd-space-${step})` }} aria-hidden="true" />
               <code>{step}</code>
               <span className="demo-muted">{size}</span>
             </li>
@@ -85,13 +85,13 @@ export function TokensPage() {
         <ul className="demo-row">
           {Object.keys(scale.radius).map((step) => (
             <li key={step}>
-              <span className="demo-tile" style={{ borderRadius: `var(--ad-radius-${step})` }} aria-hidden="true" />
+              <span className="demo-tile" style={{ borderRadius: `var(--agd-radius-${step})` }} aria-hidden="true" />
               <code>radius-{step}</code>
             </li>
           ))}
           {Object.keys(shadows[theme]).map((level) => (
             <li key={level}>
-              <span className="demo-tile" style={{ boxShadow: `var(--ad-shadow-${level})`, borderColor: "transparent" }} aria-hidden="true" />
+              <span className="demo-tile" style={{ boxShadow: `var(--agd-shadow-${level})`, borderColor: "transparent" }} aria-hidden="true" />
               <code>shadow-{level}</code>
             </li>
           ))}

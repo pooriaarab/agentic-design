@@ -130,11 +130,11 @@ test("the toolbar has named groups, one tab stop, and an overflow menu in the sa
 
 test("the badge says it in words and keeps the facts when only the avatar fits", async ({ page }) => {
   await page.goto("/chrome");
-  const badge = page.locator(".ad-agent-badge:not(.ad-agent-badge--compact)").first();
+  const badge = page.locator(".agd-agent-badge:not(.agd-agent-badge--compact)").first();
   await expect(badge).toContainText("Made by an agent");
   await expect(badge).toContainText("Claude, for Ada Lovelace");
-  await expect(page.locator(".ad-agent-badge").nth(1)).toContainText("for unknown");
-  const compact = page.locator(".ad-agent-badge--compact").getByRole("img");
+  await expect(page.locator(".agd-agent-badge").nth(1)).toContainText("for unknown");
+  const compact = page.locator(".agd-agent-badge--compact").getByRole("img");
   // The hostile name fails the allow-list, so the badge shows the generic name.
   await expect(compact).toHaveAttribute("aria-label", "Made by an agent: Unnamed agent, acting for Ada Lovelace");
   const radius = (el: ReturnType<Page["locator"]>) => el.evaluate((n) => getComputedStyle(n).borderTopLeftRadius);
@@ -154,7 +154,7 @@ test("in forced colors the badge keeps its line and the title field keeps its fo
     return value;
   }, color);
   // The page border color is replaced by the system text color, so the badge keeps its line.
-  expect(await border(".ad-agent-badge:not(.ad-agent-badge--compact)")).toBe(await system("CanvasText"));
+  expect(await border(".agd-agent-badge:not(.agd-agent-badge--compact)")).toBe(await system("CanvasText"));
   await page.getByRole("button", { name: "Launch plan, rename" }).click();
   const outline = await page.getByRole("textbox", { name: "Document title" }).evaluate((n) => getComputedStyle(n).outlineStyle);
   expect(outline).not.toBe("none");
@@ -223,9 +223,9 @@ test("SidebarNav keeps plain anchors by default and accepts a host link componen
   const component = page.getByRole("navigation", { name: "Host component links" }).getByRole("link", { name: "Component link" });
   await expect(component).toHaveAttribute("data-host-link", "component");
   await expect(component).toHaveAttribute("aria-current", "page");
-  await expect(component).toHaveClass(/ad-sidebar-nav__link/);
+  await expect(component).toHaveClass(/agd-sidebar-nav__link/);
   const render = page.getByRole("navigation", { name: "Render prop links" }).getByRole("link", { name: "Render prop link" });
   await expect(render).toHaveAttribute("data-host-link", "render");
-  await expect(render).toHaveClass(/ad-sidebar-nav__link/);
+  await expect(render).toHaveClass(/agd-sidebar-nav__link/);
   expect(await violations(page, "#demo-links")).toEqual([]);
 });

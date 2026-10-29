@@ -45,9 +45,9 @@ test("the page says an agent edited it, and an agent cursor carries the word Age
   // Nothing is accepted yet, so the page must not claim an agent edit.
   await expect(page.getByText("Last edited by")).toHaveCount(0);
   await expect(page.getByText("Claude, an agent, has a suggestion waiting.")).toBeVisible();
-  await expect(page.locator(".ad-cursor--agent")).toContainText("Claude · Agent · for Ada Lovelace");
-  await expect(page.locator(".ad-cursor--person")).not.toContainText("Agent");
-  await expect(page.locator(".ad-stack__summary")).toHaveText("2 people, 1 agent");
+  await expect(page.locator(".agd-cursor--agent")).toContainText("Claude · Agent · for Ada Lovelace");
+  await expect(page.locator(".agd-cursor--person")).not.toContainText("Agent");
+  await expect(page.locator(".agd-stack__summary")).toHaveText("2 people, 1 agent");
 });
 
 test("a person accepts an agent suggestion, and the edit stays labeled", async ({ page }) => {
@@ -60,7 +60,7 @@ test("a person accepts an agent suggestion, and the edit stays labeled", async (
   // The card held focus and is gone, so focus must land in the text and not on the page body.
   await expect(page.getByRole("textbox", { name: "Page text" })).toBeFocused();
   await expect(page.getByRole("textbox", { name: "Page text" })).toContainText("report the result to the whole team");
-  await expect(page.locator(".ad-toast", { hasText: "labeled as made by Claude, an agent" })).toBeVisible();
+  await expect(page.locator(".agd-toast", { hasText: "labeled as made by Claude, an agent" })).toBeVisible();
   // The label is on the page itself, and the description follows from it.
   const label = page.locator(".demo-attribution");
   await expect(label).toContainText("Agent");
@@ -128,7 +128,7 @@ test("an email invites a person and an @handle invites an agent that shows as an
   await expect(agent).toContainText("for Ada Lovelace");
   await expect(agent.getByLabel("Access for @review-bot", { exact: true })).toHaveValue("commenter");
   // Inviting someone gives access. It does not put them here.
-  await expect(page.locator(".ad-stack__summary")).toHaveText("2 people, 1 agent");
+  await expect(page.locator(".agd-stack__summary")).toHaveText("2 people, 1 agent");
 });
 
 test("roles change, and access is removed with its own button that keeps focus on the page", async ({ page }) => {
@@ -207,7 +207,7 @@ test("Copy link copies the link and says so", async ({ page, context }) => {
   await page.getByRole("switch", { name: "Anyone with the link" }).check();
   const url = await page.getByRole("textbox", { name: "Link", exact: true }).inputValue();
   await page.getByRole("button", { name: "Copy link" }).click();
-  await expect(page.locator(".ad-toast", { hasText: "Link copied" })).toBeVisible();
+  await expect(page.locator(".agd-toast", { hasText: "Link copied" })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(url);
 });
 
@@ -218,8 +218,8 @@ test("when the copy fails, the page says it failed and never says Link copied", 
   await page.getByRole("tab", { name: "Link" }).click();
   await page.getByRole("switch", { name: "Anyone with the link" }).check();
   await page.getByRole("button", { name: "Copy link" }).click();
-  await expect(page.locator(".ad-toast", { hasText: "We couldn't copy the link" })).toBeVisible();
-  await expect(page.locator(".ad-toast", { hasText: "Link copied" })).toHaveCount(0);
+  await expect(page.locator(".agd-toast", { hasText: "We couldn't copy the link" })).toBeVisible();
+  await expect(page.locator(".agd-toast", { hasText: "Link copied" })).toHaveCount(0);
 });
 
 async function makeSnapshotUrl(page: Page): Promise<string> {
@@ -284,7 +284,7 @@ test("targets in the open share dialog are at least 24 by 24 CSS pixels", async 
     await page.getByRole("tab", { name: tab }).click();
     if (tab === "Link") await page.getByRole("switch", { name: "Anyone with the link" }).check();
     const small: string[] = [];
-    for (const el of await dialog(page).locator("button:visible, input:not([type=checkbox]):not([role=switch]), select, .ad-toggle__row, [role=tab]").all()) {
+    for (const el of await dialog(page).locator("button:visible, input:not([type=checkbox]):not([role=switch]), select, .agd-toggle__row, [role=tab]").all()) {
       const box = await el.boundingBox();
       if (box && (box.width < 24 || box.height < 24)) small.push(await el.evaluate((n) => n.outerHTML.slice(0, 70)));
     }
@@ -358,7 +358,7 @@ test("inviting an agent that is already in the list is refused", async ({ page }
   await page.getByLabel("Invite a person or an agent").fill("@claude");
   await page.getByRole("button", { name: "Invite", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("@claude already has access. Change their role in the list below.");
-  await expect(page.locator(".ad-stack__summary")).toHaveText("2 people, 1 agent");
+  await expect(page.locator(".agd-stack__summary")).toHaveText("2 people, 1 agent");
 });
 
 test("accepting a suggestion after the paragraph was edited changes nothing", async ({ page }) => {
@@ -368,7 +368,7 @@ test("accepting a suggestion after the paragraph was edited changes nothing", as
   await page.keyboard.press("End");
   await page.keyboard.type(" Edited by hand.");
   await page.getByRole("complementary", { name: "Suggestion from Claude" }).getByRole("button", { name: "Accept" }).click();
-  await expect(page.locator(".ad-toast", { hasText: "We didn't apply the suggestion" })).toBeVisible();
+  await expect(page.locator(".agd-toast", { hasText: "We didn't apply the suggestion" })).toBeVisible();
   await expect(text).toContainText("Measure sign-ups for two weeks. Edited by hand.");
   await expect(page.getByRole("complementary", { name: "Suggestion from Claude" })).toBeVisible();
 });
@@ -382,7 +382,7 @@ test("a paragraph the reader would refuse makes no snapshot link, and the page s
   await openShare(page);
   await page.getByRole("tab", { name: "Snapshot" }).click();
   await page.getByRole("button", { name: "Create snapshot link" }).click();
-  await expect(page.locator(".ad-toast", { hasText: "text a snapshot link can't carry" })).toBeVisible();
+  await expect(page.locator(".agd-toast", { hasText: "text a snapshot link can't carry" })).toBeVisible();
   await expect(page.getByLabel("Snapshot link")).toHaveCount(0);
 });
 
@@ -431,7 +431,7 @@ test("a blank paragraph does not stop a snapshot, and a page over the limit says
   await openShare(page);
   await page.getByRole("tab", { name: "Snapshot" }).click();
   await page.getByRole("button", { name: /snapshot link/ }).first().click();
-  await expect(page.locator(".ad-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
+  await expect(page.locator(".agd-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
 });
 
 test("removing an agent's access removes its presence, its cursor, and its suggestion", async ({ page }) => {
@@ -439,8 +439,8 @@ test("removing an agent's access removes its presence, its cursor, and its sugge
   await openShare(page);
   await page.getByRole("button", { name: "Remove access for Claude" }).click();
   await page.keyboard.press("Escape");
-  await expect(page.locator(".ad-stack__summary")).toHaveText("2 people");
-  await expect(page.locator(".ad-cursor--agent")).toHaveCount(0);
+  await expect(page.locator(".agd-stack__summary")).toHaveText("2 people");
+  await expect(page.locator(".agd-cursor--agent")).toHaveCount(0);
   await expect(page.getByRole("complementary", { name: "Suggestion from Claude" })).toHaveCount(0);
 });
 
@@ -465,7 +465,7 @@ test("a very large page says it is too long and does not fail silently", async (
   await openShare(page);
   await page.getByRole("tab", { name: "Snapshot" }).click();
   await page.getByRole("button", { name: "Create snapshot link" }).click();
-  await expect(page.locator(".ad-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
+  await expect(page.locator(".agd-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -486,11 +486,11 @@ test("deleting an agent cursor with Backspace, then removing the agent's access,
     selection.addRange(range);
   });
   await page.keyboard.press("Backspace");
-  await expect(page.locator(".ad-cursor--agent")).toHaveCount(0);
+  await expect(page.locator(".agd-cursor--agent")).toHaveCount(0);
   await openShare(page);
   await page.getByRole("button", { name: "Remove access for Claude" }).click();
   await page.keyboard.press("Escape");
-  await expect(page.locator(".ad-stack__summary")).toHaveText("2 people");
+  await expect(page.locator(".agd-stack__summary")).toHaveText("2 people");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Launch plan");
   expect(errors).toEqual([]);
 });

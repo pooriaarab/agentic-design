@@ -17,16 +17,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     <button
       ref={ref}
       type={type}
-      className={cx("ad-button", `ad-button--${variant}`, `ad-button--${size}`, className)}
+      className={cx("agd-button", `agd-button--${variant}`, `agd-button--${size}`, className)}
       onClick={(event) => (loading ? event.preventDefault() : onClick?.(event))}
       {...rest}
       aria-busy={loading || undefined}
       aria-disabled={loading || rest["aria-disabled"]}
     >
-      {loading && <span className="ad-spinner" aria-hidden="true" />}
+      {loading && <span className="agd-spinner" aria-hidden="true" />}
       {children}
       {/* aria-busy is not announced on a button, so the loading state is also in the name. */}
-      {loading && <span className="ad-sr-only">, loading</span>}
+      {loading && <span className="agd-sr-only">, loading</span>}
     </button>
   );
 });
@@ -52,7 +52,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
 ) {
   if (label.trim() === "") throw new Error("IconButton needs a non-empty label.");
   const button = (
-    <IconButtonBody ref={ref} variant={variant} className={cx("ad-icon-button", className)} {...rest} aria-label={rest.loading ? `${label}, loading` : label}>
+    <IconButtonBody ref={ref} variant={variant} className={cx("agd-icon-button", className)} {...rest} aria-label={rest.loading ? `${label}, loading` : label}>
       {rest.loading ? null : icon}
     </IconButtonBody>
   );

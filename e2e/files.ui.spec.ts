@@ -10,7 +10,7 @@ const violations = async (page: Page, selector?: string) => {
 const shot = (page: Page, selector: string, name: string, scheme: string, outputPath: (n: string) => string) =>
   page.locator(selector).screenshot({ path: process.env.SCREENSHOTS ? `docs/screenshots/${name}-${scheme}.png` : outputPath(`${name}-${scheme}.png`), animations: "disabled" });
 
-const names = (page: Page) => page.locator(".ad-filetable tbody .ad-file-row__name").allTextContents();
+const names = (page: Page) => page.locator(".agd-filetable tbody .agd-file-row__name").allTextContents();
 
 for (const scheme of ["light", "dark"] as const) {
   test(`the file table, grid, loading, and empty states have no axe violations in ${scheme}`, async ({ page }, testInfo) => {
@@ -74,13 +74,13 @@ test("column headers sort by keyboard, name order is natural, and a bad date sor
 
 test("an agent owner shows as an agent in the table and the grid, and the grid sorts with a select", async ({ page }) => {
   await page.goto("/chrome");
-  await expect(page.locator(".ad-filetable tbody tr", { hasText: "Meeting notes" })).toContainText("Agent");
+  await expect(page.locator(".agd-filetable tbody tr", { hasText: "Meeting notes" })).toContainText("Agent");
   await page.getByRole("button", { name: "Show grid" }).click();
-  const card = page.locator(".ad-filegrid__item", { hasText: "Meeting notes" });
+  const card = page.locator(".agd-filegrid__item", { hasText: "Meeting notes" });
   await expect(card).toContainText("Agent");
   await expect(card).toContainText("for Ada Lovelace");
   await page.getByRole("combobox", { name: "Sort by" }).selectOption("modified:descending");
-  await expect(page.locator(".ad-filegrid__item .ad-file-row__name").first()).toHaveText("Launch plan");
+  await expect(page.locator(".agd-filegrid__item .agd-file-row__name").first()).toHaveText("Launch plan");
   await expect(page.locator("#demo-files").getByRole("status")).toHaveText("Sorted by modified, descending");
 });
 
@@ -89,7 +89,7 @@ test("placeholders hold still when the user asks for reduced motion", async ({ p
   await page.getByRole("button", { name: "Show loading" }).click();
   const table = page.getByRole("table", { name: "Recent files" });
   await expect(table).toHaveAttribute("aria-busy", "true");
-  const duration = () => page.locator(".ad-skeleton").first().evaluate((n) => getComputedStyle(n).animationDuration);
+  const duration = () => page.locator(".agd-skeleton").first().evaluate((n) => getComputedStyle(n).animationDuration);
   expect(await duration()).toBe("1.4s");
   await page.emulateMedia({ reducedMotion: "reduce" });
   expect(Number.parseFloat(await duration())).toBeLessThan(0.001);
@@ -99,7 +99,7 @@ test("in forced colors a placeholder is a system color, not the page color", asy
   await page.emulateMedia({ forcedColors: "active" });
   await page.goto("/chrome");
   await page.getByRole("button", { name: "Show loading" }).click();
-  const fill = page.locator(".ad-skeleton").first().evaluate((n) => getComputedStyle(n).backgroundColor);
+  const fill = page.locator(".agd-skeleton").first().evaluate((n) => getComputedStyle(n).backgroundColor);
   const canvas = page.evaluate(() => {
     const probe = document.createElement("div");
     probe.style.backgroundColor = "Canvas";
@@ -116,8 +116,8 @@ for (const dir of ["ltr", "rtl"] as const) {
     await page.setViewportSize({ width: 1024, height: 800 });
     await page.goto("/chrome");
     await page.evaluate((d) => document.documentElement.setAttribute("dir", d), dir);
-    const cell = page.locator(".ad-filetable tbody tr", { hasText: "Meeting notes" }).locator("td").nth(1);
-    const [box, name, meta] = await Promise.all([cell.boundingBox(), cell.locator(".ad-chip__name").boundingBox(), cell.locator(".ad-chip__meta").boundingBox()]);
+    const cell = page.locator(".agd-filetable tbody tr", { hasText: "Meeting notes" }).locator("td").nth(1);
+    const [box, name, meta] = await Promise.all([cell.boundingBox(), cell.locator(".agd-chip__name").boundingBox(), cell.locator(".agd-chip__meta").boundingBox()]);
     expect(name?.width ?? 0).toBeGreaterThan(20);
     // Measure what is drawn. The text may wrap, and it may not leave the cell.
     for (const part of [name, meta]) {
@@ -138,10 +138,10 @@ test("a very long file name is cut by an ellipsis, and the page does not scroll 
   await page.goto("/chrome");
   await expect(page.getByRole("table", { name: "Recent files" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
-  const link = page.locator(".ad-filetable .ad-file-row__name", { hasText: /^Quarterly planning/ });
+  const link = page.locator(".agd-filetable .agd-file-row__name", { hasText: /^Quarterly planning/ });
   expect(await link.evaluate((n) => n.scrollWidth > n.clientWidth)).toBe(true);
   // Every cell of a row has the height of the row, so the row line is whole.
-  const heights = await page.locator(".ad-filetable tbody tr").first().locator("td").evaluateAll((cells) => cells.map((c) => Math.round(c.getBoundingClientRect().height)));
+  const heights = await page.locator(".agd-filetable tbody tr").first().locator("td").evaluateAll((cells) => cells.map((c) => Math.round(c.getBoundingClientRect().height)));
   expect(new Set(heights).size).toBe(1);
 });
 
@@ -178,7 +178,7 @@ test("in a right-to-left page the table starts on the right and passes axe", asy
   const [name, modified] = [await page.getByRole("columnheader", { name: "Name" }).boundingBox(), await page.getByRole("columnheader", { name: "Modified" }).boundingBox()];
   expect((name?.x ?? 0) > (modified?.x ?? 0)).toBe(true);
   // A date sits under its own header, and a row has one full line, so cells do not drift.
-  const row = page.locator(".ad-filetable tbody tr", { hasText: "Launch plan" });
+  const row = page.locator(".agd-filetable tbody tr", { hasText: "Launch plan" });
   const date = await row.locator("td").nth(2).boundingBox();
   expect(Math.abs((date?.x ?? 0) - (modified?.x ?? 0))).toBeLessThan(1);
   expect(Math.abs((date?.width ?? 0) - (modified?.width ?? 0))).toBeLessThan(1);

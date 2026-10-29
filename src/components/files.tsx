@@ -6,9 +6,9 @@ import { usableText } from "./safe-name.js";
 
 export function EmptyState({ title, description, action }: { title: string; description?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="ad-empty">
-      <h2 className="ad-empty__title">{title}</h2>
-      {description && <p className="ad-empty__description">{description}</p>}
+    <div className="agd-empty">
+      <h2 className="agd-empty__title">{title}</h2>
+      {description && <p className="agd-empty__description">{description}</p>}
       {action}
     </div>
   );
@@ -91,8 +91,8 @@ const ItemName = ({ item }: { item: FileItem }) => {
   const name = shownName(item);
   return (
     <>
-      <span className="ad-file-row__icon" aria-hidden="true">{item.kind === "folder" ? <FolderIcon /> : <FileIcon />}</span>
-      <a className="ad-file-row__name" href={item.href} title={name}>{name}</a>
+      <span className="agd-file-row__icon" aria-hidden="true">{item.kind === "folder" ? <FolderIcon /> : <FileIcon />}</span>
+      <a className="agd-file-row__name" href={item.href} title={name}>{name}</a>
     </>
   );
 };
@@ -104,7 +104,7 @@ const ItemName = ({ item }: { item: FileItem }) => {
  * placeholders and says so to a screen reader. Pass `FileRow` children for the plain list.
  */
 export function FileList(props: { label: string; children: ReactNode } | FileListItemsProps) {
-  if (!("items" in props)) return <ul className="ad-files" aria-label={props.label}>{props.children}</ul>;
+  if (!("items" in props)) return <ul className="agd-files" aria-label={props.label}>{props.children}</ul>;
   return <FileItems {...props} />;
 }
 
@@ -133,9 +133,9 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
   };
   const toggle = (key: FileSortKey) => choose({ key, direction: sort.key === key && sort.direction === "ascending" ? "descending" : "ascending" });
   // One status element above every view, so a screen reader keeps hearing it as the view changes.
-  const status = <p className="ad-sr-only" role="status">{loading ? "Loading files" : said}</p>;
+  const status = <p className="agd-sr-only" role="status">{loading ? "Loading files" : said}</p>;
   const body = !loading && rows.length === 0 ? (empty ?? <EmptyState title="No files" description="Nothing is here yet." />) : view === "grid" ? (
-      <div className="ad-filegrid-wrap">
+      <div className="agd-filegrid-wrap">
         <Select
           label="Sort by"
           value={`${sort.key}:${sort.direction}`}
@@ -149,52 +149,52 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
             <option key={`${c.key}:descending`} value={`${c.key}:descending`}>{c.label}, {c.key === "modified" ? "newest first" : "Z to A"}</option>,
           ])}
         </Select>
-        <ul className="ad-filegrid" aria-label={label} aria-busy={loading || undefined}>
+        <ul className="agd-filegrid" aria-label={label} aria-busy={loading || undefined}>
           {loading
-            ? [0, 1, 2, 3].map((i) => <li key={i} className="ad-filegrid__item ad-skeleton" aria-hidden="true" />)
+            ? [0, 1, 2, 3].map((i) => <li key={i} className="agd-filegrid__item agd-skeleton" aria-hidden="true" />)
             : rows.map((item) => (
-                <li key={item.id} className="ad-filegrid__item">
-                  <span className="ad-filegrid__head"><ItemName item={item} /></span>
+                <li key={item.id} className="agd-filegrid__item">
+                  <span className="agd-filegrid__head"><ItemName item={item} /></span>
                   <PresenceChip entry={item.owner} />
-                  <span className="ad-file-row__time">{formatted(item.modified, locale)}</span>
-                  {item.actions && <span className="ad-file-row__actions">{item.actions}</span>}
+                  <span className="agd-file-row__time">{formatted(item.modified, locale)}</span>
+                  {item.actions && <span className="agd-file-row__actions">{item.actions}</span>}
                 </li>
               ))}
         </ul>
       </div>
   ) : (
-    <div className="ad-filetable-wrap">
-      <table className="ad-filetable" role="table" aria-busy={loading || undefined}>
-        <caption className="ad-sr-only">{label}</caption>
+    <div className="agd-filetable-wrap">
+      <table className="agd-filetable" role="table" aria-busy={loading || undefined}>
+        <caption className="agd-sr-only">{label}</caption>
         <thead role="rowgroup">
           <tr role="row">
             {columns.map((c) => {
               const active = sort.key === c.key;
               return (
                 <th key={c.key} role="columnheader" scope="col" aria-sort={active ? sort.direction : undefined}>
-                  <button type="button" className="ad-filetable__sort" onClick={() => toggle(c.key)}>
+                  <button type="button" className="agd-filetable__sort" onClick={() => toggle(c.key)}>
                     {c.label}
-                    <span className="ad-filetable__arrow" aria-hidden="true">{active ? (sort.direction === "ascending" ? "\u2191" : "\u2193") : ""}</span>
+                    <span className="agd-filetable__arrow" aria-hidden="true">{active ? (sort.direction === "ascending" ? "\u2191" : "\u2193") : ""}</span>
                   </button>
                 </th>
               );
             })}
-            <th role="columnheader" scope="col"><span className="ad-sr-only">Actions</span></th>
+            <th role="columnheader" scope="col"><span className="agd-sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody role="rowgroup">
           {loading
             ? [0, 1, 2, 3].map((i) => (
                 <tr key={i} role="row" aria-hidden="true">
-                  {[0, 1, 2, 3].map((j) => <td key={j} role="cell"><span className="ad-skeleton" /></td>)}
+                  {[0, 1, 2, 3].map((j) => <td key={j} role="cell"><span className="agd-skeleton" /></td>)}
                 </tr>
               ))
             : rows.map((item) => (
                 <tr key={item.id} role="row">
-                  <td role="cell"><span className="ad-filetable__name"><ItemName item={item} /></span></td>
+                  <td role="cell"><span className="agd-filetable__name"><ItemName item={item} /></span></td>
                   <td role="cell"><PresenceChip entry={item.owner} /></td>
-                  <td role="cell"><span className="ad-file-row__time">{formatted(item.modified, locale)}</span></td>
-                  <td role="cell"><span className="ad-file-row__actions">{item.actions}</span></td>
+                  <td role="cell"><span className="agd-file-row__time">{formatted(item.modified, locale)}</span></td>
+                  <td role="cell"><span className="agd-file-row__actions">{item.actions}</span></td>
                 </tr>
               ))}
         </tbody>
@@ -220,20 +220,20 @@ export function FileRow({ name, href, kind = "file", modified, editedBy, actions
   const shownName = usableText(name, MAX_FILE_NAME) ?? "Untitled";
   const valid = modified instanceof Date && !Number.isNaN(modified.getTime());
   return (
-    <li className="ad-file-row">
-      <span className="ad-file-row__icon" aria-hidden="true">{kind === "folder" ? <FolderIcon /> : <FileIcon />}</span>
-      <a className="ad-file-row__name" href={href} title={shownName}>{shownName}</a>
-      <span className="ad-file-row__meta">
+    <li className="agd-file-row">
+      <span className="agd-file-row__icon" aria-hidden="true">{kind === "folder" ? <FolderIcon /> : <FileIcon />}</span>
+      <a className="agd-file-row__name" href={href} title={shownName}>{shownName}</a>
+      <span className="agd-file-row__meta">
         Edited by <PresenceChip entry={editedBy} />
       </span>
       {valid ? (
-        <time className="ad-file-row__time" dateTime={modified.toISOString()}>
+        <time className="agd-file-row__time" dateTime={modified.toISOString()}>
           {modified.toLocaleDateString("en", { day: "numeric", month: "short", year: "numeric" })}
         </time>
       ) : (
-        <span className="ad-file-row__time">Date unknown</span>
+        <span className="agd-file-row__time">Date unknown</span>
       )}
-      {actions && <span className="ad-file-row__actions">{actions}</span>}
+      {actions && <span className="agd-file-row__actions">{actions}</span>}
     </li>
   );
 }

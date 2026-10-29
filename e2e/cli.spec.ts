@@ -46,9 +46,9 @@ test("bad input exits with a usage code", () => {
 
 test("the base styles keep the focus ring, the skip link, hidden text, and reduced motion", () => {
   const css = readFileSync("dist/styles.css", "utf8");
-  expect(css).toMatch(/:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--ad-color-focus\)/);
-  expect(css).toMatch(/\.ad-skip-link:focus\s*\{\s*transform:\s*none/);
-  expect(css).toMatch(/\.ad-sr-only\s*\{[^}]*clip:/);
+  expect(css).toMatch(/:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--agd-color-focus\)/);
+  expect(css).toMatch(/\.agd-skip-link:focus\s*\{\s*transform:\s*none/);
+  expect(css).toMatch(/\.agd-sr-only\s*\{[^}]*clip:/);
   expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*\*,[^}]*transition-duration:\s*0\.01ms !important/);
   // The same rules run in a real browser in the next PR: focus ring, skip link, and reduced motion.
 });
@@ -62,7 +62,7 @@ test("the stylesheet only loads fonts that ship in the package", () => {
 });
 
 test("the check script exits 1 and names the pair when a pair fails", () => {
-  const dir = mkdtempSync(join(tmpdir(), "ad-contrast-"));
+  const dir = mkdtempSync(join(tmpdir(), "agd-contrast-"));
   const { themes } = JSON.parse(cli("tokens", "--format", "json").stdout);
   const run = (file: string) => spawnSync("node", ["scripts/check-contrast.mjs", file], { encoding: "utf8" });
 
@@ -79,7 +79,7 @@ test("the check script exits 1 and names the pair when a pair fails", () => {
 });
 
 test("the check script refuses input it cannot check, instead of passing", () => {
-  const dir = mkdtempSync(join(tmpdir(), "ad-contrast-"));
+  const dir = mkdtempSync(join(tmpdir(), "agd-contrast-"));
   const { themes } = JSON.parse(cli("tokens", "--format", "json").stdout);
   const run = (value: unknown) => {
     const file = join(dir, `${Math.random()}.json`);
@@ -117,7 +117,7 @@ test("the shipped tokens cannot be changed at run time", () => {
 test("scales sit on :root alone, so reduced motion reaches every themed region", () => {
   const css = cli("tokens").stdout;
   const light = css.slice(css.indexOf(':root,\n[data-theme="light"]'), css.indexOf("\n}\n", css.indexOf(':root,\n[data-theme="light"]')));
-  expect(light).toContain("--ad-color-bg");
-  expect(light).not.toContain("--ad-duration");
-  expect(css).toMatch(/prefers-reduced-motion: reduce\) \{\n  :root \{\n    --ad-duration-fast: 0.01ms;\n    --ad-duration-base: 0.01ms;\n    --ad-duration-slow: 0.01ms/);
+  expect(light).toContain("--agd-color-bg");
+  expect(light).not.toContain("--agd-duration");
+  expect(css).toMatch(/prefers-reduced-motion: reduce\) \{\n  :root \{\n    --agd-duration-fast: 0.01ms;\n    --agd-duration-base: 0.01ms;\n    --agd-duration-slow: 0.01ms/);
 });

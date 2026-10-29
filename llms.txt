@@ -4,7 +4,7 @@ Accessible design tokens and UI primitives for calm, minimal apps.
 
 Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,dark-mode.
 
-- CSS: import "agentic-design/styles.css", then use var(--ad-color-bg) and friends.
+- CSS: import "agentic-design/styles.css", then use var(--agd-color-bg) and friends.
 - Library: import { themes, scale } from "agentic-design/tokens". React parts: import { Button, ShareDialog, PresenceChip } from "agentic-design/react".
 - App chrome (React): AppShell (title slot, side panel with panelLabel), DocumentTitle (renames in place), AgentBadge (marks an agent with "Made by an agent" by default, a square avatar, and who it acts for; a custom label should say an agent made the item), Toolbar with ToolbarGroup and ToolbarOverflow.
 - Files (React): FileList with items gives a sortable table or grid (view "table" or "grid", sort by name, owner, or modified); FileRow children give a plain list.
