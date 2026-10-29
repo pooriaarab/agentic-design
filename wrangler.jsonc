@@ -1,6 +1,10 @@
 {
-  // Run `npm run build`, then `npx wrangler dev`. The Worker serves /health and /api/v1/tokens.
+  // The demo site is static and served from site. A request with no file
+  // there reaches the Worker, which serves /health and /api/v1/tokens.
   "name": "agentic-design",
   "main": "src/worker.ts",
-  "compatibility_date": "2026-01-01"
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    "directory": "./site"
+  }
 }

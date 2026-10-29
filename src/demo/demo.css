@@ -1,0 +1,78 @@
+/* Layout for the demo pages only. Not part of the package stylesheet. */
+.demo-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ad-space-6);
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--ad-space-12) var(--ad-space-6) var(--ad-space-6);
+}
+.demo-main {
+  display: grid;
+  gap: var(--ad-space-12);
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--ad-space-6) var(--ad-space-6) var(--ad-space-24);
+}
+.demo-main h2 { margin-bottom: var(--ad-space-4); }
+.demo-main h3 {
+  margin-bottom: var(--ad-space-3);
+  font-size: var(--ad-font-size-sm);
+  color: var(--ad-color-text-muted);
+}
+.demo-header p { margin-top: var(--ad-space-1); }
+.demo-muted { color: var(--ad-color-text-muted); }
+.demo-group { margin-bottom: var(--ad-space-6); }
+.demo-field { display: grid; gap: var(--ad-space-1); font-size: var(--ad-font-size-xs); }
+.demo-field select {
+  min-height: var(--ad-size-control);
+  padding: 0 var(--ad-space-3);
+  border: 1px solid var(--ad-color-border-strong);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-color-surface);
+  color: var(--ad-color-text);
+  font: inherit;
+}
+
+ul.demo-swatches, ul.demo-list, ul.demo-row { margin: 0; padding: 0; list-style: none; }
+.demo-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--ad-space-4);
+}
+.demo-swatches li { display: grid; gap: var(--ad-space-1); font-size: var(--ad-font-size-xs); }
+.demo-swatch {
+  display: block;
+  height: var(--ad-space-12);
+  border: 1px solid var(--ad-color-border);
+  border-radius: var(--ad-radius-md);
+}
+.demo-list { display: grid; gap: var(--ad-space-3); }
+.demo-list code { font-size: var(--ad-font-size-xs); margin-inline-start: var(--ad-space-2); }
+.demo-mono { margin-top: var(--ad-space-4); font-family: var(--ad-font-family-mono); }
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ad-space-6);
+  margin-bottom: var(--ad-space-6);
+  font-size: var(--ad-font-size-xs);
+}
+.demo-row li { display: grid; gap: var(--ad-space-1); justify-items: start; }
+.demo-bar { display: block; height: var(--ad-space-2); background: var(--ad-color-accent); border-radius: var(--ad-radius-sm); }
+.demo-tile {
+  display: block;
+  width: var(--ad-space-12);
+  height: var(--ad-space-12);
+  border: 1px solid var(--ad-color-border-strong);
+  background: var(--ad-color-surface-raised);
+}
+
+summary { cursor: pointer; padding: var(--ad-space-2) 0; }
+.demo-table { width: 100%; border-collapse: collapse; font-size: var(--ad-font-size-xs); }
+.demo-table th, .demo-table td {
+  padding: var(--ad-space-2) var(--ad-space-3);
+  border-bottom: 1px solid var(--ad-color-border);
+  text-align: start;
+}
