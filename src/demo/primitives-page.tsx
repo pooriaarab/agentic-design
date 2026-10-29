@@ -109,7 +109,7 @@ export function PrimitivesPage() {
           <Menu
             trigger={<IconButton label="More actions" icon={<MoreIcon />} />}
             items={[
-              { label: "Rename", shortcut: "F2", onSelect: () => setLastAction("rename") },
+              { label: "Rename…", shortcut: "F2", onSelect: () => setRenameOpen(true) },
               { label: "Duplicate", onSelect: () => setLastAction("duplicate") },
               "separator",
               { label: "Delete", danger: true, onSelect: () => setLastAction("delete") },
