@@ -469,6 +469,61 @@
   .ad-file-row__actions { grid-area: actions; }
 }
 
+/* File table and grid ------------------------------------------------ */
+.ad-filetable { width: 100%; border-collapse: collapse; border-top: 1px solid var(--ad-color-border); }
+.ad-filetable th, .ad-filetable td { padding: var(--ad-space-1) var(--ad-space-3); border-bottom: 1px solid var(--ad-color-border); text-align: start; vertical-align: middle; }
+.ad-filetable th { color: var(--ad-color-text-muted); font-size: var(--ad-font-size-xs); font-weight: var(--ad-font-weight-semibold); }
+.ad-filetable tbody tr { min-height: 3rem; }
+.ad-filetable tbody tr:hover { background: var(--ad-color-surface-sunken); }
+.ad-filetable__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ad-space-1);
+  min-height: var(--ad-control-h);
+  padding: 0 var(--ad-space-2);
+  border: 0;
+  border-radius: var(--ad-radius-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.ad-filetable__sort:hover { background: var(--ad-color-surface-hover); }
+.ad-filetable__arrow { display: inline-block; min-width: 1ch; }
+.ad-filetable__name { display: flex; align-items: center; gap: var(--ad-space-3); min-height: 3rem; border-bottom: 0; }
+.ad-filetable td:has(.ad-skeleton) { padding-block: var(--ad-space-3); }
+.ad-filegrid-wrap { display: grid; gap: var(--ad-space-4); }
+.ad-filegrid-wrap > .ad-field { max-width: 16rem; }
+.ad-filegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: var(--ad-space-4); margin: 0; padding: 0; list-style: none; }
+.ad-filegrid__item {
+  display: grid;
+  align-content: start;
+  gap: var(--ad-space-2);
+  min-height: 7rem;
+  padding: var(--ad-space-3);
+  border: 1px solid var(--ad-color-border);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-color-surface);
+}
+.ad-filegrid__head { display: flex; align-items: center; gap: var(--ad-space-2); min-width: 0; }
+.ad-filegrid__item .ad-file-row__actions { justify-self: end; }
+/* A placeholder is a plain block. The pulse stops when the user asks for reduced motion. */
+.ad-skeleton { display: block; height: 1rem; border-radius: var(--ad-radius-sm); background: var(--ad-color-surface-hover); animation: ad-pulse 1.4s ease-in-out infinite; }
+.ad-filegrid__item.ad-skeleton { height: auto; min-height: 7rem; border: 1px solid var(--ad-color-border); border-radius: var(--ad-radius-md); }
+@keyframes ad-pulse { 50% { opacity: 0.5; } }
+@media (max-width: 47.99rem) {
+  .ad-filetable, .ad-filetable tbody, .ad-filetable tr { display: block; }
+  .ad-filetable thead { display: block; }
+  .ad-filetable thead tr { display: flex; flex-wrap: wrap; }
+  .ad-filetable thead th:last-child { display: none; }
+  .ad-filetable tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name actions" "owner owner" "time time"; padding-block: var(--ad-space-1); border-bottom: 1px solid var(--ad-color-border); }
+  .ad-filetable tbody td { padding: var(--ad-space-1) var(--ad-space-3); border-bottom: 0; }
+  .ad-filetable tbody td:nth-child(1) { grid-area: name; }
+  .ad-filetable tbody td:nth-child(2) { grid-area: owner; }
+  .ad-filetable tbody td:nth-child(3) { grid-area: time; }
+  .ad-filetable tbody td:nth-child(4) { grid-area: actions; }
+}
+
 /* Presence ----------------------------------------------------------- */
 .ad-avatar {
   display: inline-grid;
@@ -570,6 +625,8 @@
   .ad-button[aria-busy="true"] { border-style: dashed; }
   .ad-button[aria-pressed="true"] { background: Highlight; color: HighlightText; border-color: Highlight; }
   .ad-tabs__trigger[data-state="active"]::after { background: Highlight; }
+  .ad-skeleton { background: GrayText; }
+  .ad-filegrid__item { border-color: CanvasText; }
   .ad-agent-badge, .ad-title__button:hover, .ad-title__input { border-color: CanvasText; }
   .ad-agent-badge--compact { border: 0; }
   .ad-menu__item[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }

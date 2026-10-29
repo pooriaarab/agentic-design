@@ -13,7 +13,7 @@ export type { DocumentTitleProps } from "./document-title.js";
 export { AgentBadge } from "./agent-badge.js";
 export type { AgentBadgeProps } from "./agent-badge.js";
 export { EmptyState, FileList, FileRow } from "./files.js";
-export type { FileRowProps } from "./files.js";
+export type { FileItem, FileListItemsProps, FileRowProps, FileSort, FileSortKey } from "./files.js";
 export { Avatar, PresenceChip, PresenceCursor, PresenceStack } from "./presence.js";
 export type { PresenceEntry, PresenceKind, PresenceStatus } from "./presence.js";
 export { usableName, usableText, usableProse, MAX_NAME_LENGTH } from "./safe-name.js";
