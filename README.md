@@ -127,6 +127,7 @@ themes.dark.accent; // "#8EA4FF"
 ```tsx
 const [view, setView] = useState<DataView>(emptyDataView);
 const rows = useMemo(() => applyDataView(all, view, fields), [all, view]);
+const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all, view]);
 <DataTable
   label="Tasks"
   rows={rows}
@@ -136,7 +137,7 @@ const rows = useMemo(() => applyDataView(all, view, fields), [all, view]);
   toolbar={
     <DataTableToolbar end={<DisplayPopover fields={fields} columns={columnList} view={view} onViewChange={setView} defaults={emptyDataView} />}>
       <TableSearch value={view.query} onChange={(query) => setView({ ...view, query })} />
-      <FilterChips chips={chips} onRemove={removeFilter} addItems={filterMenuItems(all, fields, view, setView)} />
+      <FilterChips chips={chips} onRemove={removeFilter} addItems={addItems}
     </DataTableToolbar>
   }
 />
