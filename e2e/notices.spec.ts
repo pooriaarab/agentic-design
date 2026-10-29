@@ -14,7 +14,12 @@ test("the build lists a license for every package built into dist/react.js", () 
 test("each listed package has its license text", () => {
   const sections = notices.split(/^## /m).slice(1);
   expect(sections.length).toBeGreaterThanOrEqual(bundled.length);
-  for (const section of sections) expect(section, section.split("\n")[0]).toMatch(/Permission is hereby granted|Permission to use, copy, modify|Apache License|Redistribution/);
+  for (const section of sections) {
+    const title = section.split("\n")[0];
+    // A real license has its disclaimer. A one-line promise to grant permission is not a license.
+    expect(section, title).toMatch(/THE SOFTWARE IS PROVIDED "AS IS"|PROVIDED "AS IS"|WITHOUT WARRANTIES OR CONDITIONS|Apache License/);
+    expect(section.length, title).toBeGreaterThan(400);
+  }
 });
 
 test("the notices are part of the published package", () => {
