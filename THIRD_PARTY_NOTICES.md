@@ -14,6 +14,6 @@ Only the Latin and Latin Extended subsets are included.
 
 ## Test tools under MPL-2.0
 
-`axe-core` and `@axe-core/playwright` are dev dependencies under the Mozilla Public License 2.0.
+`axe-core` and `@axe-core/playwright` are dev dependencies under the MPL-2.0 license.
 The tests use them to find accessibility problems. They are not changed, they are not built into
 the package, and they are not published with it.

@@ -1,6 +1,6 @@
 {
   "name": "agentic-design",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Accessible design tokens and UI primitives for calm, minimal apps.",
   "keywords": [
     "design-system",
@@ -26,6 +26,7 @@
   },
   "files": [
     "dist",
+    "CHANGELOG.md",
     "THIRD_PARTY_NOTICES.md"
   ],
   "publishConfig": {
@@ -60,6 +61,7 @@
     "check:contrast": "node scripts/check-contrast.mjs",
     "test": "playwright test --project=node",
     "clean": "rm -rf dist",
+    "prepack": "tsup --silent",
     "ci:local": "npm run build && npm run typecheck && npm run check:contrast && npm test && npm run test:e2e",
     "test:e2e": "playwright test -c playwright.ui.config.ts"
   },
