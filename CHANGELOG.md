@@ -4,6 +4,17 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.3.2 - 2026-10-29
+
+### Changed
+
+- `Checkbox` and `Switch` show a star after the label when you pass `required`. The
+  star is hidden from assistive technology, so the accessible name does not change.
+- The README tells you to install the package from npm. It documents the
+  `agentic-design/tokens.css` subpath, for an app that needs only the custom properties.
+- The field components have an end-to-end spec. It covers labels, hints, errors and
+  `required`.
+
 ## 0.3.1 - 2026-10-29
 
 ### Fixed
