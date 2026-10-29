@@ -4,6 +4,13 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.3.1 - 2026-10-29
+
+### Fixed
+
+- `agentic-design-mcp --help` and `-h` print the usage and exit 0. `--version` and `-V`
+  print the version. Before, the bin started the stdio server, so these flags hung.
+
 ## 0.3.0 - 2026-10-29
 
 ### Added
