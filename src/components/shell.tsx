@@ -1,5 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type AnchorHTMLAttributes, type ComponentType, type ReactNode } from "react";
-import { MenuIcon } from "../icons.js";
+import { MenuIcon, MoreIcon } from "../icons.js";
 import { IconButton } from "./button.js";
 
 const NARROW = "(max-width: 47.99rem)";
@@ -10,14 +10,16 @@ const onNarrowChange = (callback: () => void) => {
 };
 
 export type AppShellProps = {
-  /** The product name, shown at the start of the top bar, inside the banner landmark. */
+  /** The product name, shown at the start of the top bar, inside the banner landmark. Keep it short: below 48rem it ends in an ellipsis if it does not fit. */
   brand: ReactNode;
   /** Usually a `SidebarNav`. */
   sidebar: ReactNode;
   /** Sits at the start of the top bar, for example a `DocumentTitle`. */
   title?: ReactNode;
-  /** Actions on the right of the top bar. */
+  /** Actions on the right of the top bar. Keep these few: they stay in view on a narrow screen. */
   topbar?: ReactNode;
+  /** Less used actions, for example a theme picker. Below 48rem they sit behind a "More options" button, under the top bar. */
+  secondary?: ReactNode;
   children: ReactNode;
 } & (
   | { panel?: null | false; panelLabel?: string }
@@ -28,17 +30,23 @@ export type AppShellProps = {
 /**
  * Sidebar, top bar, and content. The first tab stop is a skip link. Below 48rem the top bar comes first
  * in the page, the sidebar sits under it, and the sidebar hides behind a menu button. Opening it moves focus into the sidebar. Escape closes it and
- * returns focus to the button.
+ * returns focus to the button. Below 48rem the `secondary` actions fold behind a "More options" button
+ * under the top bar. Escape closes them and returns focus to that button.
  */
-export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, children }: AppShellProps) {
+export function AppShell({ brand, sidebar, title, topbar, secondary, panel, panelLabel, children }: AppShellProps) {
   // `panel={show && <Comments />}` gives false when hidden. Null and false mean no panel.
   const hasPanel = panel !== undefined && panel !== null && panel !== false;
   if (hasPanel && (panelLabel ?? "").trim() === "") throw new Error("A side panel needs a non-empty label.");
+  const hasSecondary = secondary !== undefined && secondary !== null && secondary !== false;
   const [open, setOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const secondaryRef = useRef<HTMLDivElement>(null);
   const openedByPerson = useRef(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLButtonElement>(null);
   const sidebarId = useId();
+  const secondaryId = useId();
   const mainId = useId();
   // Tab order must follow what is drawn. Wide: sidebar on the left, then the top bar. Narrow: the
   // top bar, then the sidebar under it. So the two swap places in the page with the layout.
@@ -60,6 +68,8 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
     // Wide shows it always, so a stale `open` must not outlive the change.
     openedByPerson.current = false;
     setOpen(narrow && (!!hiddenFocusWas || !!sidebarRef.current?.contains(active)));
+    // The same for the folded actions: the stylesheet keeps them shown while focus is inside.
+    setMoreOpen(narrow && !!secondaryRef.current?.contains(active));
   }
   useLayoutEffect(() => {
     const el = focused.current;
@@ -72,9 +82,15 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
   }, [open]);
 
   const onKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key !== "Escape" || !open) return;
-    // Escape inside a menu or dialog that opened from here is not for the sidebar.
+    if (event.key !== "Escape") return;
     const target = event.target as Node;
+    // Escape inside a menu or dialog that opened from here is not for the shell either.
+    if (moreOpen && (secondaryRef.current?.contains(target) || moreRef.current?.contains(target)) && !(target as Element).closest?.('[role="menu"], [role="dialog"]')) {
+      setMoreOpen(false);
+      moreRef.current?.focus();
+      return;
+    }
+    if (!open) return;
     if (!sidebarRef.current?.contains(target) && !toggleRef.current?.contains(target)) return;
     setOpen(false);
     toggleRef.current?.focus();
@@ -97,6 +113,20 @@ export function AppShell({ brand, sidebar, title, topbar, panel, panelLabel, chi
       />
       {title !== undefined && title !== null && title !== false && <div className="agd-shell__title">{title}</div>}
       <div className="agd-shell__actions">{topbar}</div>
+      {hasSecondary && (
+        <>
+          <IconButton
+            ref={moreRef}
+            className="agd-shell__more"
+            label="More options"
+            icon={<MoreIcon />}
+            aria-expanded={moreOpen}
+            aria-controls={secondaryId}
+            onClick={() => setMoreOpen((v) => !v)}
+          />
+          <div id={secondaryId} ref={secondaryRef} className="agd-shell__secondary" data-open={moreOpen}>{secondary}</div>
+        </>
+      )}
     </header>
   );
   const sidebarEl = (
