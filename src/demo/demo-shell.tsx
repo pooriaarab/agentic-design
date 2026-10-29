@@ -7,13 +7,16 @@ const pages = [
   ["/primitives", "Primitives"],
   ["/patterns", "Patterns"],
   ["/editor", "Editor"],
+  ["/chrome", "App chrome"],
 ] as const;
 
-export function DemoShell({ title, description, actions, children }: { title: string; description: string; actions?: ReactNode; children: ReactNode }) {
+export function DemoShell({ title, description, actions, panel, children }: { title: string; description: string; actions?: ReactNode; panel?: ReactNode; children: ReactNode }) {
   const { preference, setPreference } = useTheme();
+  const panelProps: { panel?: undefined; panelLabel?: undefined } | { panel: ReactNode; panelLabel: string } = panel === undefined ? {} : { panel, panelLabel: "Notes" };
   const path = window.location.pathname.replace(/\/$/, "") || "/";
   return (
     <AppShell
+      {...panelProps}
       brand="agentic-design"
       sidebar={<SidebarNav label="Demo pages" items={pages.map(([href, label]) => ({ href, label, current: href === path }))} />}
       topbar={

@@ -371,13 +371,22 @@
   border-bottom: 1px solid var(--ad-color-border);
   background: var(--ad-color-bg);
 }
+.ad-shell__title { min-width: 0; flex: 0 1 auto; }
 .ad-shell__actions { display: flex; align-items: center; gap: var(--ad-space-4); margin-inline-start: auto; }
 .ad-shell__content { grid-area: content; min-width: 0; padding: var(--ad-space-8) var(--ad-space-6) var(--ad-space-24); outline: none; }
 .ad-shell__menu { display: none; }
+/* With the sidebar and the panel both beside it, the content needs room. Below 64rem the panel sits under the content. */
+.ad-shell[data-panel] { grid-template-rows: auto 1fr auto; grid-template-areas: "sidebar topbar" "sidebar content" "sidebar panel"; }
+@media (min-width: 64rem) {
+  .ad-shell[data-panel] { grid-template-columns: var(--ad-size-sidebar) minmax(0, 1fr) var(--ad-size-panel); grid-template-rows: auto 1fr; grid-template-areas: "sidebar topbar topbar" "sidebar content panel"; }
+}
+.ad-shell__panel { grid-area: panel; min-width: 0; padding: var(--ad-space-6) var(--ad-space-4); border-block-start: 1px solid var(--ad-color-border); background: var(--ad-color-surface-sunken); }
+@media (min-width: 64rem) { .ad-shell__panel { border-block-start: 0; border-inline-start: 1px solid var(--ad-color-border); } }
 /* On a narrow screen the sidebar sits below the top bar, under the button that opens it. */
 @media (max-width: 47.99rem) {
   .ad-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr; grid-template-areas: "topbar" "sidebar" "content"; }
   .ad-shell__menu { display: inline-flex; }
+  .ad-shell[data-panel] { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; grid-template-areas: "topbar" "sidebar" "content" "panel"; }
   .ad-shell__sidebar[data-open="false"] { display: none; }
   .ad-shell__sidebar { border-inline-end: 0; border-bottom: 1px solid var(--ad-color-border); }
   .ad-shell__topbar, .ad-shell__content { padding-inline: var(--ad-space-4); }
@@ -411,6 +420,7 @@
   background: var(--ad-color-surface);
 }
 .ad-toolbar__separator { align-self: stretch; width: 1px; margin: var(--ad-space-1); background: var(--ad-color-border); }
+.ad-toolbar__group { display: inline-flex; align-items: center; gap: var(--ad-space-1); }
 /* Pressed is shown by a thicker ring and a heavier label, as well as by color. */
 .ad-button[aria-pressed="true"] {
   box-shadow: inset 0 0 0 1px var(--button-border);
@@ -498,6 +508,51 @@
   line-height: 1.2;
   text-transform: uppercase;
 }
+/* Agent badge: the words, a square avatar, and who the agent acts for. */
+.ad-agent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ad-space-2);
+  max-width: 100%;
+  padding: 0.125rem var(--ad-space-2) 0.125rem 0.125rem;
+  border: 1px solid var(--ad-color-agent);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-color-agent-subtle);
+  color: var(--ad-color-agent-text);
+  font-size: var(--ad-font-size-xs);
+}
+.ad-agent-badge--compact { padding: 0; border: 0; background: none; }
+.ad-agent-badge__label { font-weight: var(--ad-font-weight-semibold); white-space: nowrap; }
+.ad-agent-badge__meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Document title: a button that turns into a field. */
+.ad-title { display: inline-grid; min-width: 0; max-width: 100%; }
+.ad-title__button, .ad-title__input, .ad-title__text {
+  min-width: 0;
+  padding: var(--ad-space-1) var(--ad-space-2);
+  font: inherit;
+  font-size: var(--ad-font-size-lg);
+  font-weight: var(--ad-font-weight-semibold);
+}
+.ad-title__button {
+  border: 1px solid transparent;
+  border-radius: var(--ad-radius-md);
+  background: none;
+  color: var(--ad-color-text);
+  cursor: text;
+  text-align: start;
+}
+.ad-title__button:hover { border-color: var(--ad-color-border-strong); }
+.ad-title__text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ad-title__input {
+  width: min(28rem, 100%);
+  border: 1px solid var(--ad-color-border-strong);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-color-surface-raised);
+  color: var(--ad-color-text);
+}
+.ad-title__input[aria-invalid="true"] { border-color: var(--ad-color-danger-text); }
+.ad-title__error { padding-inline: var(--ad-space-2); color: var(--ad-color-danger-text); font-size: var(--ad-font-size-xs); }
 .ad-stack { display: inline-flex; align-items: center; gap: var(--ad-space-3); }
 .ad-stack__list { display: flex; margin: 0; padding: 0; list-style: none; }
 .ad-stack__list li + li { margin-inline-start: -0.25rem; }
@@ -515,6 +570,8 @@
   .ad-button[aria-busy="true"] { border-style: dashed; }
   .ad-button[aria-pressed="true"] { background: Highlight; color: HighlightText; border-color: Highlight; }
   .ad-tabs__trigger[data-state="active"]::after { background: Highlight; }
+  .ad-agent-badge, .ad-title__button:hover, .ad-title__input { border-color: CanvasText; }
+  .ad-agent-badge--compact { border: 0; }
   .ad-menu__item[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
 }
 

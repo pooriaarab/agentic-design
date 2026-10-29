@@ -7,7 +7,11 @@ export { Dialog, DialogClose, Menu, Tabs, ToastProvider, useToast } from "./over
 export type { DialogProps, MenuItem, TabItem, ToastOptions, ToastTone } from "./overlays.js";
 export { AppShell, SidebarNav } from "./shell.js";
 export type { AppShellProps, SidebarItem } from "./shell.js";
-export { Toolbar, ToolbarButton, ToolbarSeparator } from "./toolbar.js";
+export { Toolbar, ToolbarButton, ToolbarGroup, ToolbarOverflow, ToolbarSeparator } from "./toolbar.js";
+export { DocumentTitle } from "./document-title.js";
+export type { DocumentTitleProps } from "./document-title.js";
+export { AgentBadge } from "./agent-badge.js";
+export type { AgentBadgeProps } from "./agent-badge.js";
 export { EmptyState, FileList, FileRow } from "./files.js";
 export type { FileRowProps } from "./files.js";
 export { Avatar, PresenceChip, PresenceCursor, PresenceStack } from "./presence.js";

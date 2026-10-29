@@ -156,7 +156,7 @@ test("every request stays on this origin and the fonts load", async ({ page }) =
     await document.fonts.ready;
     return [...document.fonts].filter((f) => f.status === "loaded").map((f) => f.family);
   });
-  expect([...hosts]).toEqual(["127.0.0.1:8788"]);
+  expect([...hosts]).toEqual([new URL(page.url()).host]);
   expect(fonts.length).toBeGreaterThan(0);
   expect(fonts.every((f) => /Inter Variable|JetBrains Mono Variable/.test(f))).toBe(true);
 });
