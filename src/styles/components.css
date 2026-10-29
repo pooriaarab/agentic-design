@@ -118,7 +118,8 @@
 }
 .ad-input::placeholder { color: var(--ad-color-text-muted); opacity: 1; }
 .ad-input:hover:not(:disabled) { background: var(--ad-color-surface-sunken); }
-.ad-input[aria-invalid="true"] { border-color: var(--ad-color-danger); }
+/* An invalid field has a thicker line as well as a red one, so color is not the only cue. */
+.ad-input[aria-invalid="true"] { border-color: var(--ad-color-danger); box-shadow: inset 0 0 0 1px var(--ad-color-danger); }
 .ad-input:disabled {
   background: var(--ad-color-surface-sunken);
   border-color: var(--ad-color-border);

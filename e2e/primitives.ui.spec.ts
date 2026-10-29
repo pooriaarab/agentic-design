@@ -113,6 +113,11 @@ test("a caller's aria-describedby joins the generated one and does not replace i
 test("a caller's aria-invalid is kept when the field has no error of its own", async ({ page }) => {
   await page.goto("/primitives");
   await expect(page.getByLabel("Phone")).toHaveAttribute("aria-invalid", "true");
+  // The reason is text on the page and in the description, and the line is thicker than a valid field's.
+  await expect(page.getByLabel("Phone")).toHaveAccessibleDescription("Enter a phone number with its country code.");
+  const ring = (label: string) => page.getByLabel(label).evaluate((el) => getComputedStyle(el).boxShadow);
+  expect(await ring("Phone")).not.toBe("none");
+  expect(await ring("Email")).toBe("none");
   await expect(page.getByLabel("Email")).not.toHaveAttribute("aria-invalid", /.*/);
 });
 
