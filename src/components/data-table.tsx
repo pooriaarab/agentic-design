@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { cx } from "../cx.js";
 import { Button } from "./button.js";
 import { EmptyState } from "./files.js";
-import { scrollToRow, windowRange } from "./virtual-window.js";
+import { scrollToRow, windowRangeAt } from "./virtual-window.js";
 
 export interface DataTableColumn<T> {
   /** A stable key for the column. */
@@ -39,6 +39,10 @@ export interface DataTableProps<T> {
   bulkActions?: (selected: ReadonlySet<string>) => ReactNode;
   /** Called on Enter or double click on a row. */
   onRowActivate?: (row: T) => void;
+  /** Draw a label above each run of rows that share a key. The rows must already be in group order. */
+  groupBy?: (row: T) => string;
+  /** Ids of columns to leave out. */
+  hiddenColumns?: ReadonlySet<string>;
   /** Shown above the grid. */
   toolbar?: ReactNode;
 }
@@ -55,8 +59,8 @@ const noRows: readonly never[] = [];
  * Keep focusable controls out of cells: each one adds a tab stop. A selection keeps the ids of rows that are out of the list, and they count again when the rows return.
  */
 export function DataTable<T>({
-  label, rows, columns, getRowId, rowLabel, rowHeight = 40, height = "28rem", loading = false, empty,
-  selectable = false, selected: selectedProp, defaultSelected, onSelectedChange, bulkActions, onRowActivate, toolbar,
+  label, rows, columns: allColumns, getRowId, rowLabel, rowHeight = 40, height = "28rem", loading = false, empty,
+  selectable = false, groupBy, hiddenColumns, selected: selectedProp, defaultSelected, onSelectedChange, bulkActions, onRowActivate, toolbar,
 }: DataTableProps<T>) {
   if (label.trim() === "") throw new Error("A data table needs a non-empty label.");
   const [own, setOwn] = useState<ReadonlySet<string>>(defaultSelected ?? new Set());
@@ -66,6 +70,7 @@ export function DataTable<T>({
     onSelectedChange?.(next);
   }, [onSelectedChange]);
 
+  const columns = useMemo(() => (hiddenColumns ? allColumns.filter((c) => !hiddenColumns.has(c.id)) : allColumns), [allColumns, hiddenColumns]);
   const items = loading ? noRows : rows;
   const count = items.length;
   const scroller = useRef<HTMLDivElement>(null);
@@ -123,7 +128,36 @@ export function DataTable<T>({
     return () => observer.disconnect();
   }, [barVisible]);
 
-  const range = windowRange(scrollTop, viewport, rowHeight, count);
+  // Where each row sits. A group label takes one row of height above the first row of its group.
+  const layout = useMemo(() => {
+    const tops = new Float64Array(count);
+    const pos = new Int32Array(count);
+    const groups: ({ label: string; size: number } | null)[] = new Array(count).fill(null);
+    let shown = 0;
+    let previous: string | undefined;
+    let current: { label: string; size: number } | null = null;
+    for (let i = 0; i < count; i++) {
+      if (groupBy) {
+        const key = groupBy(items[i] as T);
+        if (key !== previous) {
+          current = { label: key, size: 0 };
+          groups[i] = current;
+          previous = key;
+          shown++;
+        }
+        if (current) current.size++;
+      }
+      tops[i] = (i + shown) * rowHeight;
+      pos[i] = i + shown;
+    }
+    return { tops, pos, groups, total: (count + shown) * rowHeight, shown };
+  }, [items, count, groupBy, rowHeight]);
+  // The scrollTop that shows a row, and its group label when it has one.
+  const reveal = (index: number, el: HTMLElement, footer: number) => {
+    const top = layout.tops[index] as number;
+    return scrollToRow(top - (layout.groups[index] ? rowHeight : 0), top + rowHeight, el.scrollTop, el.clientHeight, rowHeight, footer);
+  };
+  const range = windowRangeAt(layout.tops, scrollTop, viewport, rowHeight);
   // The row that has focus stays drawn when it scrolls out of view, so focus is not lost.
   const indexes: number[] = [];
   for (let i = range.start; i < range.end; i++) indexes.push(i);
@@ -134,7 +168,7 @@ export function DataTable<T>({
     wantFocus.current = false;
     const el = scroller.current;
     if (!el) return;
-    const next = scrollToRow(active, el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
+    const next = reveal(active, el, barHeight);
     if (next !== el.scrollTop) el.scrollTop = next;
     el.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
   });
@@ -148,12 +182,12 @@ export function DataTable<T>({
     // Move only when focus is on a row. A click on select-all must not pull the grid back to the top.
     const focusedRow = document.activeElement?.closest<HTMLElement>("[data-index]");
     if (barVisible && el && focusedRow && el.contains(focusedRow)) {
-      const next = scrollToRow(Number(focusedRow.dataset.index), el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
+      const next = reveal(Number(focusedRow.dataset.index), el, barHeight);
       if (next !== el.scrollTop) el.scrollTop = next;
     }
     if (barWas.current && !barVisible && barHadFocus.current && count > 0 && (!document.activeElement || document.activeElement === document.body)) {
       if (el) {
-        const next = scrollToRow(active, el.scrollTop, el.clientHeight, rowHeight, rowHeight, 0);
+        const next = reveal(active, el, 0);
         if (next !== el.scrollTop) el.scrollTop = next;
         el.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
       }
@@ -167,7 +201,7 @@ export function DataTable<T>({
     const el = scroller.current;
     if (restoreFocus.current && lost && count > 0 && !loading && el) {
       restoreFocus.current = false;
-      const next = scrollToRow(active, el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
+      const next = reveal(active, el, barHeight);
       if (next !== el.scrollTop) el.scrollTop = next;
       el.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
     }
@@ -200,7 +234,7 @@ export function DataTable<T>({
       // Nothing moves, so no render follows. Focus the row now, and leave no request behind.
       const el = scroller.current;
       if (el) {
-        const next = scrollToRow(active, el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
+        const next = reveal(active, el, barHeight);
         if (next !== el.scrollTop) el.scrollTop = next;
         el.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
       }
@@ -272,7 +306,7 @@ export function DataTable<T>({
           className="agd-datatable__scroller"
           role="grid"
           aria-label={label}
-          aria-rowcount={count + 1}
+          aria-rowcount={count + layout.shown + 1}
           aria-colcount={columns.length + (selectable ? 1 : 0)}
           aria-multiselectable={selectable || undefined}
           aria-busy={loading || undefined}
@@ -302,7 +336,7 @@ export function DataTable<T>({
               {columns.map((c) => <div key={c.id} role="columnheader" className="agd-datatable__cell">{c.header}</div>)}
             </div>
           </div>
-          <div role="rowgroup" className="agd-datatable__body" style={{ height: (loading ? PLACEHOLDERS : count) * rowHeight + barHeight }}>
+          <div role="rowgroup" className="agd-datatable__body" style={{ height: (loading ? PLACEHOLDERS * rowHeight : layout.total) + barHeight }}>
             {loading
               ? Array.from({ length: PLACEHOLDERS }, (_, i) => (
                   <div key={i} role="row" className="agd-datatable__row" style={{ top: i * rowHeight }} aria-hidden="true">
@@ -315,14 +349,22 @@ export function DataTable<T>({
                   const row = items[i] as T;
                   const id = ids[i] as string;
                   const isSelected = selected.has(id);
+                  const group = layout.groups[i];
                   return (
+                    <Fragment key={id}>
+                    {group && (
+                      <div role="row" className="agd-datatable__group" style={{ top: (layout.tops[i] as number) - rowHeight }} aria-rowindex={(layout.pos[i] as number) + 1}>
+                        <div role="gridcell" aria-colspan={columns.length + (selectable ? 1 : 0)} className="agd-datatable__group-cell">
+                          {group.label} <span className="agd-datatable__group-count">{group.size}</span>
+                        </div>
+                      </div>
+                    )}
                     <div
-                      key={id}
                       role="row"
                       data-index={i}
                       className={cx("agd-datatable__row", "agd-datatable__row--body", isSelected && "agd-datatable__row--selected")}
-                      style={{ top: i * rowHeight }}
-                      aria-rowindex={i + 2}
+                      style={{ top: layout.tops[i] as number }}
+                      aria-rowindex={(layout.pos[i] as number) + 2}
                       aria-selected={selectable ? isSelected : undefined}
                       tabIndex={i === active ? 0 : -1}
                       onFocus={(event) => {
@@ -351,6 +393,7 @@ export function DataTable<T>({
                       )}
                       {columns.map((c) => <div key={c.id} role="gridcell" className="agd-datatable__cell">{c.cell(row)}</div>)}
                     </div>
+                    </Fragment>
                   );
                 })}
           </div>

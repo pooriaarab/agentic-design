@@ -1,5 +1,19 @@
 import { useMemo, useState } from "react";
-import { Button, DataTable, type DataTableColumn } from "../react.js";
+import {
+  applyDataView,
+  Button,
+  DataTable,
+  DataTableToolbar,
+  DisplayPopover,
+  EmptyState,
+  emptyDataView,
+  FilterChips,
+  filterMenuItems,
+  TableSearch,
+  type DataField,
+  type DataTableColumn,
+  type DataView,
+} from "../react.js";
 import { DemoShell } from "./demo-shell.js";
 
 interface Task {
@@ -18,10 +32,24 @@ const columns: DataTableColumn<Task>[] = [
   { id: "owner", header: "Owner", width: "12rem", cell: (t) => t.owner },
 ];
 
+const fields: DataField<Task>[] = [
+  { id: "title", label: "Title", value: (t) => t.title, groupable: false },
+  { id: "status", label: "Status", value: (t) => t.status, filterable: true },
+  { id: "owner", label: "Owner", value: (t) => t.owner, filterable: true },
+];
+const columnList = columns.map((c) => ({ id: c.id, label: c.header }));
+
 export function DataPage() {
   const [size, setSize] = useState(10000);
   const [state, setState] = useState<"ready" | "loading">("ready");
-  const rows = useMemo(() => makeTasks(size), [size]);
+  const all = useMemo(() => makeTasks(size), [size]);
+  const [view, setView] = useState<DataView>(emptyDataView);
+  const rows = useMemo(() => applyDataView(all, view, fields), [all, view]);
+  const hidden = useMemo(() => new Set(view.hiddenColumns), [view.hiddenColumns]);
+  const groupField = fields.find((f) => f.id === view.groupBy);
+  const groupBy = useMemo(() => (groupField ? (t: Task) => String(groupField.value(t)) : undefined), [groupField]);
+  const chips = view.filters.map((f) => ({ id: `${f.field}:${f.value}`, label: `${fields.find((x) => x.id === f.field)?.label}: ${f.value}` }));
+  const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all, view]);
   const [removed, setRemoved] = useState(0);
   const [opened, setOpened] = useState("none");
   return (
@@ -36,7 +64,18 @@ export function DataPage() {
         </div>
         <DataTable
           label="Tasks"
+          toolbar={
+            <DataTableToolbar
+              end={<DisplayPopover fields={fields} columns={columnList} view={view} onViewChange={setView} defaults={emptyDataView} />}
+            >
+              <TableSearch value={view.query} onChange={(query) => setView({ ...view, query })} />
+              <FilterChips chips={chips} addItems={addItems} onRemove={(id) => setView({ ...view, filters: view.filters.filter((f) => `${f.field}:${f.value}` !== id) })} />
+            </DataTableToolbar>
+          }
           rows={rows}
+          groupBy={groupBy}
+          hiddenColumns={hidden}
+          empty={all.length > 0 ? <EmptyState title="No matches" description="No task fits the search and filters." action={<Button size="sm" onClick={() => setView({ ...view, query: "", filters: [] })}>Clear search and filters</Button>} /> : undefined}
           columns={columns}
           getRowId={(t) => t.id}
           rowLabel={(t) => t.title}
