@@ -53,7 +53,7 @@ test("column headers sort by keyboard, name order is natural, and a bad date sor
   const table = page.getByRole("table", { name: "Recent files" });
   const name = table.getByRole("columnheader", { name: "Name" });
   await expect(name).toHaveAttribute("aria-sort", "ascending");
-  expect(await names(page)).toEqual(["Budget 2", "Budget 10", "Launch plan", "Meeting notes", "Research"]);
+  expect(await names(page)).toEqual(["Budget 2", "Budget 10", "Launch plan", "Meeting notes", expect.stringMatching(/^Quarterly planning/), "Research"]);
 
   await name.getByRole("button").focus();
   await page.keyboard.press("Enter");
@@ -66,7 +66,7 @@ test("column headers sort by keyboard, name order is natural, and a bad date sor
   await page.keyboard.press("Space");
   await expect(modified).toHaveAttribute("aria-sort", "ascending");
   await expect(name).not.toHaveAttribute("aria-sort", /.+/);
-  expect(await names(page)).toEqual(["Budget 10", "Research", "Meeting notes", "Launch plan", "Budget 2"]);
+  expect(await names(page)).toEqual(["Budget 10", expect.stringMatching(/^Quarterly planning/), "Research", "Meeting notes", "Launch plan", "Budget 2"]);
   await page.keyboard.press("Space");
   await expect(modified).toHaveAttribute("aria-sort", "descending");
   expect((await names(page)).at(-1)).toBe("Budget 2");
@@ -111,6 +111,34 @@ test("in forced colors a placeholder is a system color, not the page color", asy
   expect(await fill).not.toBe(await canvas);
 });
 
+test("a very long file name is cut by an ellipsis, and the page does not scroll sideways on a desktop screen", async ({ page }) => {
+  await page.goto("/chrome");
+  await expect(page.getByRole("table", { name: "Recent files" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  const link = page.locator(".ad-filetable .ad-file-row__name", { hasText: /^Quarterly planning/ });
+  expect(await link.evaluate((n) => n.scrollWidth > n.clientWidth)).toBe(true);
+  // Every cell of a row has the height of the row, so the row line is whole.
+  const heights = await page.locator(".ad-filetable tbody tr").first().locator("td").evaluateAll((cells) => cells.map((c) => Math.round(c.getBoundingClientRect().height)));
+  expect(new Set(heights).size).toBe(1);
+});
+
+test("the status element stays in the page across views, and the sort message waits for a sort", async ({ page }) => {
+  await page.goto("/chrome");
+  const status = page.locator("#demo-files").getByRole("status");
+  await expect(status).toHaveText("");
+  const handle = await status.elementHandle();
+  await page.getByRole("button", { name: "Show grid" }).click();
+  await expect(status).toHaveText("");
+  await page.getByRole("button", { name: "Show empty" }).click();
+  await page.getByRole("button", { name: "Show loading" }).click();
+  await expect(status).toHaveText("Loading files");
+  // The same node held the text throughout, so a screen reader hears each change.
+  expect(await handle?.evaluate((n) => n.isConnected)).toBe(true);
+  await page.getByRole("button", { name: "Show files" }).click();
+  await page.getByRole("combobox", { name: "Sort by" }).selectOption("owner:ascending");
+  await expect(status).toHaveText("Sorted by owner, ascending");
+});
+
 test("on a narrow screen the table does not scroll sideways and passes axe", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/chrome");
@@ -126,6 +154,11 @@ test("in a right-to-left page the table starts on the right and passes axe", asy
   await page.evaluate(() => document.documentElement.setAttribute("dir", "rtl"));
   const [name, modified] = [await page.getByRole("columnheader", { name: "Name" }).boundingBox(), await page.getByRole("columnheader", { name: "Modified" }).boundingBox()];
   expect((name?.x ?? 0) > (modified?.x ?? 0)).toBe(true);
+  // A date sits under its own header, and a row has one full line, so cells do not drift.
+  const row = page.locator(".ad-filetable tbody tr", { hasText: "Launch plan" });
+  const date = await row.locator("td").nth(2).boundingBox();
+  expect(Math.abs((date?.x ?? 0) - (modified?.x ?? 0))).toBeLessThan(1);
+  expect(Math.abs((date?.width ?? 0) - (modified?.width ?? 0))).toBeLessThan(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
   expect(await violations(page, "#demo-files")).toEqual([]);
 });

@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { FileIcon, FolderIcon } from "../icons.js";
 import { Select } from "./fields.js";
 import { displayName, PresenceChip, type PresenceEntry } from "./presence.js";
@@ -113,18 +113,23 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
   const sort = sortProp ?? own;
   const rows = useMemo(() => (sortProp ? items : sorted(items, sort, locale)), [items, sort, sortProp, locale]);
   const [said, setSaid] = useState("");
+  // Say a sort only after it took effect. A parent that ignores onSortChange changes `sort` never, so nothing is said.
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    setSaid(`Sorted by ${columns.find((c) => c.key === sort.key)?.label.toLowerCase()}, ${sort.direction}`);
+  }, [sort.key, sort.direction]);
   const choose = (next: FileSort) => {
     setOwn(next);
-    setSaid(`Sorted by ${columns.find((c) => c.key === next.key)?.label.toLowerCase()}, ${next.direction}`);
     onSortChange?.(next);
   };
   const toggle = (key: FileSortKey) => choose({ key, direction: sort.key === key && sort.direction === "ascending" ? "descending" : "ascending" });
+  // One status element above every view, so a screen reader keeps hearing it as the view changes.
   const status = <p className="ad-sr-only" role="status">{loading ? "Loading files" : said}</p>;
-
-  if (!loading && rows.length === 0) return <>{empty ?? <EmptyState title="No files" description="Nothing is here yet." />}</>;
-
-  if (view === "grid") {
-    return (
+  const body = !loading && rows.length === 0 ? (empty ?? <EmptyState title="No files" description="Nothing is here yet." />) : view === "grid" ? (
       <div className="ad-filegrid-wrap">
         <Select
           label="Sort by"
@@ -139,7 +144,6 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
             <option key={`${c.key}:descending`} value={`${c.key}:descending`}>{c.label}, {c.key === "modified" ? "newest first" : "Z to A"}</option>,
           ])}
         </Select>
-        {status}
         <ul className="ad-filegrid" aria-label={label} aria-busy={loading || undefined}>
           {loading
             ? [0, 1, 2, 3].map((i) => <li key={i} className="ad-filegrid__item ad-skeleton" aria-hidden="true" />)
@@ -153,12 +157,8 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
               ))}
         </ul>
       </div>
-    );
-  }
-
-  return (
+  ) : (
     <div className="ad-filetable-wrap">
-      {status}
       <table className="ad-filetable" role="table" aria-busy={loading || undefined}>
         <caption className="ad-sr-only">{label}</caption>
         <thead role="rowgroup">
@@ -186,16 +186,17 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
               ))
             : rows.map((item) => (
                 <tr key={item.id} role="row">
-                  <td role="cell" className="ad-filetable__name"><ItemName item={item} /></td>
+                  <td role="cell"><span className="ad-filetable__name"><ItemName item={item} /></span></td>
                   <td role="cell"><PresenceChip entry={item.owner} /></td>
-                  <td role="cell" className="ad-file-row__time">{formatted(item.modified, locale)}</td>
-                  <td role="cell" className="ad-file-row__actions">{item.actions}</td>
+                  <td role="cell"><span className="ad-file-row__time">{formatted(item.modified, locale)}</span></td>
+                  <td role="cell"><span className="ad-file-row__actions">{item.actions}</span></td>
                 </tr>
               ))}
         </tbody>
       </table>
     </div>
   );
+  return <>{status}{body}</>;
 }
 
 export interface FileRowProps {

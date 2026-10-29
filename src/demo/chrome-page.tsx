@@ -35,6 +35,7 @@ const items: FileItem[] = [
   { id: "2", name: "Meeting notes", href: "#notes", owner: claude, modified: new Date("2026-10-26T15:30:00Z") },
   { id: "3", name: "Research", href: "#research", kind: "folder", owner: grace, modified: new Date("2026-10-20T09:00:00Z") },
   { id: "4", name: "Budget 10", href: "#budget-10", owner: ada, modified: new Date("2026-10-01T09:00:00Z") },
+  { id: "6", name: "Quarterly planning notes for the launch and the follow up review with every team, including support, docs, sales, and the partners who ship with us in the spring", href: "#quarterly", owner: grace, modified: new Date("2026-10-15T09:00:00Z") },
   { id: "5", name: "Budget 2", href: "#budget-2", owner: grace, modified: new Date(Number.NaN) },
 ];
 

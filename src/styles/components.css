@@ -470,10 +470,15 @@
 }
 
 /* File table and grid ------------------------------------------------ */
-.ad-filetable { width: 100%; border-collapse: collapse; border-top: 1px solid var(--ad-color-border); }
+.ad-filetable { width: 100%; table-layout: fixed; border-collapse: collapse; border-top: 1px solid var(--ad-color-border); }
 .ad-filetable th, .ad-filetable td { padding: var(--ad-space-1) var(--ad-space-3); border-bottom: 1px solid var(--ad-color-border); text-align: start; vertical-align: middle; }
 .ad-filetable th { color: var(--ad-color-text-muted); font-size: var(--ad-font-size-xs); font-weight: var(--ad-font-weight-semibold); }
-.ad-filetable tbody tr { min-height: 3rem; }
+/* Fixed columns, so a long name is cut by an ellipsis and never widens the page. */
+.ad-filetable th:nth-child(1) { width: 36%; }
+.ad-filetable th:nth-child(2) { width: 36%; }
+.ad-filetable th:nth-child(3) { width: 16%; }
+.ad-filetable th:nth-child(4) { width: 12%; }
+.ad-filetable td { height: 3rem; overflow: hidden; }
 .ad-filetable tbody tr:hover { background: var(--ad-color-surface-sunken); }
 .ad-filetable__sort {
   display: inline-flex;
@@ -490,7 +495,8 @@
 }
 .ad-filetable__sort:hover { background: var(--ad-color-surface-hover); }
 .ad-filetable__arrow { display: inline-block; min-width: 1ch; }
-.ad-filetable__name { display: flex; align-items: center; gap: var(--ad-space-3); min-height: 3rem; border-bottom: 0; }
+.ad-filetable__name { display: flex; align-items: center; gap: var(--ad-space-3); min-width: 0; }
+.ad-filetable__name .ad-file-row__name { min-width: 0; flex: 1 1 auto; }
 .ad-filetable td:has(.ad-skeleton) { padding-block: var(--ad-space-3); }
 .ad-filegrid-wrap { display: grid; gap: var(--ad-space-4); }
 .ad-filegrid-wrap > .ad-field { max-width: 16rem; }
@@ -516,6 +522,7 @@
   .ad-filetable thead { display: block; }
   .ad-filetable thead tr { display: flex; flex-wrap: wrap; }
   .ad-filetable thead th:last-child { display: none; }
+  .ad-filetable thead th { width: auto; }
   .ad-filetable tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name actions" "owner owner" "time time"; padding-block: var(--ad-space-1); border-bottom: 1px solid var(--ad-color-border); }
   .ad-filetable tbody td { padding: var(--ad-space-1) var(--ad-space-3); border-bottom: 0; }
   .ad-filetable tbody td:nth-child(1) { grid-area: name; }
