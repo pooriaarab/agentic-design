@@ -23,6 +23,7 @@ export function DataPage() {
   const [state, setState] = useState<"ready" | "loading">("ready");
   const rows = useMemo(() => makeTasks(size), [size]);
   const [removed, setRemoved] = useState(0);
+  const [opened, setOpened] = useState("none");
   return (
     <DemoShell title="Data table" description="Virtualized rows, keyboard navigation, bulk select, and loading and empty states.">
       <section aria-labelledby="demo-data-h" id="demo-data">
@@ -39,10 +40,11 @@ export function DataPage() {
           getRowId={(t) => t.id}
           rowLabel={(t) => t.title}
           loading={state === "loading"}
+          onRowActivate={(t) => setOpened(t.title)}
           selectable
           bulkActions={(ids) => <Button size="sm" onClick={() => setRemoved(ids.size)}>Archive</Button>}
         />
-        <p className="demo-muted demo-note">Archived: <span id="archived">{removed}</span></p>
+        <p className="demo-muted demo-note">Archived: <span id="archived">{removed}</span>. Opened: <span id="opened">{opened}</span></p>
       </section>
     </DemoShell>
   );
