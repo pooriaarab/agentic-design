@@ -7,7 +7,7 @@
 Accessible design tokens and UI primitives for calm, minimal apps.
 
 > Status: early. The design tokens, the contrast check, and the fonts work.
-> The form controls, the overlays, and most app patterns work. The share dialog and the editor demo are not built yet.
+> The tokens, the controls, the overlays, the app patterns, the share dialog, and the editor demo work.
 > The package is not on npm yet.
 
 ## Install
@@ -78,8 +78,14 @@ themes.dark.accent; // "#8EA4FF"
   needs a joiner, so show an account handle where two people must be told apart. Display names pass a
   closed allow-list (`usableName`): a name with a hidden text-direction character or a
   zero-width space shows as unnamed.
+- `ShareDialog`: people and agents with roles, an invite field (an email invites a person, an
+  `@handle` invites an agent, and anything else is refused), a link with role, expiry, and a
+  sign-in rule, and a snapshot link that holds the page in the URL fragment. `PresenceCursor`
+  shows a remote cursor, and an agent's tag says Agent.
 - `ThemeProvider` and `useTheme` for React, from `agentic-design/react`. They set `data-theme`, keep the pick on the device, and sync it across tabs. `themeInitScript()` returns a script for the page head, so a saved dark pick never flashes light. React is an optional peer: the root entry and the CLI do not need it.
-- A token page at `/` from the Worker. Run `npm run build` first, then `npx wrangler dev`.
+- A demo site from the Worker: tokens, primitives, patterns, and an editor-like page with
+  presence, an agent suggestion, and the share dialog. Run `npm run build` first, then
+  `npx wrangler dev`.
 - A CLI and an MCP server so an agent can read the tokens:
   `npx agentic-design tokens --format json`, `npx agentic-design contrast`,
   `npx agentic-design mcp`.
@@ -87,7 +93,12 @@ themes.dark.accent; // "#8EA4FF"
 
 ## Limits
 
-- The share dialog and the editor demo are not built yet.
+- `ShareDialog` is a view. It calls your handlers, and it does not store or send anything.
+- The demo snapshot link is not compressed or encrypted, and it holds text only. The demo page
+  opens it as a read-only copy after it checks the size, the shape, and every paragraph. It is
+  a demonstration of the idea, not a finished link format.
+- `parseInvitee` accepts printable ASCII only. An address with a non-ASCII letter is refused
+  until it is supported.
 - Fonts cover Latin and Latin Extended only, and only upright faces ship. Italic text is
   synthesized by the browser.
 - `Checkbox` and `Switch` have no error state yet, so a required checkbox cannot show an

@@ -25,6 +25,15 @@ Set `data-theme="dark"` on `<html>` for dark. Leave it off to follow the system.
 import { themes, scale } from "agentic-design/tokens";
 ```
 
+## Use the React parts
+
+```tsx
+import { Button, Dialog, PresenceChip, ShareDialog } from "agentic-design/react";
+```
+
+Show an agent with `PresenceChip entry={{ kind: "agent", ... }}`. It adds the word Agent and a
+square avatar. A name from a peer passes `usableName` first.
+
 ## Use the CLI and MCP
 
 ```sh
