@@ -373,7 +373,9 @@
   background: var(--agd-color-bg);
 }
 .agd-shell__title { min-width: 0; flex: 0 1 auto; }
-.agd-shell__actions { display: flex; align-items: center; gap: var(--agd-space-4); margin-inline-start: auto; }
+.agd-shell__actions, .agd-shell__secondary { display: flex; align-items: center; gap: var(--agd-space-4); }
+.agd-shell__actions { margin-inline-start: auto; }
+.agd-shell__more { display: none; }
 .agd-shell__content { grid-area: content; min-width: 0; padding: var(--agd-space-8) var(--agd-space-6) var(--agd-space-24); outline: none; }
 .agd-shell__menu { display: none; }
 /* With the sidebar and the panel both beside it, the content needs room. Below 64rem the panel sits under the content. */
@@ -391,6 +393,17 @@
   .agd-shell__sidebar[data-open="false"] { display: none; }
   .agd-shell__sidebar { border-inline-end: 0; border-bottom: 1px solid var(--agd-color-border); }
   .agd-shell__topbar, .agd-shell__content { padding-inline: var(--agd-space-4); }
+  /* The top bar must never be wider than the screen: the name and title shorten, and less used actions fold away. */
+  .agd-shell__topbar { flex-wrap: wrap; gap: var(--agd-space-2) var(--agd-space-3); padding-block: var(--agd-space-2); }
+  /* The padding and the matching negative margin leave room inside the clip for a focus ring on a link. */
+  .agd-shell__brand { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: var(--agd-space-1); margin: calc(var(--agd-space-1) * -1); }
+  /* No clip here: a DocumentTitle shortens itself, and its focus ring and error must stay whole. */
+  .agd-shell__title { flex: 1 1 8rem; overflow-wrap: anywhere; }
+  .agd-shell__actions { flex-wrap: wrap; gap: var(--agd-space-2) var(--agd-space-3); min-width: 0; }
+  .agd-shell__more { display: inline-flex; }
+  .agd-shell__secondary { flex: 1 0 100%; justify-content: flex-end; }
+  /* Focus inside keeps them shown, so crossing the breakpoint does not drop focus. */
+  .agd-shell__secondary[data-open="false"]:not(:focus-within) { display: none; }
 }
 .agd-sidebar-nav { display: grid; gap: var(--agd-space-1); margin: 0; padding: 0; list-style: none; }
 .agd-sidebar-nav__link {
@@ -560,7 +573,7 @@
 .agd-avatar--more { border-radius: var(--agd-radius-full); background: var(--agd-color-surface); color: var(--agd-color-text-muted); }
 .agd-chip { display: inline-flex; align-items: center; gap: var(--agd-space-2); max-width: 100%; min-width: 0; }
 .agd-chip__name { overflow: hidden; color: var(--agd-color-text); font-weight: var(--agd-font-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
-.agd-chip__meta { color: var(--agd-color-text-muted); font-size: var(--agd-font-size-xs); white-space: nowrap; }
+.agd-chip__meta { color: var(--agd-color-text-muted); font-size: var(--agd-font-size-xs); min-width: 0; overflow-wrap: anywhere; }
 /* The word, in a hairline pill. The word carries the meaning, not the color. */
 .agd-pill {
   flex: none;
@@ -674,7 +687,7 @@
 .agd-cursor__tag {
   position: absolute;
   inset-block-end: 1.45em;
-  inset-inline-start: 0;
+  inset-inline-start: var(--agd-cursor-shift, 0px);
   padding: 0.0625rem var(--agd-space-2);
   border: 1px solid var(--agd-color-accent);
   border-radius: var(--agd-radius-sm) var(--agd-radius-sm) var(--agd-radius-sm) 0;
@@ -683,7 +696,11 @@
   font-size: var(--agd-font-size-xs);
   font-weight: var(--agd-font-weight-medium);
   line-height: 1.3;
-  white-space: nowrap;
+  /* PresenceCursor sets the shift when the tag would leave the screen. One line when it fits;
+     a long name wraps, so the tag is never wider than the screen. */
+  width: max-content;
+  max-inline-size: calc(100vw - 1rem);
+  overflow-wrap: anywhere;
 }
 .agd-cursor--agent .agd-cursor__caret { background: var(--agd-color-agent); }
 .agd-cursor--agent .agd-cursor__tag { border-color: var(--agd-color-agent); border-radius: var(--agd-radius-sm); background: var(--agd-color-agent-subtle); color: var(--agd-color-agent-text); }

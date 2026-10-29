@@ -1,6 +1,7 @@
 /* Layout for the demo pages only. Not part of the package stylesheet. */
 .demo-main {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--agd-space-12);
   max-width: 64rem;
 }
