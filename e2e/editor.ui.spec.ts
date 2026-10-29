@@ -42,7 +42,9 @@ for (const scheme of ["light", "dark"] as const) {
 
 test("the page says an agent edited it, and an agent cursor carries the word Agent", async ({ page }) => {
   await page.goto("/editor");
-  await expect(page.getByText("Last edited by Claude, an agent.")).toBeVisible();
+  // Nothing is accepted yet, so the page must not claim an agent edit.
+  await expect(page.getByText("Last edited by")).toHaveCount(0);
+  await expect(page.getByText("Claude, an agent, has a suggestion waiting.")).toBeVisible();
   await expect(page.locator(".ad-cursor--agent")).toContainText("Claude · Agent · for Ada Lovelace");
   await expect(page.locator(".ad-cursor--person")).not.toContainText("Agent");
   await expect(page.locator(".ad-stack__summary")).toHaveText("2 people, 1 agent");
@@ -59,6 +61,12 @@ test("a person accepts an agent suggestion, and the edit stays labeled", async (
   await expect(page.getByRole("textbox", { name: "Page text" })).toBeFocused();
   await expect(page.getByRole("textbox", { name: "Page text" })).toContainText("report the result to the whole team");
   await expect(page.locator(".ad-toast", { hasText: "labeled as made by Claude, an agent" })).toBeVisible();
+  // The label is on the page itself, and the description follows from it.
+  const label = page.locator(".demo-attribution");
+  await expect(label).toContainText("Agent");
+  await expect(label).toContainText("Claude");
+  await expect(label).toContainText("Ada Lovelace accepted the change.");
+  await expect(page.getByText("Last edited by Claude, an agent. Ada Lovelace accepted the change.")).toBeVisible();
 });
 
 test("rejecting a suggestion keeps the text", async ({ page }) => {
@@ -66,6 +74,10 @@ test("rejecting a suggestion keeps the text", async ({ page }) => {
   await page.getByRole("complementary", { name: "Suggestion from Claude" }).getByRole("button", { name: "Reject" }).click();
   await expect(page.getByRole("textbox", { name: "Page text" })).not.toContainText("report the result");
   await expect(page.getByRole("complementary", { name: "Suggestion from Claude" })).toBeHidden();
+  // A rejected suggestion is not an agent edit.
+  await expect(page.getByText("Last edited by")).toHaveCount(0);
+  await expect(page.locator(".demo-attribution")).toHaveCount(0);
+  await expect(page.getByText("Ada Lovelace rejected a suggestion from Claude, an agent.")).toBeVisible();
 });
 
 test("the share dialog traps focus and gives it back", async ({ page }) => {
@@ -455,4 +467,45 @@ test("a very large page says it is too long and does not fail silently", async (
   await page.getByRole("button", { name: "Create snapshot link" }).click();
   await expect(page.locator(".ad-toast", { hasText: "too long for a snapshot link" })).toBeVisible();
   expect(errors).toEqual([]);
+});
+
+test("deleting an agent cursor with Backspace, then removing the agent's access, does not crash the page", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/editor");
+  const text = page.getByRole("textbox", { name: "Page text" });
+  await text.focus();
+  // Put the caret right after the agent's cursor, then delete the cursor as one unit.
+  await page.evaluate(() => {
+    const host = document.querySelector('[data-cursor-host="claude"]')!;
+    const range = document.createRange();
+    range.setStartAfter(host);
+    range.collapse(true);
+    const selection = getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+  });
+  await page.keyboard.press("Backspace");
+  await expect(page.locator(".ad-cursor--agent")).toHaveCount(0);
+  await openShare(page);
+  await page.getByRole("button", { name: "Remove access for Claude" }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".ad-stack__summary")).toHaveText("2 people");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Launch plan");
+  expect(errors).toEqual([]);
+});
+
+test("two long addresses that start the same have their own control names", async ({ page }) => {
+  await page.goto("/editor");
+  await openShare(page);
+  const field = page.getByLabel("Invite a person or an agent");
+  for (const tld of ["org", "net"]) {
+    await field.fill(`margaret.hamilton.engineering@example-company.${tld}`);
+    await page.getByRole("button", { name: "Invite", exact: true }).click();
+  }
+  for (const tld of ["org", "net"]) {
+    const address = `margaret.hamilton.engineering@example-company.${tld}`;
+    await expect(page.getByRole("button", { name: `Remove access for ${address}`, exact: true })).toHaveCount(1);
+    await expect(page.getByLabel(`Access for ${address}`, { exact: true })).toHaveCount(1);
+  }
 });

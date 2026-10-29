@@ -96,7 +96,9 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
       className="ad-shell__sidebar"
       data-open={open}
       onBlur={(event) => {
-        if (!event.relatedTarget && sidebarRef.current && getComputedStyle(sidebarRef.current).display === "none") hiddenFocus.current = event.target;
+        // Only a blur from the breakpoint counts: the layout is still wide here. A blur in a closed
+        // narrow layout is a person's own choice and must not move focus later.
+        if (!lastNarrow.current && !event.relatedTarget && sidebarRef.current && getComputedStyle(sidebarRef.current).display === "none") hiddenFocus.current = event.target;
       }}
       onFocus={() => { hiddenFocus.current = null; }}
     >

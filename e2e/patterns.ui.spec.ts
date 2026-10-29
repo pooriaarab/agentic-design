@@ -318,3 +318,17 @@ test("widening closes the nav state, so Escape later does not send focus to a hi
   await page.setViewportSize({ width: 390, height: 800 });
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
 });
+
+test("closing the nav in the narrow layout, then widening, does not move focus to a link nobody chose", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto("/patterns");
+  const toggle = page.getByRole("button", { name: "Navigation" });
+  await toggle.click();
+  await expect(page.getByRole("navigation", { name: "Demo pages" }).getByRole("link").first()).toBeFocused();
+  // A click that does not move focus to the button: the link blurs because it is hidden.
+  await toggle.dispatchEvent("click");
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(page.getByRole("navigation", { name: "Demo pages" })).toBeVisible();
+  expect(await page.evaluate(() => document.activeElement?.closest("nav") !== null)).toBe(false);
+});

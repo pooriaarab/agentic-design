@@ -113,7 +113,9 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
       {/* The status line is always in the page, so a screen reader announces the first message too. */}
       <p role="status" className="ad-share__sent">{sent}</p>
       <ul className="ad-share__people" aria-label="People and agents with access">
-        {people.map(({ entry, role: current }) => (
+        {people.map((item) => {
+          const { entry, role: current } = item;
+          return (
           <li key={entry.id}>
             <PresenceChip entry={entry} />
             {current === "owner" ? (
@@ -121,7 +123,7 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
             ) : (
               <span className="ad-share__controls">
                 <Select
-                  label={`Access for ${displayName(entry)}`}
+                  label={`Access for ${labelName(item)}`}
                   hideLabel
                   value={current}
                   onChange={(e) => onChangeRole(entry.id, e.target.value as ShareRole)}
@@ -133,7 +135,7 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
                 <Button
                   variant="ghost"
                   size="sm"
-                  aria-label={`Remove access for ${displayName(entry)}`}
+                  aria-label={`Remove access for ${labelName(item)}`}
                   onClick={() => {
                     onRemove(entry.id);
                     // The row is gone and so is its button. Put focus on a control that still exists.
@@ -145,11 +147,15 @@ function PeopleTab({ people, onInvite, onChangeRole, onRemove }: Pick<ShareDialo
               </span>
             )}
           </li>
-        ))}
+        );
+        })}
       </ul>
     </div>
   );
 }
+
+// The full address names a control. The row may show a shortened one, and two long addresses can share a start.
+const labelName = (item: ShareEntry) => item.invitedAs ?? displayName(item.entry);
 
 const shortDate = (date: Date) => date.toLocaleDateString("en", { day: "numeric", month: "short", year: "numeric" });
 

@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Button,
   CheckIcon,
@@ -27,14 +28,19 @@ const claude: PresenceEntry = { id: "claude", name: "Claude", kind: "agent", act
 const DAY = 86_400_000;
 const expiryDays: Record<LinkExpiry, number | null> = { never: null, "1d": 1, "7d": 7, "30d": 30 };
 
-// The page is data: text, and the remote cursors that sit in it. A snapshot is made from the text only.
-type Part = string | PresenceEntry;
-const intro: Part[][] = [
-  ["We ship the beta on 12 November. Support and docs are ready one week earlier, so the team has time to practice the new flow ", grace, "before launch day."],
-  ["The announcement goes to the mailing list first, then to the blog.", claude, " Owners review the final draft."],
-];
+// The page text is plain HTML that React renders once and never updates. The browser owns it after
+// that, so Backspace, Enter, and paste cannot put it out of step with React. Remote cursors are React
+// portals into empty host spans, so a cursor the browser deletes only unmounts its portal.
+const escapeHtml = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const host = (id: string) => `<span data-cursor-host="${id}" contenteditable="false"></span>`;
 const lastBefore = "Measure sign-ups for two weeks.";
 const lastAfter = "Measure sign-ups for two weeks, and report the result to the whole team.";
+const initialHtml = [
+  `We ship the beta on 12 November. Support and docs are ready one week earlier, so the team has time to practice the new flow ${host("grace")}before launch day.`,
+  `The announcement goes to the mailing list first, then to the blog.${host("claude")} Owners review the final draft.`,
+]
+  .map((text) => `<p>${text}</p>`)
+  .join("") + `<p data-last>${escapeHtml(lastBefore)}</p>`;
 
 // A snapshot keeps the page inside the link fragment, so a server never sees it.
 // This demo does not compress or encrypt it.
@@ -103,7 +109,11 @@ export function EditorPage() {
 function Editor() {
   const toast = useToast();
   const [bold, setBold] = useState(false);
-  const [accepted, setAccepted] = useState<"pending" | "accepted" | "rejected">("pending");
+  const [decision, setDecision] = useState<"pending" | "accepted" | "rejected">("pending");
+  // Who made the accepted edit and who accepted it. The page reads its attribution from this.
+  const [edit, setEdit] = useState<{ by: PresenceEntry; acceptedBy: PresenceEntry }>();
+  const [hosts, setHosts] = useState<Record<string, HTMLElement>>({});
+  const html = useMemo(() => ({ __html: initialHtml }), []);
   const [people, setPeople] = useState<ShareEntry[]>([
     { entry: ada, role: "owner" },
     { entry: grace, role: "editor" },
@@ -113,7 +123,12 @@ function Editor() {
   const [snapshot, setSnapshot] = useState<string>();
   const textRef = useRef<HTMLDivElement>(null);
 
-  const last = accepted === "accepted" ? lastAfter : lastBefore;
+  useLayoutEffect(() => {
+    const found: Record<string, HTMLElement> = {};
+    textRef.current?.querySelectorAll<HTMLElement>("[data-cursor-host]").forEach((el) => { found[el.dataset.cursorHost ?? ""] = el; });
+    setHosts(found);
+  }, []);
+
   // Who is here is not who has access. Claude is here only while Claude still has access, and
   // then its cursor and its suggestion go with it.
   const claudeHere = people.some((p) => p.entry.id === "claude");
@@ -132,20 +147,32 @@ function Editor() {
   const decide = (decision: "accepted" | "rejected") => {
     // The suggestion was written against the original paragraph. If a person has changed it since,
     // accepting would replace their words, so nothing is applied.
-    const live = textRef.current?.querySelectorAll("p")[2]?.textContent?.trim();
-    if (decision === "accepted" && live !== lastBefore) {
+    const lastParagraph = textRef.current?.querySelector("p[data-last]");
+    if (decision === "accepted" && (!lastParagraph || lastParagraph.textContent?.trim() !== lastBefore)) {
       toast({ title: "We didn't apply the suggestion", description: "The last paragraph changed after Claude wrote it. Nothing was changed.", tone: "danger" });
       return;
     }
     textRef.current?.focus();
-    setAccepted(decision);
-    if (decision === "accepted") toast({ title: "Suggestion accepted", description: "The edit stays labeled as made by Claude, an agent.", tone: "success" });
+    if (decision === "accepted" && lastParagraph) {
+      lastParagraph.textContent = lastAfter;
+      setEdit({ by: claude, acceptedBy: ada });
+    }
+    setDecision(decision);
+    if (decision === "accepted") toast({ title: "Suggestion accepted", description: "The edit is labeled as made by Claude, an agent.", tone: "success" });
   };
+
+  const description = edit
+    ? `Last edited by ${edit.by.name}, an agent. ${edit.acceptedBy.name} accepted the change.`
+    : decision === "rejected"
+      ? `No agent edits. ${ada.name} rejected a suggestion from ${claude.name}, an agent.`
+      : claudeHere && decision === "pending"
+        ? `${claude.name}, an agent, has a suggestion waiting. No suggestion has been accepted.`
+        : "No suggestion has been accepted.";
 
   return (
     <DemoShell
       title="Launch plan"
-      description="Last edited by Claude, an agent. Ada Lovelace accepted the change."
+      description={description}
       actions={
         <>
           <PresenceStack entries={here} label="Here now" />
@@ -205,16 +232,17 @@ function Editor() {
       </Toolbar>
 
       <article className="demo-page">
-        <div ref={textRef} className="demo-prose" role="textbox" aria-multiline="true" aria-label="Page text" contentEditable suppressContentEditableWarning spellCheck>
-          {intro.map((parts, i) => (
-            <p key={i}>
-              {parts.map((part, j) => (typeof part === "string" ? part : part.id === "claude" && !claudeHere ? null : <PresenceCursor key={j} entry={part} />))}
-            </p>
-          ))}
-          <p>{last}</p>
-        </div>
+        <div ref={textRef} className="demo-prose" role="textbox" aria-multiline="true" aria-label="Page text" contentEditable suppressContentEditableWarning spellCheck dangerouslySetInnerHTML={html} />
+        {hosts.grace && createPortal(<PresenceCursor entry={grace} />, hosts.grace)}
+        {hosts.claude && claudeHere && createPortal(<PresenceCursor entry={claude} />, hosts.claude)}
 
-        {accepted === "pending" && claudeHere && (
+        {edit && (
+          <p className="demo-attribution">
+            <PresenceChip entry={edit.by} /> edited the last paragraph. {edit.acceptedBy.name} accepted the change.
+          </p>
+        )}
+
+        {decision === "pending" && claudeHere && (
           <aside className="demo-suggestion" aria-label="Suggestion from Claude">
             <p>
               <PresenceChip entry={claude} /> suggests a change to the last paragraph:
