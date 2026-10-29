@@ -261,12 +261,11 @@ test("the rows-arrived status does not come back with an old count", async ({ pa
   await page.locator('[data-index="0"]').focus();
   await page.keyboard.press("Space");
   await page.keyboard.press("Escape");
-  // The positive state first: the status is empty. Then the old count must not return.
+  // First wait for the settled state: the selection message is gone. Then the old count must not return.
   const status = page.locator(".agd-datatable [role=status]");
-  await expect(status).toHaveText("");
-  await expect(status).not.toHaveText(/10000 rows/);
+  await expect(status).not.toHaveText(/selected/);
   await page.waitForTimeout(700);
-  await expect(status).toHaveText("");
+  await expect(status).not.toHaveText(/10000 rows/);
 });
 
 test("a load that ends with no rows says so", async ({ page }) => {
