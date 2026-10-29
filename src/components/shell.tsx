@@ -37,10 +37,20 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
   // Moving a node in the page takes focus off it. Remember the focused element as the layout
   // changes, and give focus back once the parts have moved.
   const lastNarrow = useRef(narrow);
+  // The browser may blur a link the moment its sidebar is hidden, before the layout change reaches
+  // us. Keep that element, so focus is not lost with it.
+  const hiddenFocus = useRef<Element | null>(null);
   const focused = useRef<Element | null>(null);
   if (narrow !== lastNarrow.current) {
-    focused.current = document.activeElement;
+    const active = document.activeElement;
+    const hiddenFocusWas = hiddenFocus.current;
+    focused.current = hiddenFocus.current ?? active;
+    hiddenFocus.current = null;
     lastNarrow.current = narrow;
+    // Narrow hides the sidebar until opened, so open it if focus sits inside, or focus would be lost.
+    // Wide shows it always, so a stale `open` must not outlive the change.
+    openedByPerson.current = false;
+    setOpen(narrow && (!!hiddenFocusWas || !!sidebarRef.current?.contains(active)));
   }
   useLayoutEffect(() => {
     const el = focused.current;
@@ -79,7 +89,17 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
     </header>
   );
   const sidebarEl = (
-    <div key="sidebar" id={sidebarId} ref={sidebarRef} className="ad-shell__sidebar" data-open={open}>
+    <div
+      key="sidebar"
+      id={sidebarId}
+      ref={sidebarRef}
+      className="ad-shell__sidebar"
+      data-open={open}
+      onBlur={(event) => {
+        if (!event.relatedTarget && sidebarRef.current && getComputedStyle(sidebarRef.current).display === "none") hiddenFocus.current = event.target;
+      }}
+      onFocus={() => { hiddenFocus.current = null; }}
+    >
       <p className="ad-shell__brand">{brand}</p>
       {sidebar}
     </div>
