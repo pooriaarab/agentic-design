@@ -118,9 +118,9 @@ themes.dark.accent; // "#8EA4FF"
 ```
 
 - Table controls for React, to put in the `toolbar` of a `DataTable`.
-  - `DataTableToolbar` is the bar that holds these controls. Its `end` prop takes a control at the right edge,
-    such as `DisplayPopover`. Its `label` names the group (default "Table controls"). With two tables on a page,
-    give each toolbar its own `label`.
+  - `DataTableToolbar` is the bar that holds these controls. Its `end` prop takes a control at the end of the bar
+    (the right edge in left-to-right text), such as `DisplayPopover`. Its `label` names the group
+    (default "Table controls"). With two tables on a page, give each toolbar its own `label`.
   - `TableSearch` is a button that opens a search field and moves focus into it. Escape clears the text, and
     Escape again closes the field. Inside a Radix `Dialog`, Escape also closes the dialog, because the dialog
     listens first. When it is open, it is a search landmark named by its `label` (default "Search"). With two tables on a page,
