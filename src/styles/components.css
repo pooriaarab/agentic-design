@@ -14,7 +14,7 @@
   --button-bg-hover: var(--agd-color-surface-hover);
   --button-bg-active: var(--agd-color-surface-sunken);
   --button-fg: var(--agd-color-text);
-  --button-border: var(--agd-color-border-strong);
+  --button-border: var(--agd-color-border);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -57,7 +57,7 @@
   --button-bg-hover: var(--agd-color-danger-subtle);
   --button-bg-active: var(--agd-color-danger-subtle);
   --button-fg: var(--agd-color-danger-text);
-  --button-border: var(--agd-color-danger);
+  --button-border: var(--agd-color-border);
 }
 .agd-button:disabled {
   --button-bg: var(--agd-color-surface-sunken);
@@ -233,7 +233,7 @@
   height: fit-content;
   max-height: calc(100vh - 2rem);
   overflow: auto;
-  padding: var(--agd-space-6);
+  padding: var(--agd-space-8);
   border: 1px solid var(--agd-color-border);
   border-radius: var(--agd-radius-lg);
   background: var(--agd-color-surface-raised);
@@ -243,7 +243,7 @@
 .agd-dialog__title { padding-inline-end: var(--agd-space-8); font-size: var(--agd-font-size-lg); }
 .agd-dialog__description { margin-top: var(--agd-space-2); color: var(--agd-color-text-muted); }
 .agd-dialog__body { margin-top: var(--agd-space-4); }
-.agd-dialog__footer { display: flex; justify-content: flex-end; gap: var(--agd-space-2); margin-top: var(--agd-space-6); }
+.agd-dialog__footer { display: flex; justify-content: flex-end; gap: var(--agd-space-2); margin-top: var(--agd-space-8); }
 .agd-dialog__close { position: absolute; inset-block-start: var(--agd-space-3); inset-inline-end: var(--agd-space-3); }
 
 /* A tooltip is an inverted surface. The pair text on bg is already checked. */
@@ -261,9 +261,9 @@
 .agd-menu {
   z-index: 60;
   min-width: 11rem;
-  padding: var(--agd-space-1);
+  padding: var(--agd-space-2);
   border: 1px solid var(--agd-color-border);
-  border-radius: var(--agd-radius-md);
+  border-radius: var(--agd-radius-lg);
   background: var(--agd-color-surface-raised);
   box-shadow: var(--agd-shadow-floating);
   animation: agd-pop-in var(--agd-duration-fast) var(--agd-easing-out);
@@ -274,7 +274,7 @@
   gap: var(--agd-space-2);
   min-height: var(--agd-control-h);
   padding: 0 var(--agd-space-3);
-  border-radius: var(--agd-radius-sm);
+  border-radius: var(--agd-radius-md);
   color: var(--agd-color-text);
   cursor: pointer;
   outline: none;
