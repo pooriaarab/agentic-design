@@ -104,3 +104,21 @@ export function PresenceStack({ entries, max = 4, label = "Here now" }: { entrie
     </div>
   );
 }
+
+/**
+ * A remote cursor inside text: a caret and a name tag. A person's tag is accent-filled.
+ * An agent's tag is outlined, square, and carries the word "Agent". The cursor is a visual aid
+ * only. The roster and the stack carry the same facts for assistive technology.
+ */
+export function PresenceCursor({ entry }: { entry: PresenceEntry }) {
+  const name = displayName(entry);
+  return (
+    <span className={cx("ad-cursor", `ad-cursor--${entry.kind}`)} contentEditable={false} aria-hidden="true">
+      <span className="ad-cursor__caret" />
+      <span className="ad-cursor__tag">
+        {name}
+        {entry.kind === "agent" && " · Agent"}
+      </span>
+    </span>
+  );
+}

@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
 import { ToastProvider, TooltipProvider } from "../react.js";
 import { ThemeProvider } from "../theme.js";
+import { EditorPage } from "./editor-page.js";
 import { PatternsPage } from "./patterns-page.js";
 import { DemoShell } from "./demo-shell.js";
 import { PrimitivesPage } from "./primitives-page.js";
@@ -11,6 +12,7 @@ const pages: Record<string, () => ReactElement> = {
   "/": TokensPage,
   "/primitives": PrimitivesPage,
   "/patterns": PatternsPage,
+  "/editor": EditorPage,
 };
 const Page = pages[window.location.pathname.replace(/\/$/, "") || "/"] ?? (() => (
     <DemoShell title="Page not found" description="This demo has no page at that address.">

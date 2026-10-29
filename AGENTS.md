@@ -10,7 +10,7 @@ the same object, so each returns the same shape.
 
 ## The faces
 
-- Library: `import { themes, scale } from "agentic-design/tokens"`.
+- Library: `import { themes, scale } from "agentic-design/tokens"`. React parts come from `agentic-design/react`.
 - CSS: `import "agentic-design/styles.css"`, then use `var(--ad-color-*)`.
 - CLI: `npx agentic-design tokens --format json`.
 - MCP: `npx agentic-design mcp`, then call a tool below.
@@ -32,3 +32,5 @@ Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,da
 - Run `npm run check:contrast` after any color change. Do not lower a minimum to pass.
 - Never load a font or asset from a remote host.
 - Never use color as the only signal. Pair it with text, a shape, or an icon.
+- Show an agent as an agent everywhere: the word Agent, a square avatar, and who it acts for.
+- Treat a peer display name as hostile. Pass it through `usableName` before you show it.

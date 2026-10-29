@@ -5,7 +5,7 @@ Accessible design tokens and UI primitives for calm, minimal apps.
 Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,dark-mode.
 
 - CSS: import "agentic-design/styles.css", then use var(--ad-color-bg) and friends.
-- Library: import { themes, scale } from "agentic-design/tokens".
+- Library: import { themes, scale } from "agentic-design/tokens". React parts: import { Button, ShareDialog, PresenceChip } from "agentic-design/react".
 - CLI: agentic-design tokens --format json.
 - MCP: run agentic-design mcp, then call get_tokens or check_contrast.
 - HTTP: GET /api/v1/tokens.
