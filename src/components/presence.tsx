@@ -148,7 +148,7 @@ export function PresenceCursor({ entry }: { entry: PresenceEntry }) {
     const rtl = getComputedStyle(tag).direction === "rtl";
     const edge = document.documentElement.clientWidth - 8;
     let dx = box.right > edge ? edge - box.right : 0;
-    if (box.left + dx < 8) dx = box.width > edge - 8 ? (rtl ? edge - box.right : 8 - box.left) : 8 - box.left;
+    if (box.left + dx < 8) dx = 8 - box.left;
     // The offset is from the start side, so it points the other way in a right-to-left page.
     if (dx !== 0) tag.style.setProperty("--agd-cursor-shift", `${Math.round(rtl ? -dx : dx)}px`);
   };

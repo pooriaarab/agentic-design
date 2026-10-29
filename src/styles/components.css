@@ -398,7 +398,7 @@
   /* The padding and the matching negative margin leave room inside the clip for a focus ring on a link. */
   .agd-shell__brand { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: var(--agd-space-1); margin: calc(var(--agd-space-1) * -1); }
   /* No clip here: a DocumentTitle shortens itself, and its focus ring and error must stay whole. */
-  .agd-shell__title { flex: 1 1 0; overflow-wrap: anywhere; }
+  .agd-shell__title { flex: 1 1 8rem; overflow-wrap: anywhere; }
   .agd-shell__actions { flex-wrap: wrap; gap: var(--agd-space-2) var(--agd-space-3); min-width: 0; }
   .agd-shell__more { display: inline-flex; }
   .agd-shell__secondary { flex: 1 0 100%; justify-content: flex-end; }
