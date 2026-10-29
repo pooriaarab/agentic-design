@@ -20,6 +20,8 @@ const refused: [string, unknown][] = [
   ["lone surrogate", "Ada\uD800"],
   ["private use", "Ada\uE000"],
   ["a stack of combining marks (draws far outside its row)", `a${"\u0301".repeat(8)}`],
+  ["combining marks split by joiners so no run is long", `a${("\u0301".repeat(4) + "\u200C").repeat(7)}`],
+  ["combining marks split by direction marks", `a${("\u0301".repeat(4) + "\u200E").repeat(7)}`],
 ];
 const accepted: [string, string][] = [
   ["plain", "Ada Lovelace"],

@@ -20,6 +20,13 @@ const STACKED_MARKS = /\p{M}{5,}/u;
  * The rule refuses and never repairs: a repaired name is still a name the claimant shaped.
  */
 export function usableName(name: unknown): string | null {
-  if (typeof name !== "string" || name.length > MAX_NAME_LENGTH) return null;
-  return ORDINARY_TEXT.test(name) && VISIBLE.test(name) && !STACKED_MARKS.test(name) ? name : null;
+  return usableText(name, MAX_NAME_LENGTH);
+}
+
+/** The same rule with your own length limit, for text such as a file name. */
+export function usableText(text: unknown, maxLength: number): string | null {
+  if (typeof text !== "string" || text.length > maxLength) return null;
+  // Joiners and direction marks are allowed, but they must not split a stack of marks into short runs.
+  const withoutJoiners = text.replace(/[\u200C-\u200F]/g, "");
+  return ORDINARY_TEXT.test(text) && VISIBLE.test(text) && !STACKED_MARKS.test(withoutJoiners) ? text : null;
 }

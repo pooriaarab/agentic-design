@@ -17,8 +17,13 @@ export interface PresenceEntry {
 
 const statusLabel = { active: "", away: "Away", paused: "Paused" } as const;
 
-function displayName(entry: Pick<PresenceEntry, "name" | "kind">): string {
-  return usableName(entry.name) ?? (entry.kind === "agent" ? "Unnamed agent" : "Unnamed person");
+// Entries come from other peers. Anything that is not "person" is shown as an agent, so a
+// malformed kind never hides the word Agent. An unknown status shows no status word.
+const kindOf = (entry: Pick<PresenceEntry, "kind">): PresenceKind => (entry.kind === "person" ? "person" : "agent");
+const statusOf = (entry: Pick<PresenceEntry, "status">): string => statusLabel[entry.status as PresenceStatus] ?? "";
+
+export function displayName(entry: Pick<PresenceEntry, "name" | "kind">): string {
+  return usableName(entry.name) ?? (kindOf(entry) === "agent" ? "Unnamed agent" : "Unnamed person");
 }
 
 function initials(name: string): string {
@@ -34,12 +39,12 @@ function initials(name: string): string {
 export function Avatar({ entry, label }: { entry: PresenceEntry; label?: string }) {
   return (
     <span
-      className={cx("ad-avatar", `ad-avatar--${entry.kind}`)}
+      className={cx("ad-avatar", `ad-avatar--${kindOf(entry)}`)}
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
     >
-      {entry.kind === "agent" ? <BotIcon aria-hidden="true" /> : initials(displayName(entry))}
+      {kindOf(entry) === "agent" ? <BotIcon aria-hidden="true" /> : initials(displayName(entry))}
     </span>
   );
 }
@@ -50,14 +55,14 @@ export function Avatar({ entry, label }: { entry: PresenceEntry; label?: string 
  */
 export function PresenceChip({ entry, className }: { entry: PresenceEntry; className?: string }) {
   const name = displayName(entry);
-  const status = statusLabel[entry.status ?? "active"];
+  const status = statusOf(entry);
   // A name that fails the check still shows who the agent acts for, as unnamed.
   const actingFor = entry.actingFor === undefined ? null : (usableName(entry.actingFor) ?? "Unnamed person");
   return (
     <span className={cx("ad-chip", className)}>
       <Avatar entry={entry} />
       <span className="ad-chip__name" title={name}>{name}</span>
-      {entry.kind === "agent" && (
+      {kindOf(entry) === "agent" && (
         <span
           className="ad-pill"
           title={actingFor ? `An agent acting for ${actingFor}.` : "An agent, not a person."}
@@ -65,14 +70,14 @@ export function PresenceChip({ entry, className }: { entry: PresenceEntry; class
           Agent
         </span>
       )}
-      {entry.kind === "agent" && actingFor && <span className="ad-chip__meta">for {actingFor}</span>}
+      {kindOf(entry) === "agent" && actingFor && <span className="ad-chip__meta">for {actingFor}</span>}
       {status && <span className="ad-chip__meta">{status}</span>}
     </span>
   );
 }
 
 function summary(entries: PresenceEntry[]): string {
-  const agents = entries.filter((e) => e.kind === "agent").length;
+  const agents = entries.filter((e) => kindOf(e) === "agent").length;
   const people = entries.length - agents;
   const part = (n: number, one: string, many: string) => (n === 0 ? [] : [`${n} ${n === 1 ? one : many}`]);
   return [...part(people, "person", "people"), ...part(agents, "agent", "agents")].join(", ");
@@ -86,8 +91,7 @@ export function PresenceStack({ entries, max = 4, label = "Here now" }: { entrie
     <div className="ad-stack">
       <ul className="ad-stack__list" aria-label={label}>
         {shown.map((entry) => {
-          const status = statusLabel[entry.status ?? "active"];
-          const text = [displayName(entry), entry.kind === "agent" && "agent", status.toLowerCase()].filter(Boolean).join(", ");
+          const text = [displayName(entry), kindOf(entry) === "agent" && "agent", statusOf(entry).toLowerCase()].filter(Boolean).join(", ");
           return (
             <li key={entry.id} title={text}>
               <Avatar entry={entry} label={text} />

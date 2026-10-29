@@ -31,10 +31,16 @@ test("contrast command passes for the shipped tokens", () => {
   expect(JSON.parse(stdout).every((r: { pass: boolean }) => r.pass)).toBe(true);
 });
 
+test("--version prints the version in package.json", () => {
+  const { version } = JSON.parse(readFileSync("package.json", "utf8"));
+  expect(cli("--version").stdout.trim()).toBe(version);
+});
+
 test("bad input exits with a usage code", () => {
   expect(cli("tokens", "--format", "xml").status).toBe(2);
   expect(cli("tokens", "--format", "json", "extra").status).toBe(2);
   expect(cli("contrast", "extra").status).toBe(2);
+  expect(cli("contrast", "extra").stderr).toContain("takes no arguments");
   expect(cli("nope").status).toBe(2);
 });
 
@@ -71,6 +77,12 @@ test("the check script refuses input it cannot check, instead of passing", () =>
     writeFileSync(file, JSON.stringify(value));
     return spawnSync("node", ["scripts/check-contrast.mjs", file], { encoding: "utf8" });
   };
+  // A file that holds null, 0, false, or "" must never be swapped for the shipped themes.
+  for (const falsy of [null, 0, false, ""]) {
+    const result = run(falsy);
+    expect(result.status, `file holding ${JSON.stringify(falsy)}`).toBe(2);
+    expect(result.stdout).not.toContain("pairs pass");
+  }
   const empty = run({ themes: {} });
   expect(empty.status).toBe(2);
   expect(empty.stderr).toContain('theme "light" is missing');

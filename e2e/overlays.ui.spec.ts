@@ -167,3 +167,15 @@ test("toasts are announced, tell their tone in words, and close on time or stay 
   await error.getByRole("button", { name: "Dismiss" }).click();
   await expect(error).toBeHidden();
 });
+
+test("F8 moves focus to the notifications and the focus is visible", async ({ page }) => {
+  await open(page);
+  await page.getByRole("button", { name: "Show toast", exact: true }).click();
+  await expect(page.locator(".ad-toast", { hasText: "Link copied" })).toBeVisible();
+  await page.keyboard.press("F8");
+  const viewport = page.locator(".ad-toast-viewport");
+  await expect(viewport).toBeFocused();
+  expect(await viewport.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe("solid");
+  await page.keyboard.press("Tab");
+  expect(await page.evaluate(() => !!document.activeElement?.closest(".ad-toast"))).toBe(true);
+});

@@ -13,7 +13,7 @@ export interface AppShellProps {
 }
 
 /**
- * Sidebar, top bar, and content. The first tab stop is a skip link. Below 48rem the sidebar
+ * Top bar, sidebar, and content, in that order in the page. The first tab stop is a skip link. Below 48rem the sidebar
  * hides behind a menu button. Opening it moves focus into the sidebar. Escape closes it and
  * returns focus to the button.
  */
@@ -41,10 +41,6 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
   return (
     <div className="ad-shell" onKeyDown={onKeyDown}>
       <a className="ad-skip-link" href={`#${mainId}`}>Skip to content</a>
-      <div id={sidebarId} ref={sidebarRef} className="ad-shell__sidebar" data-open={open}>
-        <p className="ad-shell__brand">{brand}</p>
-        {sidebar}
-      </div>
       <header className="ad-shell__topbar">
         <IconButton
           ref={toggleRef}
@@ -60,6 +56,10 @@ export function AppShell({ brand, sidebar, topbar, children }: AppShellProps) {
         />
         <div className="ad-shell__actions">{topbar}</div>
       </header>
+      <div id={sidebarId} ref={sidebarRef} className="ad-shell__sidebar" data-open={open}>
+        <p className="ad-shell__brand">{brand}</p>
+        {sidebar}
+      </div>
       <main id={mainId} className="ad-shell__content" tabIndex={-1}>{children}</main>
     </div>
   );

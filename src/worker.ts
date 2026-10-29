@@ -1,10 +1,10 @@
 import { tokensJson } from "./tokens/index.js";
 import { VERSION } from "./version.js";
 
-function json(value: unknown, status = 200): Response {
+function json(value: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(value), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...headers },
   });
 }
 
@@ -17,7 +17,7 @@ export default {
   async fetch(request: Request): Promise<Response> {
     const route = routes[new URL(request.url).pathname];
     if (!route) return json({ error: "not found" }, 404);
-    if (request.method !== "GET" && request.method !== "HEAD") return json({ error: "method not allowed" }, 405);
+    if (request.method !== "GET" && request.method !== "HEAD") return json({ error: "method not allowed" }, 405, { allow: "GET, HEAD" });
     const response = json(route());
     return request.method === "HEAD" ? new Response(null, response) : response;
   },

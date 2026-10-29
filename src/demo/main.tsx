@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import { ToastProvider, TooltipProvider } from "../react.js";
 import { ThemeProvider } from "../theme.js";
 import { PatternsPage } from "./patterns-page.js";
-import { DemoShell } from "./demo-shell.js";
 import { PrimitivesPage } from "./primitives-page.js";
 import { TokensPage } from "./tokens-page.js";
 
@@ -12,18 +11,17 @@ const pages: Record<string, () => ReactElement> = {
   "/primitives": PrimitivesPage,
   "/patterns": PatternsPage,
 };
-const Page = pages[window.location.pathname.replace(/\/$/, "") || "/"] ?? (() => (
-    <DemoShell title="Page not found" description="This demo has no page at that address.">
-      <p>Choose a page from the sidebar.</p>
-    </DemoShell>
-  ));
+// The Worker serves a page only for these paths. Any other path never reaches this script.
+const Page = pages[window.location.pathname.replace(/\/$/, "") || "/"];
 
-createRoot(document.getElementById("root") as HTMLElement).render(
-  <ThemeProvider>
-    <TooltipProvider>
-      <ToastProvider>
-        <Page />
-      </ToastProvider>
-    </TooltipProvider>
-  </ThemeProvider>,
-);
+if (Page) {
+  createRoot(document.getElementById("root") as HTMLElement).render(
+    <ThemeProvider>
+      <TooltipProvider>
+        <ToastProvider>
+          <Page />
+        </ToastProvider>
+      </TooltipProvider>
+    </ThemeProvider>,
+  );
+}

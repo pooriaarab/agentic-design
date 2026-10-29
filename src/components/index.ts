@@ -12,4 +12,4 @@ export { EmptyState, FileList, FileRow } from "./files.js";
 export type { FileRowProps } from "./files.js";
 export { Avatar, PresenceChip, PresenceStack } from "./presence.js";
 export type { PresenceEntry, PresenceKind, PresenceStatus } from "./presence.js";
-export { usableName, MAX_NAME_LENGTH } from "./safe-name.js";
+export { usableName, usableText, MAX_NAME_LENGTH } from "./safe-name.js";

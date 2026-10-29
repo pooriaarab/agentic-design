@@ -63,17 +63,22 @@ test("the skip link moves focus into the main content", async ({ page }) => {
   expect(await page.evaluate(() => !!document.activeElement?.closest("main"))).toBe(true);
 });
 
-test("the theme select works with the keyboard alone, and the tab order is skip link, pages, theme", async ({ page }) => {
+test("the theme select works with the keyboard alone, and the tab order is skip link, theme, pages", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   const pages = await page.getByRole("navigation", { name: "Demo pages" }).getByRole("link").allInnerTexts();
   const stops: string[] = [];
   for (let i = 0; i < pages.length + 2; i++) {
     await page.keyboard.press("Tab");
-    stops.push(await page.evaluate(() => (document.activeElement as HTMLElement).innerText || document.activeElement?.getAttribute("aria-label") || document.activeElement?.tagName || ""));
+    stops.push(
+      await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement;
+        return el.tagName === "SELECT" ? "Theme" : el.innerText || el.getAttribute("aria-label") || el.tagName;
+      }),
+    );
   }
-  expect(stops.slice(0, -1)).toEqual(["Skip to content", ...pages]);
-  await expect(page.getByLabel("Theme")).toBeFocused();
+  expect(stops.slice(0, pages.length + 2)).toEqual(["Skip to content", "Theme", ...pages]);
+  await page.getByLabel("Theme").focus();
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowDown");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -123,6 +128,14 @@ test("a saved dark pick is applied before the app loads, so there is no light fl
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   expect(await bodyBg(page)).toBe(hexToRgb(themes.dark.bg));
+});
+
+test("a saved value that is not light, dark, or system is ignored and the page still renders", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("agentic-design-theme", "Dark"));
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.*/);
+  await expect(page.getByLabel("Theme")).toHaveValue("system");
 });
 
 test("a pick in one tab reaches another tab of the same app", async ({ context }) => {

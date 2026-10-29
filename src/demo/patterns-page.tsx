@@ -22,6 +22,11 @@ const grace: PresenceEntry = { id: "2", name: "Grace Hopper", kind: "person", st
 const claude: PresenceEntry = { id: "3", name: "Claude", kind: "agent", actingFor: "Ada Lovelace" };
 const reviewer: PresenceEntry = { id: "4", name: "Review bot", kind: "agent", status: "paused" };
 const hostile: PresenceEntry = { id: "5", name: "Eve\u202Eevil", kind: "person" };
+// Entries from peers can be malformed. They must still render, and an agent must still say Agent.
+const malformed = [
+  { id: "7", name: "Mallory", kind: "bot" },
+  { id: "8", name: "Trent", kind: "person", status: "busy" },
+] as unknown as PresenceEntry[];
 const crowd: PresenceEntry[] = [ada, grace, claude, reviewer, hostile, { id: "6", name: "Linus", kind: "person" }];
 
 export function PatternsPage() {
@@ -49,6 +54,13 @@ export function PatternsPage() {
         </div>
         <ul className="demo-plain">
           {crowd.map((entry) => (
+            <li key={entry.id}>
+              <PresenceChip entry={entry} />
+            </li>
+          ))}
+        </ul>
+        <ul className="demo-plain" aria-label="Malformed entries">
+          {malformed.map((entry) => (
             <li key={entry.id}>
               <PresenceChip entry={entry} />
             </li>
@@ -82,6 +94,7 @@ export function PatternsPage() {
             />
             <FileRow name="Meeting notes" href="#notes" modified={new Date("2026-10-26T15:30:00Z")} editedBy={claude} />
             <FileRow name="Research" href="#research" kind="folder" modified={new Date("2026-10-20T09:00:00Z")} editedBy={grace} />
+            <FileRow name={"invoice\u202Etxt.exe"} href="#untitled" modified={new Date(Number.NaN)} editedBy={ada} />
           </FileList>
         )}
       </section>

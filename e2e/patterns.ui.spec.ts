@@ -75,7 +75,7 @@ test("the toolbar is one tab stop, moves with arrow keys, and toggles", async ({
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
   // Tab enters the toolbar on one item, and the next Tab leaves it.
-  await page.getByRole("combobox", { name: "Theme" }).focus();
+  await page.getByRole("navigation", { name: "Demo pages" }).getByRole("link").last().focus();
   await page.keyboard.press("Tab");
   await expect(toolbar.locator(":focus")).toHaveCount(1);
   await page.keyboard.press("Tab");
@@ -153,7 +153,7 @@ test("a hostile name shows as unnamed", async ({ page }) => {
 test("a file row links by name, shows who edited, and labels an agent edit", async ({ page }) => {
   await page.goto("/patterns");
   const list = page.getByRole("list", { name: "Recent files" });
-  await expect(list.getByRole("listitem")).toHaveCount(3);
+  await expect(list.getByRole("listitem")).toHaveCount(4);
   await expect(list.getByRole("link", { name: "Launch plan" })).toHaveAttribute("href", "#launch-plan");
   const notes = list.getByRole("listitem").filter({ hasText: "Meeting notes" });
   await expect(notes).toContainText("Edited by");
@@ -181,4 +181,44 @@ test("on a narrow screen every file row still shows its date", async ({ page }) 
   const times = page.getByRole("list", { name: "Recent files" }).locator("time");
   await expect(times).toHaveCount(3);
   for (const time of await times.all()) await expect(time).toBeVisible();
+  await expect(page.getByText("Date unknown")).toBeVisible();
+});
+
+test("a malformed peer entry still renders, and an unknown kind shows as an agent", async ({ page }) => {
+  await page.goto("/patterns");
+  const list = page.getByRole("list", { name: "Malformed entries" });
+  const mallory = list.getByRole("listitem").filter({ hasText: "Mallory" });
+  await expect(mallory).toContainText("Agent");
+  await expect(mallory.locator(".ad-avatar--agent")).toHaveCount(1);
+  const trent = list.getByRole("listitem").filter({ hasText: "Trent" });
+  await expect(trent).toBeVisible();
+  await expect(trent).not.toContainText("busy");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Patterns");
+});
+
+test("a file name with a hidden direction character shows as untitled", async ({ page }) => {
+  await page.goto("/patterns");
+  const row = page.getByRole("list", { name: "Recent files" }).getByRole("listitem").filter({ hasText: "Untitled" });
+  await expect(row).toHaveCount(1);
+  await expect(row.getByRole("link", { name: "Untitled" })).toHaveAttribute("href", "#untitled");
+  await expect(page.getByText(/txt\.exe/)).toHaveCount(0);
+});
+
+test("on a narrow screen the tab order follows what is on the screen", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto("/patterns");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const toggle = page.getByRole("button", { name: "Navigation" });
+  await toggle.click();
+  const nav = page.getByRole("navigation", { name: "Demo pages" });
+  const inHeader = () => page.evaluate(() => !!document.activeElement?.closest("header"));
+  const inMain = () => page.evaluate(() => !!document.activeElement?.closest("main"));
+  // The nav sits below the top bar. Shift+Tab from its first link goes up into the top bar, not past it.
+  await expect(nav.getByRole("link").first()).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  expect(await inHeader()).toBe(true);
+  // Tab from the last link goes down into the content.
+  await nav.getByRole("link").last().focus();
+  await page.keyboard.press("Tab");
+  expect(await inMain()).toBe(true);
 });
