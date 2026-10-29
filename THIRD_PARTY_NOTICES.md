@@ -11,3 +11,9 @@ The license texts are in `src/fonts/` and ship in `dist/fonts/`.
 | JetBrains Mono | https://github.com/JetBrains/JetBrainsMono, packaged by `@fontsource-variable/jetbrains-mono` 5.3.0 | SIL OFL 1.1 |
 
 Only the Latin and Latin Extended subsets are included.
+
+## Test tools under MPL-2.0
+
+`axe-core` and `@axe-core/playwright` are dev dependencies under the Mozilla Public License 2.0.
+The tests use them to find accessibility problems. They are not changed, they are not built into
+the package, and they are not published with it.
