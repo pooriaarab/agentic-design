@@ -59,7 +59,7 @@ test("column headers sort by keyboard, name order is natural, and a bad date sor
   await page.keyboard.press("Enter");
   await expect(name).toHaveAttribute("aria-sort", "descending");
   expect((await names(page))[0]).toBe("Research");
-  await expect(page.locator("#demo-files").getByRole("status")).toHaveText("Sorted by name, descending");
+  await expect(page.locator("#demo-files").getByRole("status")).toHaveText("Sorted: Name, Z to A");
 
   const modified = table.getByRole("columnheader", { name: "Modified" });
   await modified.getByRole("button").focus();
@@ -72,6 +72,14 @@ test("column headers sort by keyboard, name order is natural, and a bad date sor
   expect((await names(page)).at(-1)).toBe("Budget 2");
 });
 
+test("a column that is not sorted shows a two-way arrow, and the active one shows its direction", async ({ page }) => {
+  await page.goto("/chrome");
+  const arrow = (column: string) => page.getByRole("columnheader", { name: column }).locator(".ad-filetable__arrow");
+  await expect(arrow("Name")).toHaveText("\u2191");
+  await expect(arrow("Owner")).toHaveText("\u21C5");
+  await expect(page.getByRole("columnheader", { name: "Owner" }).getByRole("button")).toHaveAccessibleName("Owner");
+});
+
 test("an agent owner shows as an agent in the table and the grid, and the grid sorts with a select", async ({ page }) => {
   await page.goto("/chrome");
   await expect(page.locator(".ad-filetable tbody tr", { hasText: "Meeting notes" })).toContainText("Agent");
@@ -81,7 +89,7 @@ test("an agent owner shows as an agent in the table and the grid, and the grid s
   await expect(card).toContainText("for Ada Lovelace");
   await page.getByRole("combobox", { name: "Sort by" }).selectOption("modified:descending");
   await expect(page.locator(".ad-filegrid__item .ad-file-row__name").first()).toHaveText("Launch plan");
-  await expect(page.locator("#demo-files").getByRole("status")).toHaveText("Sorted by modified, descending");
+  await expect(page.locator("#demo-files").getByRole("status")).toHaveText("Sorted: Modified, newest first");
 });
 
 test("placeholders hold still when the user asks for reduced motion", async ({ page }) => {
@@ -159,7 +167,7 @@ test("the status element stays in the page across views, and the sort message wa
   expect(await handle?.evaluate((n) => n.isConnected)).toBe(true);
   await page.getByRole("button", { name: "Show files" }).click();
   await page.getByRole("combobox", { name: "Sort by" }).selectOption("owner:ascending");
-  await expect(status).toHaveText("Sorted by owner, ascending");
+  await expect(status).toHaveText("Sorted: Owner, A to Z");
 });
 
 test("on a narrow screen the table does not scroll sideways and passes axe", async ({ page }) => {
@@ -168,6 +176,9 @@ test("on a narrow screen the table does not scroll sideways and passes axe", asy
   await expect(page.getByRole("table", { name: "Recent files" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
   expect(await violations(page, "#demo-files")).toEqual([]);
+  // A stacked row is as tall as its lines need, not three rows of 3rem each.
+  const row = await page.locator(".ad-filetable tbody tr", { hasText: "Launch plan" }).boundingBox();
+  expect(row?.height ?? 0).toBeLessThan(140);
   await page.getByRole("button", { name: "Show grid" }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
 });

@@ -56,6 +56,10 @@ const columns: { key: FileSortKey; label: string }[] = [
   { key: "modified", label: "Modified" },
 ];
 
+/** The words for one sort, the same in the grid select and in the status message. */
+const sortWords = (key: FileSortKey, direction: FileSort["direction"]) =>
+  `${columns.find((c) => c.key === key)?.label}, ${key === "modified" ? (direction === "ascending" ? "oldest first" : "newest first") : direction === "ascending" ? "A to Z" : "Z to A"}`;
+
 const shownName = (item: Pick<FileItem, "name">) => usableText(item.name, MAX_FILE_NAME) ?? "Untitled";
 const validDate = (date: unknown): date is Date => date instanceof Date && !Number.isNaN(date.getTime());
 
@@ -119,7 +123,7 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
   useEffect(() => {
     if (lastSort.current.key === sort.key && lastSort.current.direction === sort.direction) return;
     lastSort.current = sort;
-    setSaid(`Sorted by ${columns.find((c) => c.key === sort.key)?.label.toLowerCase()}, ${sort.direction}`);
+    setSaid(`Sorted: ${sortWords(sort.key, sort.direction)}`);
   }, [sort]);
   // When loading ends, say how many files arrived, so the status does not just go quiet.
   const wasLoading = useRef(loading);
@@ -144,10 +148,7 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
             choose({ key, direction });
           }}
         >
-          {columns.flatMap((c) => [
-            <option key={`${c.key}:ascending`} value={`${c.key}:ascending`}>{c.label}, {c.key === "modified" ? "oldest first" : "A to Z"}</option>,
-            <option key={`${c.key}:descending`} value={`${c.key}:descending`}>{c.label}, {c.key === "modified" ? "newest first" : "Z to A"}</option>,
-          ])}
+          {columns.flatMap((c) => (["ascending", "descending"] as const).map((d) => <option key={`${c.key}:${d}`} value={`${c.key}:${d}`}>{sortWords(c.key, d)}</option>))}
         </Select>
         <ul className="ad-filegrid" aria-label={label} aria-busy={loading || undefined}>
           {loading
@@ -174,7 +175,7 @@ function FileItems({ label, items, view = "table", defaultSort = { key: "name", 
                 <th key={c.key} role="columnheader" scope="col" aria-sort={active ? sort.direction : undefined}>
                   <button type="button" className="ad-filetable__sort" onClick={() => toggle(c.key)}>
                     {c.label}
-                    <span className="ad-filetable__arrow" aria-hidden="true">{active ? (sort.direction === "ascending" ? "\u2191" : "\u2193") : ""}</span>
+                    <span className="ad-filetable__arrow" aria-hidden="true">{active ? (sort.direction === "ascending" ? "\u2191" : "\u2193") : "\u21C5"}</span>
                   </button>
                 </th>
               );

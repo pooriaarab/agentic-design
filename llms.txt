@@ -10,6 +10,19 @@ Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,da
 - MCP: run agentic-design mcp, then call get_tokens or check_contrast.
 - HTTP: GET /api/v1/tokens.
 
+## App chrome (React, agentic-design/react)
+
+Use these for the frame of any editor. They need only the stylesheet. Each example in the README is a whole module.
+
+- AppShell: <AppShell brand="Docs" sidebar={<SidebarNav label="Main" items={[{ href: "/", label: "Home", current: true }]} />} title={<DocumentTitle value={t} onRename={setT} />} topbar={<AgentBadge compact name="Claude" actingFor="Ada Lovelace" />} panel={<Comments />} panelLabel="Comments">{children}</AppShell>
+- Toolbar: <Toolbar label="Tools"><ToolbarGroup label="Text style"><ToolbarButton label="Bold" icon={<b>B</b>} pressed={bold} onClick={toggle} /></ToolbarGroup><ToolbarOverflow items={[{ label: "Word count", onSelect }]} /></Toolbar>
+- DocumentTitle: <DocumentTitle value={title} onRename={setTitle} />. Enter, Space, or F2 renames. Escape cancels. Put it in the top bar, not in a dialog.
+- ShareDialog: <ShareDialog trigger={<Button>Share</Button>} resourceName="Plan" people={people} onInvite onChangeRole onRemove link={link} onChangeLink snapshot={{ onCreate }} onCopy={copy} />. It is a view with no network.
+- FileList: <FileList label="Files" view="table" items={items} loading={loading} />. Items have id, name, href, owner (a presence entry), modified. view is "table" or "grid". Add sort and onSortChange to control the sort.
+- AgentBadge: <AgentBadge name="Claude" actingFor="Ada Lovelace" />. Add compact for an avatar only. Show it on everything an agent made.
+
+Rules: use tokens only, never a hex value. Show an agent as an agent. Pass a peer display name through usableName.
+
 ## Docs
 
 - README: https://github.com/pooriaarab/agentic-design

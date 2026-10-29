@@ -39,6 +39,10 @@ test("a badge label in another language is shown as given, and does not crash th
   expect(html(createElement(AgentBadge, { label: "\u0623\u0646\u0634\u0623\u0647 \u0648\u0643\u064A\u0644" }))).toContain("for unknown");
 });
 
+test("a blank badge label is refused", () => {
+  for (const label of ["", "  "]) expect(() => html(createElement(AgentBadge, { label }))).toThrow("non-empty label");
+});
+
 test("a panel that is false or null draws no panel, and no label is needed", () => {
   const shell = (panel: null | false) => html(createElement(AppShell, { brand: "x", sidebar: null, panel, panelLabel: "Notes", children: null }));
   for (const panel of [false, null] as const) {

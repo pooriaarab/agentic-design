@@ -20,6 +20,7 @@ export interface AgentBadgeProps {
  * only signal. With `compact` there is room for the avatar only, and the facts sit in its name.
  */
 export function AgentBadge({ name, actingFor, label = "Made by an agent", compact = false, className }: AgentBadgeProps) {
+  if (label.trim() === "") throw new Error("An agent badge needs a non-empty label.");
   const agent = displayName({ name: name ?? "", kind: "agent" });
   const who = name === undefined ? null : agent;
   const owner = actingFor === undefined ? "unknown" : (usableName(actingFor) ?? "Unnamed person");

@@ -525,7 +525,8 @@
   .ad-filetable thead { display: block; }
   .ad-filetable thead tr { display: flex; flex-wrap: wrap; }
   .ad-filetable thead th:last-child { display: none; }
-  .ad-filetable thead th { width: auto; }
+  .ad-filetable thead th:nth-child(n) { width: auto; }
+  .ad-filetable td { height: auto; }
   .ad-filetable tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name actions" "owner owner" "time time"; padding-block: var(--ad-space-1); border-bottom: 1px solid var(--ad-color-border); }
   .ad-filetable tbody td { padding: var(--ad-space-1) var(--ad-space-3); border-bottom: 0; }
   .ad-filetable tbody td:nth-child(1) { grid-area: name; }
@@ -579,7 +580,8 @@
   align-items: center;
   gap: var(--ad-space-2);
   max-width: 100%;
-  padding: 0.125rem var(--ad-space-2) 0.125rem 0.125rem;
+  padding-block: 0.125rem;
+  padding-inline: 0.125rem var(--ad-space-2);
   border: 1px solid var(--ad-color-agent);
   border-radius: var(--ad-radius-md);
   background: var(--ad-color-agent-subtle);
