@@ -96,6 +96,10 @@ export function DataTable<T>({
   const [activeRaw, setActive] = useState(0);
   const active = Math.min(activeRaw, Math.max(0, count - 1));
   const wantFocus = useRef(false);
+  // Did focus sit in the grid before this render? A refetch or a filter can remove the row that has it.
+  const focusWasInside = useRef(false);
+  const restoreFocus = useRef(false);
+  if (typeof document !== "undefined") focusWasInside.current = !!scroller.current?.contains(document.activeElement);
   const anchor = useRef<string | null>(null);
   const barVisible = selectable && selected.size > 0 && !loading;
   const [barSize, setBarSize] = useState(0);
@@ -148,13 +152,26 @@ export function DataTable<T>({
     }
     barWas.current = barVisible;
   }, [barVisible, barHeight]); // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => {
+    const lost = !document.activeElement || document.activeElement === document.body;
+    if (!lost) restoreFocus.current = false;
+    else if (focusWasInside.current) restoreFocus.current = true;
+    const el = scroller.current;
+    if (restoreFocus.current && lost && count > 0 && !loading && el) {
+      restoreFocus.current = false;
+      const next = scrollToRow(active, el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
+      if (next !== el.scrollTop) el.scrollTop = next;
+      el.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
+    }
+  });
   const headerCheck = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (headerCheck.current) headerCheck.current.indeterminate = someSelected;
   }, [someSelected]);
 
   const toggle = (index: number, withRange: boolean) => {
-    const next = new Set(selected);
+    // Start from the stored ids, so picks among rows that are out of the list survive.
+    const next = new Set(stored);
     // The anchor is an id, so a change of rows cannot point it at another row. A lost anchor makes a plain toggle.
     const from = withRange && anchor.current !== null ? ids.indexOf(anchor.current) : -1;
     if (from >= 0) {
@@ -243,7 +260,11 @@ export function DataTable<T>({
                     aria-label={`Select all ${count} rows`}
                     checked={allSelected}
                     disabled={count === 0}
-                    onChange={() => setSelected(allSelected ? new Set() : new Set(ids))}
+                    onChange={() => {
+                      const next = new Set(stored);
+                      for (const id of ids) allSelected ? next.delete(id) : next.add(id);
+                      setSelected(next);
+                    }}
                   />
                 </div>
               )}
@@ -274,7 +295,7 @@ export function DataTable<T>({
                       aria-selected={selectable ? isSelected : undefined}
                       tabIndex={i === active ? 0 : -1}
                       onFocus={() => setActive(i)}
-                      onDoubleClick={onRowActivate ? () => onRowActivate(row) : undefined}
+                      onDoubleClick={onRowActivate ? (event) => { if (!(event.target as HTMLElement).closest(".agd-datatable__cell--check")) onRowActivate(row); } : undefined}
                     >
                       {selectable && (
                         <div role="gridcell" className="agd-datatable__cell agd-datatable__cell--check">
@@ -298,7 +319,7 @@ export function DataTable<T>({
         </div>
         {!loading && count === 0 && <div className="agd-datatable__state">{empty ?? <EmptyState title="No rows" description="Nothing is here yet." />}</div>}
         {barVisible && (
-          <div ref={bar} role="region" aria-label="Bulk actions" className="agd-datatable__bar">
+          <div ref={bar} role="region" aria-label={`Bulk actions, ${selected.size} selected`} className="agd-datatable__bar">
             <span className="agd-datatable__bar-count" aria-hidden="true">{selected.size} selected</span>
             <div className="agd-datatable__bar-actions">{bulkActions?.(selected)}</div>
             <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear selection</Button>

@@ -181,3 +181,33 @@ test("clearing the selection scrolls focus back into view", async ({ page }) => 
   await expect(page.locator('[data-index="0"]')).toBeFocused();
   expect(await grid.evaluate((el) => el.scrollTop)).toBe(0);
 });
+
+test("picks among rows that left the list count again when the rows return", async ({ page }) => {
+  await page.goto("/data");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await grid.getByRole("checkbox", { name: "Select Task 1", exact: true }).click();
+  await page.getByRole("button", { name: "Show empty" }).click();
+  await page.getByRole("button", { name: "100 rows" }).click();
+  await grid.getByRole("checkbox", { name: "Select Task 2", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Bulk actions" })).toContainText("2 selected");
+  await page.getByRole("button", { name: "10,000 rows" }).click();
+  await expect(page.getByRole("region", { name: "Bulk actions" })).toContainText("2 selected");
+});
+
+test("a double click on a checkbox does not open the row", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("checkbox", { name: "Select Task 3", exact: true }).dblclick();
+  await expect(page.locator("#opened")).toHaveText("none");
+});
+
+test("focus returns to the row after the rows reload", async ({ page }) => {
+  await page.goto("/data");
+  await page.locator('[data-index="0"]').focus();
+  await page.evaluate(() => {
+    const press = (name: string) => [...document.querySelectorAll("button")].find((b) => b.textContent === name)?.click();
+    press("Show loading");
+  });
+  await expect(page.getByRole("status").filter({ hasText: "Loading rows" })).toBeVisible();
+  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent === "Show rows")?.click());
+  await expect(page.locator('[data-index="0"]')).toBeFocused();
+});
