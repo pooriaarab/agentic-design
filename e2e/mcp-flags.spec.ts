@@ -1,0 +1,43 @@
+import { spawn } from "node:child_process";
+import { join } from "node:path";
+import { expect, test } from "@playwright/test";
+import { VERSION } from "../src/version.js";
+
+// Ways `mcp --help` can fail: it exits 2 on an unknown flag, or it starts the server and waits on stdin.
+// Each case runs the built bin with stdin left open and a bare environment.
+
+function run(file: string, args: string[]): Promise<{ code: number | null; out: string; err: string }> {
+  return new Promise((resolve) => {
+    const child = spawn("node", [join(process.cwd(), "dist", file), ...args], {
+      env: { PATH: process.env.PATH },
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    let out = "";
+    let err = "";
+    child.stdout.on("data", (d) => (out += d));
+    child.stderr.on("data", (d) => (err += d));
+    const timer = setTimeout(() => child.kill("SIGKILL"), 5_000);
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      resolve({ code, out, err });
+    });
+  });
+}
+
+const cases: [string, string[], "help" | "version"][] = [
+  ["cli.js", ["--help"], "help"],
+  ["cli.js", ["--version"], "version"],
+  ["cli.js", ["mcp", "--help"], "help"],
+  ["cli.js", ["mcp", "-h"], "help"],
+  ["cli.js", ["mcp", "--version"], "version"],
+  ["mcp-bin.js", ["--help"], "help"],
+  ["mcp-bin.js", ["--version"], "version"],
+];
+for (const [file, args, kind] of cases) {
+  test(`${file} ${args.join(" ")} exits 0 within 5 s`, async () => {
+    const r = await run(file, args);
+    expect([r.code, r.err]).toEqual([0, ""]);
+    if (kind === "version") expect(r.out.trim()).toBe(VERSION);
+    else expect(r.out).toContain("Usage");
+  });
+}
