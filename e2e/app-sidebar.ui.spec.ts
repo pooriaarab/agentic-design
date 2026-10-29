@@ -143,3 +143,23 @@ test("a long sidebar in a frame of fixed height scrolls to its last item with th
   await expect.poll(() => content.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
   await expect(last).toBeInViewport();
 });
+
+test("a sidebar that collapses from outside moves focus from a removed link to the toggle", async ({ page }) => {
+  await page.goto("/chrome");
+  const rail = page.getByRole("complementary", { name: "Rail" });
+  await rail.getByRole("link", { name: "Item 3", exact: true }).focus();
+  await page.locator("#demo-rail-collapse").evaluate((el) => (el as HTMLElement).click());
+  await expect(rail.getByRole("button", { name: "Expand sidebar" })).toBeFocused();
+});
+
+test("a keyboard focus ring on a sidebar link is not cut off by the sidebar", async ({ page }) => {
+  await page.goto("/chrome");
+  const link = sidebar(page).getByRole("link", { name: "Overview" });
+  await page.keyboard.press("Tab");
+  await link.focus();
+  const [linkBox, contentBox] = await Promise.all([link.boundingBox(), sidebar(page).locator(".agd-appsidebar__content").boundingBox()]);
+  // The ring is 2px wide and 2px away from the link, so it needs 4px on each side.
+  expect(linkBox!.x - contentBox!.x).toBeGreaterThanOrEqual(4);
+  expect(contentBox!.x + contentBox!.width - (linkBox!.x + linkBox!.width)).toBeGreaterThanOrEqual(4);
+  expect(linkBox!.y - contentBox!.y).toBeGreaterThanOrEqual(4);
+});

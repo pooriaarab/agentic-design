@@ -134,6 +134,7 @@ export function ChromePage() {
 
       <section aria-labelledby="demo-railbar-h" id="demo-railbar">
         <h2 id="demo-railbar-h">Controlled sidebar</h2>
+        <Button id="demo-rail-collapse" onClick={() => setRailCollapsed(true)}>Collapse the rail from outside</Button>
         <div className="demo-sidebar-frame demo-sidebar-frame--short">
           <AppSidebar label="Rail" collapsed={railCollapsed} onCollapsedChange={setRailCollapsed}>
             {({ collapsed }) =>

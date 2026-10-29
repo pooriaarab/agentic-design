@@ -81,12 +81,18 @@ export function AppSidebar({ label, children, defaultCollapsed, collapsed: contr
     return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); };
   }, []);
   const toggleButton = useRef<HTMLButtonElement>(null);
-  const contentBox = useRef<HTMLDivElement>(null);
   const hidesContent = collapsed && typeof children !== "function";
-  // Content that hides while it has focus (a narrow window, or a change from another tab) would drop focus to the page. Keep it on the toggle.
+  // Focus inside the content can vanish when the sidebar collapses on its own (a narrow window, another tab, or your own state): the links hide or unmount. Keep focus on the toggle.
+  // A removed element sends no blur, so the last focused element tells us focus was inside.
+  const lastFocus = useRef<EventTarget | null>(null);
   useLayoutEffect(() => {
-    if (hidesContent && contentBox.current?.contains(document.activeElement)) toggleButton.current?.focus();
-  }, [hidesContent]);
+    const was = lastFocus.current;
+    if (!collapsed || !was) return;
+    if (!(was as Node).isConnected || hidesContent) {
+      lastFocus.current = null;
+      toggleButton.current?.focus();
+    }
+  }, [collapsed, hidesContent]);
   const toggle = useCallback(() => {
     const next = !collapsed;
     onCollapsedChange?.(next);
@@ -112,7 +118,13 @@ export function AppSidebar({ label, children, defaultCollapsed, collapsed: contr
         aria-controls={`${id}-content`}
         onClick={toggle}
       />
-      <div ref={contentBox} id={`${id}-content`} className="agd-appsidebar__content" hidden={hidesContent}>
+      <div
+        id={`${id}-content`}
+        className="agd-appsidebar__content"
+        hidden={hidesContent}
+        onFocus={(event) => { lastFocus.current = event.target; }}
+        onBlur={() => { lastFocus.current = null; }}
+      >
         {content}
       </div>
     </aside>
