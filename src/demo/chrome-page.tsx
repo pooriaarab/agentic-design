@@ -44,6 +44,7 @@ const items: FileItem[] = [
 export function ChromePage() {
   const [view, setView] = useState<"table" | "grid">("table");
   const [state, setState] = useState<"ready" | "loading" | "empty">("ready");
+  const [railCollapsed, setRailCollapsed] = useState(false);
   const [people, setPeople] = useState<ShareEntry[]>([{ entry: ada, role: "owner" }, { entry: claude, role: "commenter" }]);
   const [link, setLink] = useState<ShareLink>({ enabled: true, role: "viewer", expiry: "never", signedInOnly: false, url: "https://example.com/s/abc" });
   const [title, setTitle] = useState("Launch plan");
@@ -128,6 +129,16 @@ export function ChromePage() {
             />
           </AppSidebar>
           <p className="demo-muted demo-sidebar-frame__body">Collapse the sidebar with its button. The choice stays after a reload.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="demo-railbar-h" id="demo-railbar">
+        <h2 id="demo-railbar-h">Controlled sidebar</h2>
+        <div className="demo-sidebar-frame">
+          <AppSidebar label="Rail" collapsed={railCollapsed} onCollapsedChange={setRailCollapsed}>
+            {({ collapsed }) => <p className="demo-muted">{collapsed ? "T" : "Tasks"}</p>}
+          </AppSidebar>
+          <p className="demo-muted demo-sidebar-frame__body">You own the state of this sidebar. Nothing is saved.</p>
         </div>
       </section>
 

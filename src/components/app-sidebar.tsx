@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { PanelLeftIcon } from "../icons.js";
 import { IconButton } from "./button.js";
 
@@ -24,12 +24,19 @@ const onNarrowChange = (callback: () => void) => {
   return () => query.removeEventListener("change", callback);
 };
 
-function subscribe(callback: () => void) {
-  window.addEventListener("storage", callback);
-  window.addEventListener(CHANGE, callback);
-  return () => {
-    window.removeEventListener("storage", callback);
-    window.removeEventListener(CHANGE, callback);
+// A save that failed stays in memory. A change from another tab is newer, so it replaces that.
+function subscribe(key: string) {
+  return (callback: () => void) => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === key || event.key === null) memory.delete(key);
+      callback();
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(CHANGE, callback);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(CHANGE, callback);
+    };
   };
 }
 
@@ -57,16 +64,29 @@ export function AppSidebar({ label, children, defaultCollapsed, collapsed: contr
   if (label.trim() === "") throw new Error("A sidebar needs a non-empty label.");
   const id = useId();
   // The server and the first client render use the default. A saved choice applies after hydration.
+  const subscribeToKey = useMemo(() => subscribe(storageKey), [storageKey]);
   const saved = useSyncExternalStore(
-    subscribe,
+    subscribeToKey,
     () => memory.get(storageKey) ?? read(storageKey),
     () => null,
   );
   const narrow = useSyncExternalStore(onNarrowChange, () => window.matchMedia(NARROW).matches, () => false);
   const collapsed = controlled ?? saved ?? defaultCollapsed ?? narrow;
   // No animation for the first paint, so a saved choice does not slide in on every load.
+  // Wait two frames: after hydration, a saved choice or a narrow screen changes the state in the same flush as mount.
   const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
+  useEffect(() => {
+    let second = 0;
+    const first = requestAnimationFrame(() => { second = requestAnimationFrame(() => setReady(true)); });
+    return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); };
+  }, []);
+  const toggleButton = useRef<HTMLButtonElement>(null);
+  const contentBox = useRef<HTMLDivElement>(null);
+  const hidesContent = collapsed && typeof children !== "function";
+  // Content that hides while it has focus (a narrow window, or a change from another tab) would drop focus to the page. Keep it on the toggle.
+  useLayoutEffect(() => {
+    if (hidesContent && contentBox.current?.contains(document.activeElement)) toggleButton.current?.focus();
+  }, [hidesContent]);
   const toggle = useCallback(() => {
     const next = !collapsed;
     onCollapsedChange?.(next);
@@ -84,6 +104,7 @@ export function AppSidebar({ label, children, defaultCollapsed, collapsed: contr
   return (
     <aside className="agd-appsidebar" aria-label={label} data-collapsed={collapsed} data-ready={ready || undefined}>
       <IconButton
+        ref={toggleButton}
         className="agd-appsidebar__toggle"
         label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         icon={<PanelLeftIcon />}
@@ -91,7 +112,7 @@ export function AppSidebar({ label, children, defaultCollapsed, collapsed: contr
         aria-controls={`${id}-content`}
         onClick={toggle}
       />
-      <div id={`${id}-content`} className="agd-appsidebar__content" hidden={collapsed && typeof children !== "function"}>
+      <div ref={contentBox} id={`${id}-content`} className="agd-appsidebar__content" hidden={hidesContent}>
         {content}
       </div>
     </aside>

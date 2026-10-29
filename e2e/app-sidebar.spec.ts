@@ -5,7 +5,7 @@ import { AppSidebar } from "../dist/react.js";
 
 const render = (props: object) => renderToString(createElement(AppSidebar, { label: "Main", children: createElement("p", null, "Links"), ...props }));
 
-test("the server renders open, whatever is saved, and collapsed when asked", () => {
+test("the server renders open, and collapsed when asked", () => {
   expect(render({})).toContain('data-collapsed="false"');
   expect(render({})).toContain("Collapse sidebar");
   expect(render({ defaultCollapsed: true })).toContain('data-collapsed="true"');

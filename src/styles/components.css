@@ -764,7 +764,7 @@
 }
 .agd-appsidebar[data-ready] { transition: width var(--agd-duration-base) var(--agd-easing-out); }
 @media (max-width: 47.99rem) { .agd-appsidebar:not([data-collapsed="true"]) { max-width: 60vw; } }
-.agd-appsidebar[data-collapsed="true"] { width: var(--agd-size-sidebar-rail); align-items: center; }
+.agd-appsidebar[data-collapsed="true"] { width: var(--agd-size-sidebar-rail); align-items: center; padding-inline: var(--agd-space-1); }
 .agd-appsidebar__toggle { align-self: flex-start; }
 .agd-appsidebar[data-collapsed="true"] .agd-appsidebar__toggle { align-self: center; }
 .agd-appsidebar__content { min-width: 0; width: 100%; overflow: hidden; }

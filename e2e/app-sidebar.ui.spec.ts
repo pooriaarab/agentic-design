@@ -98,3 +98,34 @@ test("on a small screen with nothing saved, the sidebar starts collapsed", async
   await page.goto("/chrome");
   await expect(sidebar(page).getByRole("button", { name: "Expand sidebar" })).toBeVisible();
 });
+
+test("controlled mode calls the handler, saves nothing, and a function child stays mounted", async ({ page }) => {
+  await page.goto("/chrome");
+  const rail = page.getByRole("complementary", { name: "Rail" });
+  await expect(rail.getByText("Tasks", { exact: true })).toBeVisible();
+  await rail.getByRole("button", { name: "Collapse sidebar" }).click();
+  await expect(rail.getByRole("button", { name: "Expand sidebar" })).toBeVisible();
+  await expect(rail.getByText("T", { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+});
+
+test("a window that turns narrow moves focus from the hidden links to the toggle", async ({ page }) => {
+  await page.goto("/chrome");
+  await sidebar(page).getByRole("link", { name: "Tasks" }).focus();
+  await page.setViewportSize({ width: 320, height: 640 });
+  await expect(sidebar(page).getByRole("button", { name: "Expand sidebar" })).toBeFocused();
+});
+
+test("a change in another tab replaces a choice that could not be saved", async ({ page, context }) => {
+  await page.addInitScript(() => {
+    if (location.hash === "#stuck") Storage.prototype.setItem = () => { throw new DOMException("full", "QuotaExceededError"); };
+  });
+  await page.goto("/chrome#stuck");
+  await sidebar(page).getByRole("button", { name: "Collapse sidebar" }).click();
+  await expect(sidebar(page).getByRole("button", { name: "Expand sidebar" })).toBeVisible();
+  const other = await context.newPage();
+  await other.goto("/chrome");
+  await sidebar(other).getByRole("button", { name: "Collapse sidebar" }).click();
+  await sidebar(other).getByRole("button", { name: "Expand sidebar" }).click();
+  await expect(sidebar(page).getByRole("button", { name: "Collapse sidebar" })).toBeVisible();
+});
