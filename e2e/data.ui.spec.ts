@@ -263,3 +263,14 @@ test("the rows-arrived status does not come back with an old count", async ({ pa
   await page.keyboard.press("Escape");
   await expect(page.getByRole("status").filter({ hasText: "10000 rows" })).toHaveCount(0);
 });
+
+test("Home on the first row scrolls it back into view", async ({ page }) => {
+  await page.goto("/data");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  await page.locator('[data-index="0"]').focus();
+  await grid.evaluate((el) => { el.scrollTop = 4000; });
+  await expect(page.getByRole("row", { name: /Task 101\b/ })).toBeVisible();
+  await page.keyboard.press("Home");
+  await expect(page.locator('[data-index="0"]')).toBeFocused();
+  expect(await grid.evaluate((el) => el.scrollTop)).toBe(0);
+});

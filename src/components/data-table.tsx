@@ -198,7 +198,12 @@ export function DataTable<T>({
     const target = Math.max(0, Math.min(count - 1, to));
     if (target === active) {
       // Nothing moves, so no render follows. Focus the row now, and leave no request behind.
-      scroller.current?.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
+      const el = scroller.current;
+      if (el) {
+        const next = scrollToRow(active, el.scrollTop, el.clientHeight, rowHeight, rowHeight, barHeight);
+        if (next !== el.scrollTop) el.scrollTop = next;
+        el.querySelector<HTMLElement>(`[data-index="${active}"]`)?.focus({ preventScroll: true });
+      }
       return;
     }
     wantFocus.current = true;
