@@ -72,7 +72,65 @@ test("select all and a bulk action", async ({ page }) => {
   await expect(bar).toContainText("10000 selected");
   await bar.getByRole("button", { name: "Archive" }).click();
   await expect(page.locator("#archived")).toHaveText("10000");
-  await page.getByRole("checkbox", { name: "Select Task 3", exact: true }).click({ modifiers: ["Shift"] });
   await bar.getByRole("button", { name: "Clear selection" }).click();
   await expect(bar).toHaveCount(0);
+});
+
+test("Shift selects a range from the last row picked", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("checkbox", { name: "Select Task 2", exact: true }).click();
+  await page.getByRole("checkbox", { name: "Select Task 5", exact: true }).click({ modifiers: ["Shift"] });
+  await expect(page.getByRole("region", { name: "Bulk actions" })).toContainText("4 selected");
+  await expect(page.getByRole("row", { name: /Task 4\b/ })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("row", { name: /Task 6\b/ })).toHaveAttribute("aria-selected", "false");
+});
+
+test("Page Down moves by a page and Enter opens the row", async ({ page }) => {
+  await page.goto("/data");
+  await page.locator('[data-index="0"]').focus();
+  await page.keyboard.press("PageDown");
+  const index = Number(await page.evaluate(() => document.activeElement?.getAttribute("data-index")));
+  expect(index).toBeGreaterThan(4);
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#opened")).toHaveText(`Task ${index + 1}`);
+  await page.keyboard.press("PageUp");
+  await expect(page.locator('[data-index="0"]')).toBeFocused();
+});
+
+test("a selection of rows that are gone does not show a bar", async ({ page }) => {
+  await page.goto("/data");
+  await page.getByRole("checkbox", { name: "Select Task 1", exact: true }).click();
+  await page.getByRole("button", { name: "Show empty" }).click();
+  await expect(page.getByRole("heading", { name: "No rows" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Bulk actions" })).toHaveCount(0);
+});
+
+test("clearing the selection from the bar keeps focus in the table", async ({ page }) => {
+  await page.goto("/data");
+  await page.locator('[data-index="0"]').focus();
+  await page.keyboard.press("Space");
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Clear selection" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator('[data-index="0"]')).toBeFocused();
+});
+
+test("the bar does not cover the row that has focus", async ({ page }) => {
+  await page.goto("/data");
+  await page.locator('[data-index="0"]').focus();
+  for (let i = 0; i < 8; i++) await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Space");
+  const row = await page.locator('[data-index="8"]').boundingBox();
+  const bar = await page.getByRole("region", { name: "Bulk actions" }).boundingBox();
+  expect((row?.y ?? 0) + (row?.height ?? 0)).toBeLessThanOrEqual(bar?.y ?? 0);
+});
+
+test("on a narrow screen the headers line up with the cells", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/data");
+  const grid = page.getByRole("grid", { name: "Tasks" });
+  const header = await grid.getByRole("columnheader", { name: "Owner" }).boundingBox();
+  const cell = await grid.getByRole("row", { name: /Task 1\b/ }).getByRole("gridcell").last().boundingBox();
+  expect(Math.abs((header?.x ?? 0) - (cell?.x ?? 99))).toBeLessThan(1);
 });
