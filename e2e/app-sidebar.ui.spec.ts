@@ -102,7 +102,7 @@ test("on a small screen with nothing saved, the sidebar starts collapsed", async
 test("controlled mode calls the handler, saves nothing, and a function child stays mounted", async ({ page }) => {
   await page.goto("/chrome");
   const rail = page.getByRole("complementary", { name: "Rail" });
-  await expect(rail.getByText("Tasks", { exact: true })).toBeVisible();
+  await expect(rail.getByRole("link", { name: "Item 1", exact: true })).toBeVisible();
   await rail.getByRole("button", { name: "Collapse sidebar" }).click();
   await expect(rail.getByRole("button", { name: "Expand sidebar" })).toBeVisible();
   await expect(rail.getByText("T", { exact: true })).toBeVisible();
@@ -128,4 +128,18 @@ test("a change in another tab replaces a choice that could not be saved", async 
   await sidebar(other).getByRole("button", { name: "Collapse sidebar" }).click();
   await sidebar(other).getByRole("button", { name: "Expand sidebar" }).click();
   await expect(sidebar(page).getByRole("button", { name: "Collapse sidebar" })).toBeVisible();
+});
+
+test("a long sidebar in a frame of fixed height scrolls to its last item with the wheel", async ({ page }) => {
+  await page.goto("/chrome");
+  const rail = page.getByRole("complementary", { name: "Rail" });
+  const last = rail.getByRole("link", { name: "Item 30" });
+  await rail.scrollIntoViewIfNeeded();
+  const content = rail.locator(".agd-appsidebar__content");
+  await content.evaluate((el) => { el.scrollTop = 0; });
+  const box = await content.boundingBox();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await page.mouse.wheel(0, 4000);
+  await expect.poll(() => content.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  await expect(last).toBeInViewport();
 });

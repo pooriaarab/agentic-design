@@ -767,5 +767,5 @@
 .agd-appsidebar[data-collapsed="true"] { width: var(--agd-size-sidebar-rail); align-items: center; padding-inline: var(--agd-space-1); }
 .agd-appsidebar__toggle { align-self: flex-start; }
 .agd-appsidebar[data-collapsed="true"] .agd-appsidebar__toggle { align-self: center; }
-.agd-appsidebar__content { min-width: 0; width: 100%; overflow: hidden; }
+.agd-appsidebar__content { flex: 1; min-width: 0; min-height: 0; width: 100%; overflow-x: hidden; overflow-y: auto; }
 .agd-appsidebar__content[hidden] { display: none; }

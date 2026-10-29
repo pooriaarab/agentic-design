@@ -134,9 +134,11 @@ export function ChromePage() {
 
       <section aria-labelledby="demo-railbar-h" id="demo-railbar">
         <h2 id="demo-railbar-h">Controlled sidebar</h2>
-        <div className="demo-sidebar-frame">
+        <div className="demo-sidebar-frame demo-sidebar-frame--short">
           <AppSidebar label="Rail" collapsed={railCollapsed} onCollapsedChange={setRailCollapsed}>
-            {({ collapsed }) => <p className="demo-muted">{collapsed ? "T" : "Tasks"}</p>}
+            {({ collapsed }) =>
+              collapsed ? <p className="demo-muted">T</p> : <SidebarNav label="Rail pages" items={Array.from({ length: 30 }, (_, i) => ({ href: `/chrome#item-${i + 1}`, label: `Item ${i + 1}` }))} />
+            }
           </AppSidebar>
           <p className="demo-muted demo-sidebar-frame__body">You own the state of this sidebar. Nothing is saved.</p>
         </div>
