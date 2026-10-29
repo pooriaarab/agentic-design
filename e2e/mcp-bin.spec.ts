@@ -39,7 +39,7 @@ for (const flag of ["--help", "-h"]) {
     const result = await run([flag]);
     expect(result.timedOut).toBe(false);
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain("Usage: agentic-design-mcp [--help | --version]");
+    expect(result.stdout).toContain("Usage: agentic-design-mcp [mcp] [--help | --version]");
     expect(result.stderr).toBe("");
     expect(Date.now() - started).toBeLessThan(5000);
   });
@@ -62,11 +62,18 @@ for (const flag of ["--help", "-h"]) {
     const result = await run(["mcp", flag]);
     expect(result.timedOut).toBe(false);
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain("Usage: agentic-design-mcp [--help | --version]");
+    expect(result.stdout).toContain("Usage: agentic-design-mcp [mcp] [--help | --version]");
     expect(result.stderr).toBe("");
     expect(Date.now() - started).toBeLessThan(5000);
   });
 }
+
+test("mcp --verbose --help prints usage, as the package CLI reads flags after mcp", async () => {
+  const result = await run(["mcp", "--verbose", "--help"]);
+  expect(result.timedOut).toBe(false);
+  expect(result.code).toBe(0);
+  expect(result.stdout).toContain("Usage: agentic-design-mcp [mcp] [--help | --version]");
+});
 
 for (const flag of ["--version", "-V"]) {
   test(`mcp ${flag} prints the package version and exits 0`, async () => {
@@ -78,13 +85,16 @@ for (const flag of ["--version", "-V"]) {
   });
 }
 
-test("no arguments starts the MCP server on stdio", async () => {
-  const client = new Client({ name: "e2e", version: "0.0.0" });
-  await client.connect(new StdioClientTransport({ command: process.execPath, args: [BIN] }));
-  try {
-    const { tools } = await client.listTools();
-    expect(tools.length).toBeGreaterThan(0);
-  } finally {
-    await client.close();
-  }
-});
+// The form an MCP client uses: no argument, or the `mcp` word alone. Both start the server.
+for (const args of [[], ["mcp"]]) {
+  test(`${JSON.stringify(args)} starts the MCP server on stdio`, async () => {
+    const client = new Client({ name: "e2e", version: "0.0.0" });
+    await client.connect(new StdioClientTransport({ command: process.execPath, args: [BIN, ...args] }));
+    try {
+      const { tools } = await client.listTools();
+      expect(tools.length).toBeGreaterThan(0);
+    } finally {
+      await client.close();
+    }
+  });
+}
