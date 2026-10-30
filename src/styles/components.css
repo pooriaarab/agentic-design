@@ -770,3 +770,17 @@
 .agd-appsidebar[data-collapsed="true"] .agd-appsidebar__toggle { align-self: center; }
 .agd-appsidebar__content { flex: 1; box-sizing: border-box; padding: var(--agd-space-1); min-width: 0; min-height: 0; width: 100%; overflow-x: hidden; overflow-y: auto; }
 .agd-appsidebar__content[hidden] { display: none; }
+
+.agd-item-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--agd-space-3);
+  padding: var(--agd-space-3);
+  background: var(--agd-color-bg);
+  color: var(--agd-color-text);
+}
+.agd-item-header__title { flex: 1 1 12rem; min-inline-size: 0; }
+.agd-item-header__title .agd-title { width: 100%; }
+
+.agd-title__status { color: var(--agd-color-text-muted); font-size: var(--agd-font-size-xs); }

@@ -27,3 +27,5 @@ export { applyDataView, emptyDataView, fieldText, sameDisplay } from "./data-vie
 export type { DataField, DataFilter, DataView } from "./data-view.js";
 export { AppSidebar, SIDEBAR_STORAGE_KEY } from "./app-sidebar.js";
 export type { AppSidebarProps } from "./app-sidebar.js";
+export { ItemHeader } from "./item-header.js";
+export type { ItemHeaderProps } from "./item-header.js";

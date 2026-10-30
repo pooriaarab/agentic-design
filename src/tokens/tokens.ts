@@ -127,6 +127,8 @@ const status = (name: "danger" | "warning" | "success"): ContrastPair[] => [
 
 // Every pair the components use. Disabled controls are exempt by WCAG 1.4.3.
 export const contrastPairs: readonly ContrastPair[] = deepFreeze([
+  ...text("text", ["bg"], "item header text"),
+  ...text("text-muted", surfaces, "title saving status"),
   ...text("text", [...surfaces, "accent-subtle"], "body text, and text on a selected row"),
   ...text("text-muted", surfaces, "secondary text and placeholders"),
   ...text("text-on-accent", ["accent", "accent-hover"], "text on a filled accent control"),

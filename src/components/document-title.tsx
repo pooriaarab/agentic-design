@@ -5,7 +5,7 @@ import { usableText } from "./safe-name.js";
 export interface DocumentTitleProps {
   value: string;
   /** Called with the new title. It is not called when the title did not change. */
-  onRename: (title: string) => void;
+  onRename: (title: string) => void | Promise<void>;
   /** The accessible name of the field while a person edits. */
   label?: string;
   /** Show the title as plain text, with no way to edit it. */
@@ -25,6 +25,11 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
   // A long one is safe to show, and the CSS cuts it with an ellipsis, so length alone never hides it.
   const limit = Math.max(maxLength, typeof value === "string" ? value.length : 0);
   const shown = usableText(value, limit) ?? "Untitled";
+  const [saving, setSaving] = useState(false);
+  const pending = useRef(false);
+  const restoreFocus = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(shown);
   const [error, setError] = useState<string | null>(null);
@@ -56,26 +61,37 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
     giveFocusBack.current = keepFocus;
     setEditing(false);
   };
-  /** Returns true when the field may close. */
-  const commit = (): boolean => {
+  const commit = async (keepFocus: boolean): Promise<void> => {
+    if (finished.current || pending.current) return;
     const next = draft.trim();
     // Nothing changed, so there is nothing to check. A long stored title must not trap a person who never edited it.
-    if (next === shown) return true;
+    if (next === shown) { close(keepFocus); return; }
     if (next === "") {
       setError("Enter a title.");
-      return false;
+      return;
     }
     if (next.length > maxLength) {
       setError(`Use up to ${maxLength} characters.`);
-      return false;
+      return;
     }
     if (usableText(next, limit) === null) {
       // Double spaces and wide spaces are refused too, and the message names what to fix.
       setError(/\s{2,}|(?! )\p{Zs}/u.test(next) ? "Use single spaces only." : "Use letters, numbers, and punctuation, with no hidden characters.");
-      return false;
+      return;
     }
-    onRename(next);
-    return true;
+    restoreFocus.current = keepFocus;
+    pending.current = true;
+    setSaving(true);
+    setError(null);
+    try {
+      await onRename(next);
+      if (mounted.current) close(restoreFocus.current);
+    } catch {
+      if (mounted.current) setError("Could not save the title. Try again.");
+    } finally {
+      pending.current = false;
+      if (mounted.current) setSaving(false);
+    }
   };
 
   if (readOnly) return <span className={cx("agd-title", className)}><span className="agd-title__text" title={shown}>{shown}</span></span>;
@@ -112,16 +128,18 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         value={draft}
+        readOnly={saving}
+        aria-busy={saving}
         maxLength={maxLength}
         onChange={(event) => {
           setDraft(event.target.value);
           setError(null);
         }}
         onKeyDown={(event) => {
-          if (event.nativeEvent.isComposing) return;
+          if (event.nativeEvent.isComposing || pending.current) return;
           if (event.key === "Enter") {
             event.preventDefault();
-            if (commit()) close(true);
+            void commit(true);
           } else if (event.key === "Escape") {
             event.preventDefault();
             event.stopPropagation();
@@ -130,10 +148,12 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
         }}
         onBlur={() => {
           // Leaving the field saves a good title. A bad one stays open with its message, so the edit is not lost.
+          if (pending.current) { restoreFocus.current = false; return; }
           if (finished.current) return;
-          if (commit()) close(false);
+          void commit(false);
         }}
       />
+      <span className="agd-title__status" role="status">{saving ? "Saving title…" : ""}</span>
       {error && <span id={errorId} className="agd-title__error" role="alert">{error}</span>}
     </span>
   );
