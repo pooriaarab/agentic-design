@@ -5,8 +5,10 @@ import { PresenceStack, type PresenceEntry } from "./presence.js";
 
 export interface ItemHeaderProps {
   title: string;
-  /** Omit to show a read-only title. Save and update title before the promise resolves. */
+  /** Omit for a read-only title. Update title before resolving; use a timeout so the promise settles. */
   onRename?: (title: string) => Promise<void>;
+  /** Heading level for the item title. Defaults to 1. */
+  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
   backLink?: ReactNode;
   shareButton?: ReactNode;
   fileMenu?: ReactNode;
@@ -17,12 +19,12 @@ export interface ItemHeaderProps {
 }
 
 /** Shared item chrome. Supply named, keyboard-accessible controls in each slot. */
-export function ItemHeader({ title, onRename, backLink, shareButton, fileMenu, presence = [], maxPresence = 4, className }: ItemHeaderProps) {
+export function ItemHeader({ title, onRename, headingLevel = 1, backLink, shareButton, fileMenu, presence = [], maxPresence = 4, className }: ItemHeaderProps) {
   const max = Number.isFinite(maxPresence) ? Math.max(0, Math.floor(maxPresence)) : 4;
   return (
     <div className={cx("agd-item-header", className)}>
       {backLink}
-      <div className="agd-item-header__title">
+      <div className="agd-item-header__title" role="heading" aria-level={headingLevel}>
         <DocumentTitle value={title} label="Item title" onRename={onRename ?? (() => undefined)} readOnly={!onRename} />
       </div>
       {presence.length > 0 && <PresenceStack entries={presence} max={max} />}

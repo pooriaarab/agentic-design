@@ -1,6 +1,23 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+test("a synchronous rename does not announce a pending save", async ({ page }) => {
+  await page.goto("/chrome");
+  const title = page.locator("#demo-title");
+  await title.getByRole("button", { name: "Launch plan, rename" }).click();
+  const field = title.getByRole("textbox", { name: "Document title" });
+  await field.fill("New title");
+  await title.evaluate((element) => {
+    const observer = new MutationObserver(() => {
+      if (element.textContent?.includes("Saving title…")) element.setAttribute("data-saw-saving", "yes");
+    });
+    observer.observe(element, { childList: true, subtree: true, characterData: true });
+  });
+  await field.press("Enter");
+  await expect(title.getByRole("button", { name: "New title, rename" })).toBeVisible();
+  await expect(title).not.toHaveAttribute("data-saw-saving", "yes");
+});
+
 for (const scheme of ["light", "dark"] as const) {
   test(`item header supports async rename and passes axe in ${scheme}`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: scheme });
