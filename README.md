@@ -200,7 +200,7 @@ const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all
 
 `ItemHeader` composes a title, a back link, presence, Share, and a file menu.
 Import it from `agentic-design/react`. Pass `title` and an async `onRename`
-that saves the change and updates `title` before its promise resolves. Omit `onRename` for a read-only title.
+that saves the change and updates `title` before its promise resolves. The promise must settle; use a timeout for network saves. Omit `onRename` for a read-only title. The title is a level 1 heading by default; set `headingLevel` to fit the page.
 Click or press Enter to edit. Enter or blur saves; Escape cancels. Blank titles
 are refused. A pending save announces its state; a failed save keeps the draft
 with an error so the user can retry. Supply named controls in `backLink`,
