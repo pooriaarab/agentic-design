@@ -16,3 +16,5 @@ Keywords: design-system,tokens,ui,accessibility,wcag,react,components,minimal,da
 
 - README: https://github.com/pooriaarab/agentic-design
 - License: MIT
+
+- ItemHeader: shared item chrome with backLink, shareButton, fileMenu, presence, and maxPresence slots/props. title and async onRename control inline rename. Enter/blur saves, Escape cancels, blank refused; saving and error states are announced. Omit onRename for read-only.

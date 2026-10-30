@@ -4,6 +4,7 @@ import {
   AppSidebar,
   Button,
   DocumentTitle,
+  ItemHeader,
   FileList,
   IconButton,
   Menu,
@@ -48,6 +49,7 @@ export function ChromePage() {
   const [people, setPeople] = useState<ShareEntry[]>([{ entry: ada, role: "owner" }, { entry: claude, role: "commenter" }]);
   const [link, setLink] = useState<ShareLink>({ enabled: true, role: "viewer", expiry: "never", signedInOnly: false, url: "https://example.com/s/abc" });
   const [title, setTitle] = useState("Launch plan");
+  const [itemTitle, setItemTitle] = useState("Project notes");
   const [bold, setBold] = useState(false);
   const [italic, setItalic] = useState(true);
   const [last, setLast] = useState("none");
@@ -70,6 +72,19 @@ export function ChromePage() {
           items={[{ href: "/chrome#b", label: "Render prop link" }]}
           renderLink={(props) => <a {...props} data-host-link="render" />}
         />
+      </section>
+
+      <section aria-labelledby="item-header-h" id="demo-item-header">
+        <h2 id="item-header-h">Item header</h2>
+        <ItemHeader title={itemTitle} onRename={async (next) => {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          if (next === "Fail") throw new Error("Save refused");
+          setItemTitle(next);
+        }} backLink={<a href="/chrome">Back to files</a>}
+          shareButton={<Button>Share item</Button>}
+          fileMenu={<Menu trigger={<IconButton label="Item menu" icon={<MoreIcon />} tooltip={false} />} items={[{ label: "Download", onSelect: () => undefined }]} />}
+          presence={[ada, claude, grace]} maxPresence={2} />
+        <p className="demo-muted">Use the title Fail to try a failed save.</p>
       </section>
 
       <section aria-labelledby="doc-title" id="demo-title">

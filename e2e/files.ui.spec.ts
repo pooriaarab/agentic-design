@@ -40,7 +40,7 @@ for (const scheme of ["light", "dark"] as const) {
   test(`the share dialog has no axe violations in ${scheme}`, async ({ page }, testInfo) => {
     await page.emulateMedia({ colorScheme: scheme });
     await page.goto("/chrome");
-    await page.getByRole("button", { name: "Share" }).click();
+    await page.getByRole("button", { name: "Share", exact: true }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.screenshot({ path: process.env.SCREENSHOTS ? `docs/screenshots/share-dialog-${scheme}.png` : testInfo.outputPath(`share-dialog-${scheme}.png`), animations: "disabled" });

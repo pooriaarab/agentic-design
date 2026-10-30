@@ -4,6 +4,12 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.10.0 - 2026-10-30
+
+### Added
+
+- `ItemHeader` and `ItemHeaderProps`: shared item chrome with control slots, capped presence, and async inline rename. `DocumentTitle` now supports promise saves with pending and retry states.
+
 ## 0.9.0 - 2026-10-29
 
 ### Added

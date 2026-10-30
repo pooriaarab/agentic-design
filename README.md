@@ -235,3 +235,13 @@ because the tests import `dist/`.
 ## License
 
 MIT. Fonts are SIL OFL 1.1. See `THIRD_PARTY_NOTICES.md`.
+
+`ItemHeader` composes a title, a back link, presence, Share, and a file menu.
+Import it from `agentic-design/react`. Pass `title` and an async `onRename`
+that updates `title` after the save. Omit `onRename` for a read-only title.
+Click or press Enter to edit. Enter or blur saves; Escape cancels. Blank titles
+are refused. A pending save announces its state; a failed save keeps the draft
+with an error so the user can retry. Supply named controls in `backLink`,
+`shareButton`, and `fileMenu`. Pass `presence` and `maxPresence` (default 4)
+to cap avatars and show the rest as +k. Agent avatars retain their identity
+and who they act for in their accessible names.
