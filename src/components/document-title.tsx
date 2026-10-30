@@ -4,7 +4,7 @@ import { usableText } from "./safe-name.js";
 
 export interface DocumentTitleProps {
   value: string;
-  /** Called with the new title. Promises must settle; use a timeout for network saves. */
+  /** Called with the new title when it changes. Promises must settle; use a timeout for network saves. */
   onRename: (title: string) => void | Promise<void>;
   /** The accessible name of the field while a person edits. */
   label?: string;

@@ -76,7 +76,7 @@ export function ChromePage() {
 
       <section aria-labelledby="item-header-h" id="demo-item-header">
         <h2 id="item-header-h">Item header</h2>
-        <ItemHeader title={itemTitle} onRename={async (next) => {
+        <ItemHeader title={itemTitle} headingLevel={3} onRename={async (next) => {
           await new Promise((resolve) => setTimeout(resolve, 300));
           if (next === "Fail") throw new Error("Save refused");
           setItemTitle(next);

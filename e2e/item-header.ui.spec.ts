@@ -22,6 +22,7 @@ for (const scheme of ["light", "dark"] as const) {
   test(`item header supports async rename and passes axe in ${scheme}`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: scheme });
     await page.goto("/chrome");
+    await expect(page.getByRole("heading", { name: "Project notes", level: 3 })).toBeVisible();
     const header = page.locator("#demo-item-header");
     const rename = header.getByRole("button", { name: "Project notes, rename" });
     await rename.focus();
