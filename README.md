@@ -6,7 +6,7 @@
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
-> Status: 0.9.0. The design tokens, the contrast check, and the fonts work.
+> Status: 0.10.0. The design tokens, the contrast check, and the fonts work.
 > The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the data table, the table controls, the app sidebar, the share dialog, and the editor demo work.
 > See [CHANGELOG.md](CHANGELOG.md) for what is in this release, its breaking changes, and its limits.
 
@@ -196,6 +196,18 @@ const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all
   `npx agentic-design mcp`.
 - An HTTP route, `GET /api/v1/tokens`, from a Cloudflare Worker.
 
+## Item header
+
+`ItemHeader` composes a title, a back link, presence, Share, and a file menu.
+Import it from `agentic-design/react`. Pass `title` and an async `onRename`
+that saves the change and updates `title` before its promise resolves. Omit `onRename` for a read-only title.
+Click or press Enter to edit. Enter or blur saves; Escape cancels. Blank titles
+are refused. A pending save announces its state; a failed save keeps the draft
+with an error so the user can retry. Supply named controls in `backLink`,
+`shareButton`, and `fileMenu`. Pass `presence` and `maxPresence` (default 4)
+to cap avatars and show the rest as +k. Agent avatars retain their identity
+and who they act for in their accessible names.
+
 ## Limits
 
 - `DataTable` rows have one fixed height (`rowHeight`), so a cell cannot wrap. It does not sort or fetch pages.
@@ -235,13 +247,3 @@ because the tests import `dist/`.
 ## License
 
 MIT. Fonts are SIL OFL 1.1. See `THIRD_PARTY_NOTICES.md`.
-
-`ItemHeader` composes a title, a back link, presence, Share, and a file menu.
-Import it from `agentic-design/react`. Pass `title` and an async `onRename`
-that updates `title` after the save. Omit `onRename` for a read-only title.
-Click or press Enter to edit. Enter or blur saves; Escape cancels. Blank titles
-are refused. A pending save announces its state; a failed save keeps the draft
-with an error so the user can retry. Supply named controls in `backLink`,
-`shareButton`, and `fileMenu`. Pass `presence` and `maxPresence` (default 4)
-to cap avatars and show the rest as +k. Agent avatars retain their identity
-and who they act for in their accessible names.

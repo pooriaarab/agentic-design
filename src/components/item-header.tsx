@@ -5,7 +5,7 @@ import { PresenceStack, type PresenceEntry } from "./presence.js";
 
 export interface ItemHeaderProps {
   title: string;
-  /** Omit to show a read-only title. Update title after a successful save. */
+  /** Omit to show a read-only title. Save and update title before the promise resolves. */
   onRename?: (title: string) => Promise<void>;
   backLink?: ReactNode;
   shareButton?: ReactNode;
