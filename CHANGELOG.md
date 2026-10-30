@@ -4,6 +4,12 @@ All notable changes to this package are in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.10.1 - 2026-10-30
+
+### Fixed
+
+- Item titles expose a configurable heading level. Synchronous title saves no longer announce a pending state. The async save contract now calls for a timeout on network saves.
+
 ## 0.10.0 - 2026-10-30
 
 ### Added
