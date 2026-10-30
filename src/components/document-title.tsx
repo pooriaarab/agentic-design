@@ -4,7 +4,7 @@ import { usableText } from "./safe-name.js";
 
 export interface DocumentTitleProps {
   value: string;
-  /** Called with the new title. It is not called when the title did not change. */
+  /** Called with the new title. Promises must settle; use a timeout for network saves. */
   onRename: (title: string) => void | Promise<void>;
   /** The accessible name of the field while a person edits. */
   label?: string;
@@ -81,10 +81,13 @@ export function DocumentTitle({ value, onRename, label = "Document title", readO
     }
     restoreFocus.current = keepFocus;
     pending.current = true;
-    setSaving(true);
     setError(null);
     try {
-      await onRename(next);
+      const result = onRename(next);
+      if (result !== undefined) {
+        setSaving(true);
+        await result;
+      }
       if (mounted.current) close(restoreFocus.current);
     } catch {
       if (mounted.current) setError("Could not save the title. Try again.");

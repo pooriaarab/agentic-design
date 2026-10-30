@@ -20,6 +20,11 @@ test("read-only title, safe agent identity, and all slots survive composition", 
   for (const text of ["Untitled", "Unnamed agent, agent, acting for Ada", "Back", "Share", "Menu", "+1"]) expect(out).toContain(text);
   expect(out).not.toContain("\u202E");
   expect(out).not.toContain(", rename");
+  expect(out).toContain('role="heading" aria-level="1"');
+});
+test("the title heading level can match its page", () => {
+  const out = renderToStaticMarkup(createElement(ItemHeader, { title: "Notes", headingLevel: 2 }));
+  expect(out).toContain('role="heading" aria-level="2"');
 });
 test("caps never expose more than N avatars and invalid caps use the default", () => {
   expect(render(0)).toContain("+3");
