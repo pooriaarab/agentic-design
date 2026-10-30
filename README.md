@@ -6,8 +6,8 @@
 
 Accessible design tokens and UI primitives for calm, minimal apps.
 
-> Status: 0.8.0. The design tokens, the contrast check, and the fonts work.
-> The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the data table, the share dialog, and the editor demo work.
+> Status: 0.9.0. The design tokens, the contrast check, and the fonts work.
+> The tokens, the controls, the overlays, the app patterns, the app chrome, the file table and grid, the data table, the table controls, the app sidebar, the share dialog, and the editor demo work.
 > See [CHANGELOG.md](CHANGELOG.md) for what is in this release, its breaking changes, and its limits.
 
 ## Install
@@ -117,12 +117,30 @@ themes.dark.accent; // "#8EA4FF"
 />
 ```
 
-- Table controls for React, to put in the `toolbar` of a `DataTable`. `TableSearch` is a button that opens a
-  search field and moves focus into it. Escape clears the text, and Escape again closes the field. Inside a Radix `Dialog`, Escape also closes the dialog, because the dialog listens first.
-  `FilterChips` lists the filters in use, each with a remove button, and a menu to add one
-  (`filterMenuItems` builds the menu from your rows). `DisplayPopover` opens a panel with "Group by", "Order by",
-  a direction, a checkbox for each column, and "Reset to defaults". `applyDataView(rows, view, fields)` does the
-  searching, filtering, ordering, and grouping for you. Pass `groupBy` and `hiddenColumns` to `DataTable`. Keep `groupBy` stable with `useMemo`, because each new function builds the layout again. Keep `hiddenColumns` stable too, so the column list is not made again on every render. `TableSearch` is a search landmark named by its `label` (default "Search"). With two tables on a page, give each its own `label`. The table says the new row count after a pause when a search or filter changes the count. It does not speak when the count stays the same.
+- Table controls for React, to put in the `toolbar` of a `DataTable`.
+  - `DataTableToolbar` is the bar that holds these controls. Its `end` prop takes a control at the end of the bar
+    (the right edge in left-to-right text), such as `DisplayPopover`. Its `label` names the group
+    (default "Table controls"). With two tables on a page, give each toolbar its own `label`.
+  - `TableSearch` is a button that opens a search field and moves focus into it. Escape clears the text, and
+    Escape again closes the field. Inside a Radix `Dialog`, Escape also closes the dialog, because the dialog
+    listens first. When it is open, it is a search landmark named by its `label` (default "Search"). With two tables on a page,
+    give each its own `label`.
+  - `FilterChips` lists the filters in use, each with a remove button, and a menu to add one. Pass `chips`, a
+    list of `FilterChip` objects. Each has an `id` and a `label` such as "Status: Open". `filterMenuItems` builds
+    the menu from your rows. It takes up to `limit` values per field (default 12), the first ones in row order, and lists them
+    in text order. A `limit` below 1 still offers one value. It leaves out values already in use.
+  - `DisplayPopover` opens a panel with "Group by", "Order by", a direction, a checkbox for each column, and
+    "Reset to defaults". Its props are `DisplayPopoverProps`.
+  - `applyDataView(rows, view, fields)` does the searching, filtering, ordering, and grouping for you. Pass
+    `groupBy` and `hiddenColumns` to `DataTable`. Keep `groupBy` stable with `useMemo`, because each new function
+    builds the layout again. Keep `hiddenColumns` stable too, so the column list is not made again on every render.
+  - The table says the new row count after a pause when a search or filter changes the count. It does not speak
+    when the count stays the same.
+  - `DataField`, `DataFilter`, and `DataView` type the view. `emptyDataView` is the default view.
+    `fieldText(field, row)` returns the text that a field searches, filters, and groups by. `sameDisplay(a, b)` says whether
+    two views show rows the same way (grouping, order, direction, hidden columns). It ignores the search and the
+    filters.
+  - `SearchIcon` draws the icon for search, and `SlidersIcon` draws the icon for display options.
 
 ```tsx
 const [view, setView] = useState<DataView>(emptyDataView);
@@ -144,11 +162,19 @@ const addItems = useMemo(() => filterMenuItems(all, fields, view, setView), [all
 />
 ```
 
-- `AppSidebar` for React: a left sidebar with a toggle button. The button says what it does ("Collapse sidebar"
-  or "Expand sidebar") and has `aria-expanded`. The choice is saved in `localStorage` (set `storageKey` per sidebar)
-  and follows across tabs. Collapsed, it is a narrow rail with the button, and its content leaves the page and
-  the tab order. Pass a function as the child to keep the content and draw icons only. Pass `collapsed` and
-  `onCollapsedChange` to control it, and nothing is saved then.
+- `AppSidebar` for React: a left sidebar with a toggle button.
+  - The button says what it does ("Collapse sidebar" or "Expand sidebar") and has `aria-expanded`.
+  - The choice is saved in `localStorage`, and it follows across tabs. Set `storageKey` per sidebar. The default
+    key is `SIDEBAR_STORAGE_KEY`.
+  - With no saved choice, it starts open, or collapsed on a screen narrower than 48rem. Set `defaultCollapsed`
+    to change this.
+  - Collapsed, it is a narrow rail with the button, and its content is hidden and leaves the tab order. The rail
+    is as wide as the size token `sidebar-rail` (`var(--agd-size-sidebar-rail)`).
+  - Pass a function as the child to keep the content and draw icons only.
+  - Pass `collapsed` and `onCollapsedChange` to control it, and nothing is saved then.
+  - Its props are `AppSidebarProps`: `label`, `children`, `defaultCollapsed`, `collapsed`, `onCollapsedChange`,
+    and `storageKey`.
+  - `PanelLeftIcon` draws a panel icon for your own toggle.
 
 ```tsx
 <AppSidebar label="Project">
